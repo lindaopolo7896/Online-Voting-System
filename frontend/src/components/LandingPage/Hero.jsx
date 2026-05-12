@@ -1,6 +1,7 @@
 import React from "react";
-import BG from "../../assets/bg-landing.jpg";
+import BG from "../../assets/bg-landing.png";
 import { Link } from "react-router-dom";
+import VoteIllustration from "../../assets/vote.png";
 
 function Hero() {
   return (
@@ -43,20 +44,26 @@ function Hero() {
               </button>
             </nav>
           </div>
-          <div className="py-20 flex flex-col items-start justify-start gap-10">
-            <p className=" text-6xl font-bold w-3/4 leading-tight">
-              Run Secure and <span className="text-[#144DEF]">Transparent</span>{" "}
-              Elections Online
-            </p>
-            <p className="text-lg w-1/2  text-white/95">
-              Effortlessly create, manage, and monitor elections with a secure
-              and transparent digital voting system built for reliability. From
-              voter registration to final results, every step is verifiable,
-              accurate, and designed to inspire trust.
-            </p>
-            <button className="bg-[#144DEF] text-white py-6 w-1/3 text-xl font-bold rounded-full cursor-pointer hover:bg-white  hover:text-[#144DEF] transition-all duration-300 ease-in-out">
-              <Link to="/sign-up">Create an Election</Link>
-            </button>
+          <div className="flex">
+            <div className="py-20 flex flex-col items-start justify-start gap-10 w-2/3 ">
+              <p className=" text-6xl font-bold w-full leading-tight">
+                Run Secure and{" "}
+                <span className="text-[#144DEF]">Transparent</span> Elections
+                Online
+              </p>
+              <p className="text-lg w-1/2  text-white/95">
+                Effortlessly create, manage, and monitor elections with a secure
+                and transparent digital voting system built for reliability.
+                From voter registration to final results, every step is
+                verifiable, accurate, and designed to inspire trust.
+              </p>
+              <button className="bg-[#144DEF] text-white py-6 w-1/3 text-xl font-bold rounded-full cursor-pointer hover:bg-white  hover:text-[#144DEF] transition-all duration-300 ease-in-out">
+                <Link to="/sign-up">Create an Election</Link>
+              </button>
+            </div>
+            <div className="w-1/4 py-10 flex items-center justify-center">
+              <img src={VoteIllustration} alt="" className="w-full" />
+            </div>
           </div>
         </div>
       </div>
