@@ -123,3 +123,18 @@
 .marquee:hover {
   animation-play-state: paused;
 }
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.flicker-dot {
+  animation: flicker 1s infinite;
+}
