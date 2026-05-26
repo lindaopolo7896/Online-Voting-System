@@ -10,6 +10,7 @@ import Dashboard from "./pages/Voter/Dashboard";
 import VoterLayout from "./layouts/VoterLayout";
 import VotePage from "./pages/Voter/VotePage";
 import GuidelinesPage from "./pages/Voter/GuidelinesPage";
+import ResultsPage from "./pages/Voter/ResultsPage";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route index element={<Dashboard />} />
         <Route path="/voter/vote" element={<VotePage />} />
         <Route path="/voter/guidelines" element={<GuidelinesPage />} />
+        <Route path="/voter/results" element={<ResultsPage />} />
       </Route>
     </Routes>
   );

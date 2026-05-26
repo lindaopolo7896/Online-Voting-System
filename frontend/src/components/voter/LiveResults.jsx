@@ -33,7 +33,6 @@ function LiveResults({ election }) {
     px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10
     w-full bg-white shadow-[0px_4px_10px_0px_rgba(20,77,239,0.25)]"
     >
-      {/* Header */}
       <div className="flex justify-between items-start gap-4 mb-6 sm:mb-8">
         <div className="min-w-0">
           <p className="text-gray-400 text-xs sm:text-sm font-semibold tracking-wide">
@@ -49,7 +48,6 @@ function LiveResults({ election }) {
           </p>
         </div>
 
-        {/* Navigation */}
         <div className="flex gap-2 sm:gap-3 shrink-0">
           <button
             onClick={prevPosition}
@@ -77,7 +75,6 @@ function LiveResults({ election }) {
         </div>
       </div>
 
-      {/* Results */}
       <div className="flex flex-col gap-5 sm:gap-6">
         {category.results.map((candidate, index) => (
           <div key={index} className="flex flex-col gap-2">
@@ -97,7 +94,6 @@ function LiveResults({ election }) {
               </div>
             </div>
 
-            {/* Progress Bar */}
             <div className="w-full h-2.5 sm:h-3 bg-gray-200 rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-700 ${colors[index]}`}
