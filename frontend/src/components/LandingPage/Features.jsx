@@ -37,7 +37,7 @@ const features = [
 
 function Features() {
   return (
-    <div className="overflow-hidden bg-[#F9FAFB] py-6">
+    <div className="overflow-hidden py-6">
       <div className="flex w-max marquee">
         {[...features, ...features].map((feature, index) => (
           <div
@@ -45,10 +45,10 @@ function Features() {
             className="flex flex-col items-center justify-center gap-2 mx-10 max-w-[350px]"
           >
             <img src={feature.icon} alt={feature.name} className="w-20" />
-            <h1 className="text-[#111827] text-xl font-bold text-center">
+            <h1 className="text-[#144DEF] text-xl font-bold text-center">
               {feature.name}
             </h1>
-            <p className="text-center text-black/60">{feature.description}</p>
+            <p className="text-center text-white">{feature.description}</p>
           </div>
         ))}
       </div>

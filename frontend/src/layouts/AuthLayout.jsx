@@ -1,5 +1,5 @@
 import React from "react";
-import SVG from "../assets/bg.png";
+import SVG from "../assets/bg-auth.png";
 
 function AuthLayout({ children }) {
   return (
