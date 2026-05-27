@@ -1,28 +1,64 @@
 import { useEffect, useState } from "react";
 
-export default function Countdown() {
-  const [time, setTime] = useState(5 * 60);
+export default function Countdown({ election }) {
+  const [countdown, setCountdown] = useState({
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTime((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
+    const calculateTime = () => {
+      // Completed elections stay at 0
+      if (election.status === "completed") {
+        setCountdown({
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+        });
+
+        return;
+      }
+
+      // Determine target time
+      const targetDate =
+        election.status === "live"
+          ? new Date(election.endTime)
+          : new Date(election.startTime);
+
+      const now = new Date();
+
+      const difference = targetDate - now;
+
+      if (difference <= 0) {
+        setCountdown({
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+        });
+
+        return;
+      }
+
+      const hours = Math.floor(difference / (1000 * 60 * 60));
+
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+      setCountdown({
+        hours,
+        minutes,
+        seconds,
       });
-    }, 1000);
+    };
 
-    return () => clearInterval(timer);
-  }, []);
+    calculateTime();
 
-  const minutes = Math.floor(time / 60);
-  const seconds = time % 60;
+    const interval = setInterval(calculateTime, 1000);
 
-  return (
-    <h1 className="text-[#111827] font-bold">
-      {minutes}:{seconds.toString().padStart(2, "0")}m
-    </h1>
-  );
+    return () => clearInterval(interval);
+  }, [election]);
+
+  return countdown;
 }

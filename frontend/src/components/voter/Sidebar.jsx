@@ -24,7 +24,7 @@ function Sidebar() {
       <div
         className={`
           fixed left-0 top-0 z-50
-          h-screen w-70 md:w-80 bg-white shadow-2xl
+          h-screen w-70 md:w-80 bg-[#050B14] border-r border-r-white/10
           px-4 py-12
 
           flex flex-col items-center justify-between
@@ -38,7 +38,6 @@ function Sidebar() {
           lg:flex
         `}
       >
-        {/* CLOSE BUTTON */}
         <button
           onClick={() => setOpen(false)}
           className="absolute top-5 right-5 lg:hidden"
@@ -56,7 +55,7 @@ function Sidebar() {
               `px-8 py-2 rounded-lg flex items-center justify-start gap-2 text-lg font-medium ${
                 isActive
                   ? "bg-[#144DEF] text-white"
-                  : "text-[#0F1117] bg-transparent hover:text-[#144DEF] hover:border hover:border-[#144DEF] transition-all duration-300 ease-in-out"
+                  : "text-white bg-transparent hover:text-[#144DEF] hover:border hover:border-[#144DEF] transition-all duration-300 ease-in-out"
               }`
             }
           >
@@ -65,40 +64,12 @@ function Sidebar() {
           </NavLink>
 
           <NavLink
-            to="/voter/vote"
-            className={({ isActive }) =>
-              `px-8 py-2 rounded-lg flex justify-start items-center gap-2 text-lg font-medium ${
-                isActive
-                  ? "bg-[#144DEF] text-white"
-                  : "text-[#0F1117] hover:text-[#144DEF] hover:border hover:border-[#144DEF] transition-all duration-300 ease-in-out"
-              }`
-            }
-          >
-            <MdHowToVote className="text-[20px]" />
-            Vote
-          </NavLink>
-
-          <NavLink
-            to="/voter/guidelines"
-            className={({ isActive }) =>
-              `px-8 py-2 rounded-lg flex justify-start items-center gap-2 text-lg font-medium ${
-                isActive
-                  ? "bg-[#144DEF] text-white"
-                  : "text-[#0F1117] hover:text-[#144DEF] hover:border hover:border-[#144DEF] transition-all duration-300 ease-in-out"
-              }`
-            }
-          >
-            <FaUsers className="text-[20px]" />
-            Voter Guidelines
-          </NavLink>
-
-          <NavLink
             to="/voter/results"
             className={({ isActive }) =>
               `px-8 py-2 rounded-lg flex justify-start items-center gap-2 text-lg font-medium ${
                 isActive
                   ? "bg-[#144DEF] text-white"
-                  : "text-[#0F1117] hover:text-[#144DEF] hover:border hover:border-[#144DEF] transition-all duration-300 ease-in-out"
+                  : "text-white hover:text-[#144DEF] hover:border hover:border-[#144DEF] transition-all duration-300 ease-in-out"
               }`
             }
           >
@@ -112,7 +83,7 @@ function Sidebar() {
               `px-8 py-2 rounded-lg flex justify-start items-center gap-2 text-lg font-medium ${
                 isActive
                   ? "bg-[#144DEF] text-white"
-                  : "text-[#0F1117] hover:text-[#144DEF] hover:border hover:border-[#144DEF] transition-all duration-300 ease-in-out"
+                  : "text-white hover:text-[#144DEF] hover:border hover:border-[#144DEF] transition-all duration-300 ease-in-out"
               }`
             }
           >
@@ -121,7 +92,7 @@ function Sidebar() {
           </NavLink>
         </div>
 
-        <button className="bg-[#0F1117] text-white py-2 px-14 rounded-full font-medium hover:border hover:bg-transparent hover:border-[#0F1117] hover:text-[#0F1117] cursor-pointer transition-all duration-300 ease-in-out active:bg-[#0f1117]/95 active:text-white">
+        <button className="bg-[white]  text-[#144DEF]  py-2 px-14 rounded-lg font-medium hover:border hover:bg-transparent hover:border-[#144DEF]   cursor-pointer transition-all duration-300 ease-in-out active:bg-[#0f1117]/95 active:text-white">
           Log Out
         </button>
       </div>
