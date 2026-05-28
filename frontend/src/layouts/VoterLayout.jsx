@@ -4,7 +4,7 @@ import Sidebar from "../components/voter/Sidebar";
 
 function VoterLayout() {
   return (
-    <div className="flex bg-[#040509]">
+    <div className="flex bg-[#040509] overflow-x-hidden">
       <Sidebar />
 
       <div className="w-full lg:ml-80">

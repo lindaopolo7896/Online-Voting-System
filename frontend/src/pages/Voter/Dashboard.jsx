@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 
-import ElectionCard from "../../components/voter/ElectionCard";
-import LiveResults from "../../components/voter/LiveResults";
+import ElectionCard from "../../components/voter/dashboard/ElectionCard";
+import LiveResults from "../../components/voter/dashboard/LiveResults";
 import TopBar from "../../components/voter/TopBar";
-import VotingProcess from "../../components/voter/VotingProcess";
+import VotingProcess from "../../components/voter/dashboard/VotingProcess";
 
 import { elections } from "../../mock/data";
 
