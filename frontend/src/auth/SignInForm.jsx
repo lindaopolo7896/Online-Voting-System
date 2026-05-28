@@ -24,21 +24,16 @@ function SignInForm() {
     <AuthLayout>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className=" bg-white w-full max-w-lg m-auto rounded-xl flex flex-col p-10 gap-4 shadow-2xl "
+        className="  w-full max-w-lg m-auto rounded-xl flex flex-col p-10 gap-6 shadow-2xl "
       >
         <div className="flex flex-col gap-1 ">
-          <h1 className="text-2xl font-bold text-[#111827]">
-            Welcome to Votex
-          </h1>
-          <p className="font-semibold text-black/50">
+          <h1 className="text-2xl  font-bold text-white">Welcome to Votex</h1>
+          <p className="font-semibold  text-[#6F7995] text-lg">
             Sign in to manage your elections
           </p>
         </div>
 
-        <label
-          htmlFor=""
-          className="flex flex-col gap-3 text-[#111827] font-semibold"
-        >
+        <label htmlFor="" className="flex flex-col gap-3 text-white ">
           Email
           <input
             type="email"
@@ -49,7 +44,7 @@ function SignInForm() {
                 message: "Invalid Email Format",
               },
             })}
-            className="border-b-2 py-2 placeholder:font-normal text-black/60 focus:border-b-[#144DEF] focus:outline-none "
+            className="border border-white/10 bg-[#0F1117]/70 rounded-lg py-2 placeholder:font-normal text-[#6F7995] focus:border-[#144DEF] focus:shadow-xl focus:shadow-[#144DEF]/15 focus:outline-none px-3"
             placeholder="Enter your email address"
           />
           {errors.email && (
@@ -58,10 +53,7 @@ function SignInForm() {
             </p>
           )}
         </label>
-        <label
-          htmlFor=""
-          className="flex flex-col gap-3 text-[#111827] font-semibold "
-        >
+        <label htmlFor="" className="flex flex-col gap-3 text-white ">
           Password
           <div className="relative w-full">
             <input
@@ -73,7 +65,7 @@ function SignInForm() {
                   message: "Password must be  a minimum of 8 characters",
                 },
               })}
-              className="w-full border-b-2 py-2 pr-10 placeholder:font-normal text-black/60 focus:border-b-[#144DEF] focus:outline-none"
+              className="border border-white/10 bg-[#0F1117]/70 rounded-lg py-2 placeholder:font-normal text-[#6F7995] focus:border-[#144DEF] focus:shadow-xl focus:shadow-[#144DEF]/15 focus:outline-none w-full px-3"
               placeholder="Setup your password"
             />
             <ShowPassword show={show} setShow={setShow} />
@@ -86,11 +78,11 @@ function SignInForm() {
         </label>
         <Button name="Sign In" />
         <div className="flex justify-between">
-          <p className="font-medium">
+          <p className="font-medium text-[#144DEF]">
             Don't Have an Account?{" "}
             <Link
               to="/sign-up"
-              className="text-[#144DEF] hover:text-[#144DEF]/90 hover:underline transition-all duration-300 ease-in-out"
+              className="text-[#6F7995] hover:text-[#144DEF]/90 hover:underline transition-all duration-300 ease-in-out"
             >
               Sign up
             </Link>

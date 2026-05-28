@@ -1,5 +1,5 @@
-import ElectionList from "../../components/voter/ElectionList";
-import ResultAnalysis from "../../components/voter/ResultAnalysis";
+import ElectionList from "../../components/voter/results/ElectionList";
+import ResultAnalysis from "../../components/voter/results/ResultAnalysis";
 import TopBar from "../../components/voter/TopBar";
 import { elections } from "../../mock/data";
 

@@ -11,6 +11,7 @@ import VoterLayout from "./layouts/VoterLayout";
 import VotePage from "./pages/Voter/VotePage";
 import GuidelinesPage from "./pages/Voter/GuidelinesPage";
 import ResultsPage from "./pages/Voter/ResultsPage";
+import ElectionDetails from "./components/voter/dashboard/ElectionDetails";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route path="/voter/vote" element={<VotePage />} />
         <Route path="/voter/guidelines" element={<GuidelinesPage />} />
         <Route path="/voter/results" element={<ResultsPage />} />
+        <Route path="/voter/results/:id" element={<ElectionDetails />} />
       </Route>
     </Routes>
   );

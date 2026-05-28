@@ -7,179 +7,277 @@
 export const elections = [
   {
     id: 1,
+
     title: "Student Council Election 2026",
+
     organization: "ABC University",
+
     status: "live",
 
+    date: "2026-06-15",
+
+    startTime: "2026-06-15T08:00:00",
+
+    endTime: "2026-06-15T22:30:00",
+
+    startDate: "June 15, 2026 • 08:00 AM",
+
+    endDate: "June 15, 2026 • 10:30 PM",
+
+    duration: "14h 30m",
+
+    resultPublished: null,
+
     totalVoters: 374,
+
     votesCast: 344,
+
     turnout: 92,
-
-    date: "2026-05-20",
-
-    startTime: "2026-05-20T08:00:00",
-    endTime: "2026-06-30T23:59:00",
 
     categories: [
       {
         id: 1,
+
         position: "President",
 
         results: [
           {
             candidate: "Ted Owalo",
-            votes: 117,
+
+            votes: 134,
+
             percentage: 39,
+
             image:
               "https://images.unsplash.com/photo-1500648767791-00dcc994a43d?w=500",
           },
 
           {
             candidate: "Elsie May",
-            votes: 104,
-            percentage: 35,
+
+            votes: 124,
+
+            percentage: 36,
+
             image:
               "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500",
           },
 
           {
             candidate: "Jane Doe",
-            votes: 74,
-            percentage: 26,
+
+            votes: 86,
+
+            percentage: 25,
+
             image:
-              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500",
+              "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500",
           },
         ],
       },
 
       {
         id: 2,
+
         position: "Vice President",
 
         results: [
           {
-            candidate: "Brian Kimani",
-            votes: 132,
-            percentage: 44,
+            candidate: "Brian James",
+
+            votes: 145,
+
+            percentage: 45,
+
             image:
-              "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500",
+              "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=500",
           },
 
           {
             candidate: "Sarah Mike",
-            votes: 98,
-            percentage: 33,
+
+            votes: 110,
+
+            percentage: 34,
+
             image:
-              "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500",
+              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500",
           },
 
           {
             candidate: "Kevin Otieno",
-            votes: 70,
-            percentage: 23,
+
+            votes: 69,
+
+            percentage: 21,
+
             image:
-              "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500",
+              "https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=500",
           },
         ],
       },
 
       {
         id: 3,
+
         position: "Secretary",
 
         results: [
           {
             candidate: "Mercy Atieno",
-            votes: 145,
+
+            votes: 160,
+
             percentage: 48,
+
             image:
-              "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500",
+              "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500",
           },
 
           {
             candidate: "Ian Kariuki",
-            votes: 96,
-            percentage: 32,
+
+            votes: 100,
+
+            percentage: 30,
+
             image:
-              "https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=500",
+              "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500",
           },
 
           {
             candidate: "Daisy Njeri",
-            votes: 59,
-            percentage: 20,
+
+            votes: 74,
+
+            percentage: 22,
+
             image:
-              "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=500",
+              "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500",
           },
         ],
       },
     ],
   },
 
+  // ==========================================
+  // COMPLETED ELECTION
+  // ==========================================
+
   {
     id: 2,
+
     title: "ICT Club Election",
+
     organization: "ABC University",
+
     status: "completed",
 
+    date: "2026-05-20",
+
+    startTime: "2026-05-20T08:00:00",
+
+    endTime: "2026-05-20T18:00:00",
+
+    startDate: "May 20, 2026 • 08:00 AM",
+
+    endDate: "May 20, 2026 • 06:00 PM",
+
+    duration: "10h",
+
+    resultPublished: "May 20, 2026 • 06:15 PM",
+
     totalVoters: 150,
+
     votesCast: 130,
+
     turnout: 86,
-
-    date: "2026-05-13",
-
-    startTime: "2026-05-13T08:00:00",
-    endTime: "2026-05-13T18:00:00",
 
     categories: [
       {
         id: 1,
-        position: "Chairperson",
+
+        position: "President",
 
         results: [
           {
             candidate: "Johnson Doe",
-            votes: 60,
-            percentage: 46,
+
+            votes: 72,
+
+            percentage: 55,
+
             image:
               "https://images.unsplash.com/photo-1500648767791-00dcc994a43d?w=500",
           },
 
           {
             candidate: "Mary Smith",
-            votes: 45,
-            percentage: 35,
+
+            votes: 58,
+
+            percentage: 45,
+
             image:
               "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500",
-          },
-
-          {
-            candidate: "Kelvin Otis",
-            votes: 25,
-            percentage: 19,
-            image:
-              "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500",
           },
         ],
       },
 
       {
         id: 2,
+
+        position: "Vice President",
+
+        results: [
+          {
+            candidate: "Jane Cooper",
+
+            votes: 80,
+
+            percentage: 62,
+
+            image:
+              "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=500",
+          },
+
+          {
+            candidate: "Brian James",
+
+            votes: 50,
+
+            percentage: 38,
+
+            image:
+              "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=500",
+          },
+        ],
+      },
+
+      {
+        id: 3,
+
         position: "Secretary",
 
         results: [
           {
             candidate: "Grace Kim",
-            votes: 70,
-            percentage: 54,
+
+            votes: 67,
+
+            percentage: 52,
+
             image:
               "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500",
           },
 
           {
             candidate: "Sarah Wilson",
-            votes: 60,
-            percentage: 46,
+
+            votes: 63,
+
+            percentage: 48,
+
             image:
               "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500",
           },
@@ -188,339 +286,209 @@ export const elections = [
     ],
   },
 
+  // ==========================================
+  // CHURCH ELECTION
+  // ==========================================
+
   {
     id: 3,
+
     title: "Church Youth Election",
+
     organization: "Grace Church",
+
     status: "completed",
 
+    date: "2026-04-10",
+
+    startTime: "2026-04-10T09:00:00",
+
+    endTime: "2026-04-10T15:00:00",
+
+    startDate: "April 10, 2026 • 09:00 AM",
+
+    endDate: "April 10, 2026 • 03:00 PM",
+
+    duration: "6h",
+
+    resultPublished: "April 10, 2026 • 03:20 PM",
+
     totalVoters: 80,
+
     votesCast: 72,
+
     turnout: 90,
-
-    date: "2026-01-30",
-
-    startTime: "2026-01-30T09:00:00",
-    endTime: "2026-01-30T17:00:00",
 
     categories: [
       {
         id: 1,
-        position: "Youth Leader",
+
+        position: "President",
 
         results: [
           {
-            candidate: "Michael Lee",
-            votes: 34,
-            percentage: 47,
-            image:
-              "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500",
-          },
+            candidate: "Pastor Mike",
 
-          {
-            candidate: "Jane Cooper",
-            votes: 25,
-            percentage: 35,
+            votes: 40,
+
+            percentage: 56,
+
             image:
-              "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=500",
+              "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500",
           },
 
           {
             candidate: "Kevin Brown",
-            votes: 13,
-            percentage: 18,
+
+            votes: 32,
+
+            percentage: 44,
+
             image:
               "https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=500",
           },
         ],
       },
+
+      {
+        id: 2,
+
+        position: "Secretary",
+
+        results: [
+          {
+            candidate: "Sarah Wilson",
+
+            votes: 41,
+
+            percentage: 57,
+
+            image:
+              "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500",
+          },
+
+          {
+            candidate: "Grace Kim",
+
+            votes: 31,
+
+            percentage: 43,
+
+            image:
+              "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500",
+          },
+        ],
+      },
+    ],
+  },
+
+  // ==========================================
+  // UPCOMING ELECTION
+  // ==========================================
+
+  {
+    id: 4,
+
+    title: "Faculty Representative Election",
+
+    organization: "ABC University",
+
+    status: "upcoming",
+
+    date: "2026-08-01",
+
+    startTime: "2026-08-01T08:00:00",
+
+    endTime: "2026-08-01T20:00:00",
+
+    startDate: "August 1, 2026 • 08:00 AM",
+
+    endDate: "August 1, 2026 • 08:00 PM",
+
+    duration: "12h",
+
+    resultPublished: null,
+
+    totalVoters: 210,
+
+    votesCast: 0,
+
+    turnout: 0,
+
+    categories: [
+      {
+        id: 1,
+
+        position: "President",
+
+        results: [],
+      },
+
+      {
+        id: 2,
+
+        position: "Vice President",
+
+        results: [],
+      },
+
+      {
+        id: 3,
+
+        position: "Secretary",
+
+        results: [],
+      },
     ],
   },
 ];
-// ==========================
-// Candidates
-// ==========================
-export const candidates = [
-  // ================= PRESIDENT =================
-  {
-    id: 1,
-    name: "Johnson Doe",
-    position: "President",
-    course: "Bachelor of Science in Data Science",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43d?w=500",
-    slogan: "Building with purpose",
-    votes: 134,
-    percentage: 39,
-  },
-  {
-    id: 2,
-    name: "Mary Smith",
-    position: "President",
-    course: "Computer Science",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500",
-    slogan: "Your voice matters",
-    votes: 124,
-    percentage: 36,
-  },
-  {
-    id: 3,
-    name: "Ted Owalo",
-    position: "President",
-    course: "Information Technology",
-    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500",
-    slogan: "Future starts now",
-    votes: 86,
-    percentage: 25,
-  },
-
-  // ================= VICE PRESIDENT =================
-  {
-    id: 4,
-    name: "Elsie May",
-    position: "Vice President",
-    course: "Software Engineering",
-    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500",
-    slogan: "Leadership through action",
-    votes: 120,
-    percentage: 45,
-  },
-  {
-    id: 5,
-    name: "Brian James",
-    position: "Vice President",
-    course: "Business IT",
-    image: "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=500",
-    slogan: "Together we grow",
-    votes: 90,
-    percentage: 34,
-  },
-  {
-    id: 6,
-    name: "Jane Cooper",
-    position: "Vice President",
-    course: "Cyber Security",
-    image: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=500",
-    slogan: "Innovation for all",
-    votes: 56,
-    percentage: 21,
-  },
-
-  // ================= SECRETARY =================
-  {
-    id: 7,
-    name: "Kevin Brown",
-    position: "Secretary",
-    course: "Computer Science",
-    image: "https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=500",
-    slogan: "Clear communication matters",
-    votes: 98,
-    percentage: 30,
-  },
-  {
-    id: 8,
-    name: "Sarah Wilson",
-    position: "Secretary",
-    course: "Information Systems",
-    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500",
-    slogan: "Organized leadership",
-    votes: 88,
-    percentage: 27,
-  },
-  {
-    id: 9,
-    name: "Michael Lee",
-    position: "Secretary",
-    course: "Software Engineering",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500",
-    slogan: "Efficiency first",
-    votes: 76,
-    percentage: 23,
-  },
-  {
-    id: 10,
-    name: "Grace Kim",
-    position: "Secretary",
-    course: "Data Science",
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500",
-    slogan: "Connecting every voice",
-    votes: 64,
-    percentage: 20,
-  },
-];
 
 // ==========================
-// Voter Activity
+// USER PROFILE
 // ==========================
-export const voterActivity = [
-  {
-    time: "8:00 AM",
-    votes: 20,
-  },
-  {
-    time: "9:00 AM",
-    votes: 90,
-  },
-  {
-    time: "10:00 AM",
-    votes: 160,
-  },
-  {
-    time: "11:00 AM",
-    votes: 270,
-  },
-  {
-    time: "12:00 PM",
-    votes: 344,
-  },
-];
 
-// ==========================
-// Selected Candidates
-// ==========================
-export const selectedCandidates = [
-  {
-    position: "President",
-    candidate: "Johnson Doe",
-  },
-  {
-    position: "Vice President",
-    candidate: "Brian James",
-  },
-  {
-    position: "Secretary",
-    candidate: "Jane Doe",
-  },
-  {
-    position: "Treasurer",
-    candidate: "Mary Smith",
-  },
-  {
-    position: "Representative",
-    candidate: "Elsie May",
-  },
-];
-
-// ==========================
-// User Settings
-// ==========================
 export const userProfile = {
   fullName: "Eleanor Doe",
+
   email: "eleanor@example.com",
+
   voterId: "VT-839104",
+
   verified: true,
 };
 
 // ==========================
-// Notifications / Guidelines
+// GUIDELINES
 // ==========================
+
 export const guidelines = [
   {
     id: 1,
+
     text: "Each voter can vote only once.",
   },
+
   {
     id: 2,
+
     text: "Do not share your voting link.",
   },
+
   {
     id: 3,
+
     text: "Votes cannot be changed after submission.",
   },
+
   {
     id: 4,
+
     text: "Election results may update in real time.",
   },
+
   {
     id: 5,
+
     text: "Keep your credentials secure.",
   },
 ];
-
-// ==========================
-// Live Election Results
-// ==========================
-
-export const liveResults = {
-  id: 1,
-  title: "Student Council Election 2026",
-
-  categories: [
-    {
-      position: "President",
-
-      results: [
-        {
-          candidate: "Johnson Doe",
-          votes: 134,
-          percentage: 39,
-        },
-
-        {
-          candidate: "Mary Smith",
-          votes: 124,
-          percentage: 36,
-        },
-
-        {
-          candidate: "Ted Owalo",
-          votes: 86,
-          percentage: 25,
-        },
-      ],
-    },
-
-    {
-      position: "Vice President",
-
-      results: [
-        {
-          candidate: "Elsie May",
-          votes: 120,
-          percentage: 45,
-        },
-
-        {
-          candidate: "Brian James",
-          votes: 90,
-          percentage: 34,
-        },
-
-        {
-          candidate: "Jane Cooper",
-          votes: 56,
-          percentage: 21,
-        },
-      ],
-    },
-
-    {
-      position: "Secretary",
-
-      results: [
-        {
-          candidate: "Kevin Brown",
-          votes: 98,
-          percentage: 30,
-        },
-
-        {
-          candidate: "Sarah Wilson",
-          votes: 88,
-          percentage: 27,
-        },
-
-        {
-          candidate: "Michael Lee",
-          votes: 76,
-          percentage: 23,
-        },
-
-        {
-          candidate: "Grace Kim",
-          votes: 64,
-          percentage: 20,
-        },
-      ],
-    },
-  ],
-};

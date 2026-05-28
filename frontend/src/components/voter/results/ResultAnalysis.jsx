@@ -1,7 +1,7 @@
 import React from "react";
-import VoteIcon from "../../assets/icons/vote.png";
-import VoterIcon from "../../assets/icons/voter.png";
-import TickIcon from "../../assets/icons/tick.png";
+import VoteIcon from "../../../assets/icons/vote.png";
+import VoterIcon from "../../../assets/icons/voter.png";
+import TickIcon from "../../../assets/icons/tick.png";
 
 const data = [
   {

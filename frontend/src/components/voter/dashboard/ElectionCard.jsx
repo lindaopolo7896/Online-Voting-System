@@ -1,4 +1,4 @@
-import Voters from "../../assets/voters.png";
+import Voters from "../../../assets/voters.png";
 import { Link } from "react-router-dom";
 import { GoDotFill } from "react-icons/go";
 import { useMemo, useEffect, useState } from "react";

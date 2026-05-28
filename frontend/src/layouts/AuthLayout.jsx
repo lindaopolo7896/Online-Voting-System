@@ -5,7 +5,7 @@ function AuthLayout({ children }) {
   return (
     <div
       style={{ backgroundImage: `url(${SVG})` }}
-      className="bg-gray-50 bg-cover bg-center min-h-screen flex items-center justify-center flex-col"
+      className="bg-cover bg-center min-h-screen flex items-center justify-center flex-col"
     >
       {children}
     </div>
