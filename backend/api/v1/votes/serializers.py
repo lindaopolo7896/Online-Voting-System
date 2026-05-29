@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.votes.models import Vote, VotingLink
+from apps.votes.models import Vote, VotingLink, Participant, Candidate
 from apps.users.models import Election, Membership
 from api.v1.elections.serializers import ParticipantSerializer, CandidateSerializer
 from api.v1.users.serializers import ElectionSerializer, MembershipSerializer
@@ -14,9 +14,9 @@ class VoteSerializer(serializers.ModelSerializer):
     participant_id = serializers.PrimaryKeyRelatedField(
         source='participant', queryset=Participant.objects.all(), write_only=True
     )
-    votes_for = CandidateSerializer(read_only=True)
-    votes_for_id = serializers.PrimaryKeyRelatedField(
-        source='votes_for', queryset=Candidate.objects.all(), write_only=True
+    voted_for = CandidateSerializer(read_only=True)
+    voted_for_id = serializers.PrimaryKeyRelatedField(
+        source='voted_for', queryset=Candidate.objects.all(), write_only=True
     )
 
     class Meta:
@@ -27,8 +27,8 @@ class VoteSerializer(serializers.ModelSerializer):
             'election_id',
             'participant',
             'participant_id',
-            'votes_for',
-            'votes_for_id',
+            'voted_for',
+            'voted_for_id',
             'timestamp',
         ]
         read_only_fields = ['id', 'timestamp']

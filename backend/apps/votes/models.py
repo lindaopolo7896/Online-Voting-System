@@ -5,7 +5,7 @@ from apps.elections.models import Candidate, Participant
 class Vote(models.Model):
     election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='votes')
     participant = models.ForeignKey(Participant, on_delete=models.CASCADE, related_name='votes')
-    votes_for = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='votes')
+    voted_for = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='votes')
     timestamp = models.DateTimeField(auto_now_add=True)
 
 class VotingLink(models.Model):
