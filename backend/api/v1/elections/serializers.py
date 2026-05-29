@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from apps.elections.models import Position, Participant, Candidate
 from apps.users.models import Organisation, Election, Membership
 from api.v1.users.serializers import OrganisationSerializer, ElectionSerializer, MembershipSerializer

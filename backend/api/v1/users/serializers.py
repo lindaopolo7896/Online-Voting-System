@@ -18,17 +18,20 @@ class OrganisationSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    organisation_id = serializers.CharField(write_only=True, required=False)
+    role = serializers.CharField(write_only=True, required=False)
     class Meta:
         model = User
         fields = [
             'id',
-            'username',
             'email',
             'first_name',
             'last_name',
             'phone',
             'bio',
             'password',
+            'organisation_id',
+            'role',
             'is_active',
         ]
         read_only_fields = ['id']

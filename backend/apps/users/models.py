@@ -7,6 +7,9 @@ class Organisation(models.Model):
     name = models.CharField(max_length = 50)
     description = models.CharField(max_length = 100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
 
 # This is at level 2 where we deal with a user and their relationship with an organisation
 # For user we used abstract user coz we will be using django built in user fields plus these
@@ -16,7 +19,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=50, blank=True, null=True)
     bio = models.CharField(max_length = 150, blank=True, null=True)
 
-    username_field = 'email'
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
     objects = manager()
@@ -39,6 +42,15 @@ class Membership(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 
+    def __str__(self):
+        return f"{self.user.email} - {self.organisation.name} ({self.role})"
+
+    #ensure a user can only have one role per organisation, but can have different roles in different organisations
+    class Meta:
+        unique_together = ('organisation', 'user')
+
+    
+
 # election has been brought to this app to avoid circular imports.
 class Election(models.Model):
     name = models.CharField(max_length=100)
@@ -49,11 +61,17 @@ class Election(models.Model):
     winner = models.ForeignKey(Membership, on_delete=models.SET_NULL, related_name='won_elections', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.name
+
 
 #Next up we have permissions table, one to define the permissions and the other to relate a user to a permission
 class Permission(models.Model):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
 
 class PermissionRecord(models.Model):
     membership = models.ForeignKey(Membership, on_delete=models.CASCADE, related_name='permission_records')
@@ -61,8 +79,14 @@ class PermissionRecord(models.Model):
     election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='permission_records')
     assigned_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"{self.membership.user.email} - {self.permission.name} for {self.election.name}"
+
 class Log(models.Model):
     membership = models.ForeignKey(Membership, on_delete=models.CASCADE, related_name='logs')
     election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='logs')
     action = models.ForeignKey(Permission, on_delete=models.CASCADE, related_name='logs')
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.membership.user.email} performed {self.action.name} on {self.election.name} at {self.timestamp}"

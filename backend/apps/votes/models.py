@@ -8,6 +8,9 @@ class Vote(models.Model):
     voted_for = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='votes')
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Vote by {self.participant.membership.user.email} for {self.voted_for.membership.user.email} in {self.election.name}"
+
 class VotingLink(models.Model):
     election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='voting_links')
     participant = models.ForeignKey(Participant, on_delete=models.CASCADE, related_name='voting_links')
@@ -16,3 +19,6 @@ class VotingLink(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     is_used = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Voting link for {self.participant.membership.user.email} in {self.election.name}"

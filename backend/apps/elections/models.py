@@ -8,10 +8,16 @@ class Position(models.Model):
     election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='positions')
     status = models.CharField(max_length=20, default='open')  # open, closed
 
+    def __str__(self):
+        return f"{self.name} ({self.organisation.name})"
+
 class Participant(models.Model):
     membership = models.ForeignKey(Membership, on_delete=models.CASCADE, related_name='participants')
     election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='participants')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.membership.user.email} in {self.election.name}"
 
 class Candidate(models.Model):
     membership = models.ForeignKey(Membership, on_delete=models.CASCADE, related_name='candidates')
@@ -23,4 +29,5 @@ class Candidate(models.Model):
     status = models.CharField(max_length=20, default='active')  # active, withdrawn, disqualified
     created_at = models.DateTimeField(auto_now_add=True)
 
-
+    def __str__(self):
+        return f"{self.membership.user.email} for {self.election.name}"
