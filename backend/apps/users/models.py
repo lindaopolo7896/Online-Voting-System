@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from utils.manager import manager
 
 # This is the organisation at level 1
 class Organisation(models.Model):
@@ -10,15 +11,25 @@ class Organisation(models.Model):
 # This is at level 2 where we deal with a user and their relationship with an organisation
 # For user we used abstract user coz we will be using django built in user fields plus these
 class User(AbstractUser):
+    username = None
+    email = models.EmailField(unique=True)
     phone = models.CharField(max_length=50, blank=True, null=True)
     bio = models.CharField(max_length = 150, blank=True, null=True)
 
-ROLE_CHOICES ={
-    ('Admin','admin'),
-    ('Canidate','canidate'),
-    ('Participant','participant'),
-    ('Official','official'),
-}
+    username_field = 'email'
+    REQUIRED_FIELDS = []
+
+    objects = manager()
+
+    def __str__(self):
+        return self.email
+
+ROLE_CHOICES =(
+    ('admin','Admin'),
+    ('candidate','Candidate'),
+    ('participant','Participant'),
+    ('official','Official'),
+)
 
 class Membership(models.Model):
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE, related_name='memberships')
