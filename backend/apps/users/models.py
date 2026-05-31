@@ -74,9 +74,9 @@ class Permission(models.Model):
         return self.name
 
 class PermissionRecord(models.Model):
-    membership = models.ForeignKey(Membership, on_delete=models.CASCADE, related_name='permission_records')
-    permission = models.ForeignKey(Permission, on_delete=models.CASCADE, related_name='permission_records')
-    election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='permission_records')
+    membership = models.ForeignKey(Membership, on_delete=models.CASCADE, related_name='permissions')
+    permission = models.ForeignKey(Permission, on_delete=models.CASCADE, related_name='permissions')
+    election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='permissions', blank=True, null=True)
     assigned_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -84,7 +84,7 @@ class PermissionRecord(models.Model):
 
 class Log(models.Model):
     membership = models.ForeignKey(Membership, on_delete=models.CASCADE, related_name='logs')
-    election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='logs')
+    election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='logs', blank=True, null=True)
     action = models.ForeignKey(Permission, on_delete=models.CASCADE, related_name='logs')
     timestamp = models.DateTimeField(auto_now_add=True)
 
