@@ -138,7 +138,7 @@ def assign_election_default_permissions_to_membership(membership, role):
             permission_record.save()
 
 #assigning org level perms
-def assign_org_bulk_permisions_to_membership(membership, permissions):
+def assign_org_bulk_permissions_to_membership(membership, permissions):
     #clear out everything for clean start, then assign new ones
     old_perms = PermissionRecord.objects.filter(membership=membership)
     for old_perm in old_perms:
@@ -184,6 +184,10 @@ def revoke_election_bulk_permissions_from_membership(membership, election, permi
             old_perm.delete()
 
 #verifying perms
+
+def get_all_permissions_for_membership(membership):
+    return membership.permissions.all()
+
 def check_membership_permission(membership, codename, election=None):
     if election:
         return membership.permissions.filter(codename=codename, election=election).exists()

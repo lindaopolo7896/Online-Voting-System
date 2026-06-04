@@ -61,10 +61,23 @@ class MembershipSerializer(serializers.ModelSerializer):
             'role',
             'profile_photo',
             'created_at',
+            'currently_active',
             'is_active',
         ]
         read_only_fields = ['id', 'created_at']
 
+class UserMembershipCreateSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    email = serializers.EmailField()
+    phone = serializers.CharField(required=False, allow_blank=True)
+    bio = serializers.CharField(required=False, allow_blank=True)
+    password = serializers.CharField(write_only=True)
+    organisation_id = serializers.PrimaryKeyRelatedField(
+        source='organisation', queryset=Organisation.objects.all(), write_only=True
+    )
+    role = serializers.CharField(write_only=True)
+    is_active = serializers.BooleanField(default=True)
 
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
