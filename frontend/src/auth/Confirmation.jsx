@@ -8,10 +8,10 @@ function Confirmation() {
   const navigate = useNavigate();
   return (
     <AuthLayout>
-      <div className=" bg-white w-full max-w-lg m-auto rounded-xl flex flex-col p-10 gap-7 shadow-2xl items-center justify-center">
+      <div className=" w-full max-w-lg m-auto rounded-xl flex flex-col p-10 gap-7 shadow-2xl items-center justify-center">
         <img src={Success} alt="success icon" srcset="" className="w-[60px] " />
-        <h1 className="text-2xl font-bold text-[#111827]">Password Changed!</h1>
-        <p className="font-medium text-center text-black/50 w-7/8">
+        <h1 className="text-2xl font-bold text-white">Password Changed!</h1>
+        <p className=" text-center text-[#6F7995] md:w-7/8">
           Your password has been reset succesfully. Click below to sign in
         </p>
 

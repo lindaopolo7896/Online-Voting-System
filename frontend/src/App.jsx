@@ -12,6 +12,7 @@ import VotePage from "./pages/Voter/VotePage";
 import GuidelinesPage from "./pages/Voter/GuidelinesPage";
 import ResultsPage from "./pages/Voter/ResultsPage";
 import ElectionDetails from "./components/voter/dashboard/ElectionDetails";
+import VotingAccess from "./components/vote/VotingAccess";
 
 function App() {
   return (
@@ -25,9 +26,13 @@ function App() {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/confirmation" element={<Confirmation />} />
 
+      {/* Voting  */}
+      <Route path="/vote" element={<VotePage />} />
+      <Route path="/voting-access" element={<VotingAccess />} />
+
       <Route path="/voter" element={<VoterLayout />}>
         <Route index element={<Dashboard />} />
-        <Route path="/voter/vote" element={<VotePage />} />
+
         <Route path="/voter/guidelines" element={<GuidelinesPage />} />
         <Route path="/voter/results" element={<ResultsPage />} />
         <Route path="/voter/results/:id" element={<ElectionDetails />} />

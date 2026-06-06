@@ -26,10 +26,10 @@ const data = [
 
 function ResultAnalysis() {
   return (
-    <div className="flex justify-center gap-10  mt-25">
+    <div className="flex flex-col lg:flex-row justify-center gap-2 lg:gap-10  mt-25">
       {data.map((analysis) => (
         <div
-          className="flex mt-8  gap-6 shadow-lg p-3 rounded-xl w-1/2 items-center font-medium
+          className="flex w-full mt-8  gap-6 shadow-lg p-3 rounded-xl items-center font-medium
            bg-[#050B14] border border-white/10"
           key={analysis.id}
         >

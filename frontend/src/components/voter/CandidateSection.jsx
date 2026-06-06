@@ -7,10 +7,10 @@ function CandidateSection({
   setSelectedCandidate,
 }) {
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-bold text-center text-[#0F1117]">{title}</h1>
+    <div className="flex flex-col gap-6 w-full">
+      <h1 className="text-3xl font-bold text-center text-white">{title}</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 justify-center sm:gap-10 lg:gap-110">
+      <div className="flex  justify-center flex-wrap gap-10">
         {candidates.map((candidate) => (
           <CandidateCard
             key={candidate.id}

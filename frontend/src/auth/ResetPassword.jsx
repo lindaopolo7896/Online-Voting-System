@@ -27,21 +27,16 @@ function ResetPassword() {
     <AuthLayout>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className=" bg-white w-full max-w-lg m-auto rounded-xl flex flex-col p-10 gap-4 shadow-2xl "
+        className="  w-full max-w-lg m-auto rounded-xl flex flex-col p-10 gap-6 shadow-2xl "
       >
         <div className="flex flex-col gap-1 ">
-          <h1 className="text-2xl font-bold text-[#111827]">
-            Create New Password
-          </h1>
-          <p className="font-semibold text-black/50">
+          <h1 className="text-2xl font-bold text-white">Create New Password</h1>
+          <p className="font-semibold text-[#6F7995]">
             Create a strong password
           </p>
         </div>
 
-        <label
-          htmlFor=""
-          className="flex flex-col gap-3 text-[#111827] font-semibold"
-        >
+        <label htmlFor="" className="flex flex-col gap-3 text-white">
           Create Password
           <div className="relative">
             <input
@@ -53,7 +48,7 @@ function ResetPassword() {
                   message: "Password must be  a minimum of 8 characters",
                 },
               })}
-              className="w-full pr-10 border-b-2 p-3 placeholder:font-normal text-black/60 focus:border-b-[#144DEF] focus:outline-none "
+              className="border border-white/10 bg-[#0F1117]/70 rounded-lg py-2 placeholder:font-normal text-[#6F7995] focus:border-[#144DEF] focus:shadow-xl focus:shadow-[#144DEF]/15 focus:outline-none w-full px-3"
               placeholder="Create new password"
             />
             <ShowPassword show={show} setShow={setShow} />
@@ -64,10 +59,7 @@ function ResetPassword() {
             </p>
           )}
         </label>
-        <label
-          htmlFor=""
-          className="flex flex-col gap-3 text-[#111827] font-semibold"
-        >
+        <label htmlFor="" className="flex flex-col gap-3 text-white">
           Confirm Password
           <div className="relative">
             <input
@@ -77,7 +69,7 @@ function ResetPassword() {
                 validate: (value) =>
                   value === password || "Passwords do not match",
               })}
-              className="w-full pr-10 border-b-2 p-3 placeholder:font-normal text-black/60 focus:border-b-[#144DEF] focus:outline-none "
+              className="border border-white/10 bg-[#0F1117]/70 rounded-lg py-2 placeholder:font-normal text-[#6F7995] focus:border-[#144DEF] focus:shadow-xl focus:shadow-[#144DEF]/15 focus:outline-none w-full px-3"
               placeholder="Confirm new password"
             />
             <ShowPassword show={show} setShow={setShow} />

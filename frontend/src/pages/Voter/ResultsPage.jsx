@@ -7,7 +7,7 @@ function ResultsPage() {
   return (
     <div className="min-h-screen">
       <TopBar page="Election Results" />
-      <div className="mx-10">
+      <div className="mx-3 md:mx-10">
         <ResultAnalysis />
         <ElectionList elections={elections} />
       </div>

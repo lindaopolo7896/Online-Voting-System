@@ -1,0 +1,44 @@
+@theme {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+
+  --color-text: var(--text);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --color-bg-success: var(--bg-success);
+  --color-bg-error: var(--bg-error);
+}
+
+:root {
+  --background: #ffffff;
+  --surface: #ffffff;
+  --primary: #144def;
+  --primary-hover: #0c329e;
+  --text: #000000;
+  --border: hsl(0, 0%, 10%);
+  --muted: hsl(0, 0%, 60%);
+  --success: hsl(142, 76%, 36%);
+  --error: hsl(0, 72%, 51%);
+  --bg-success: hsl(142, 76%, 36%, 12%);
+  --bg-error: hsl(0, 72%, 51%, 12%);
+}
+
+.dark {
+  --background: #040509;
+  --surface: hsl(219, 50%, 5%, 70%);
+  --primary: #144def;
+  --primary-hover: #0c329e;
+  --text: #ffffff;
+  --border: hsl(0, 0%, 20%);
+  --muted: #b7c6f2;
+  --success: hsl(142, 76%, 36%);
+  --error: hsl(0, 72%, 51%);
+  --bg-success: hsl(142, 76%, 36%, 12%);
+  --bg-error: hsl(0, 72%, 51%, 12%);
+}

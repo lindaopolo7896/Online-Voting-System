@@ -15,16 +15,16 @@ function ElectionList({ elections }) {
         </div>
       </div>
 
-      <div className="flex items-center flex-col gap-8">
+      <div className="flex items-center justify-center md:justify-start flex-col gap-8">
         {elections.map((election) => (
           <Link
             to={`/voter/results/${election.id}`}
             key={election.id}
-            className="flex items-center justify-between border bg-[#050B14] border-white/10 w-full rounded-xl p-4 gap-5 hover:shadow-xl hover:shadow-[#144DEF]/12 cursor-pointer hover:scale-102 transition-all duration-300 ease-in-out"
+            className="flex items-center justify-center md:justify-between border bg-[#050B14] border-white/10 w-full rounded-xl p-4 gap-5 hover:shadow-xl hover:shadow-[#144DEF]/12 cursor-pointer hover:scale-102 transition-all duration-300 ease-in-out"
           >
             {/* left side */}
-            <div className="flex gap-5">
-              <div className="flex flex-col items-center justify-center gap-2 w-50">
+            <div className="flex flex-col md:flex-row gap-5 ">
+              <div className="flex flex-col items-center justify-center gap-2 md:w-50">
                 <img
                   src={`https://ui-avatars.com/api/?name=${election.organization}&background=144DEF&color=fff`}
                   alt={election.organization}
@@ -32,10 +32,12 @@ function ElectionList({ elections }) {
                 />
                 <p className="text-white">{election.organization}</p>
               </div>
-              <div className="h-30 w-0.5 bg-white/10 mr-10"></div>
+              <div className="hidden md:flex h-30 w-0.5 bg-white/10 mr-10"></div>
 
               <div className="flex flex-col gap-5">
-                <h1 className="text-white font-bold">{election.title}</h1>
+                <h1 className="text-white text-center md:text-left font-bold">
+                  {election.title}
+                </h1>
                 <div className="text-[#B7C6F2] flex items-center gap-4">
                   <p>{election.date}</p>
                   <GoDotFill />
@@ -71,7 +73,7 @@ function ElectionList({ elections }) {
             </div>
             {/* right side  */}
             <div>
-              <RxCaretRight className="text-5xl mr-20 text-[#144DEF]" />
+              <RxCaretRight className="hidden md:flex text-5xl mr-20 text-[#144DEF]" />
             </div>
           </Link>
         ))}

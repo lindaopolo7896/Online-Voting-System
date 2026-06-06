@@ -77,7 +77,7 @@ function SignInForm() {
           )}
         </label>
         <Button name="Sign In" />
-        <div className="flex justify-between">
+        <div className="flex justify-between text-sm md:text-md">
           <p className="font-medium text-[#144DEF]">
             Don't Have an Account?{" "}
             <Link
@@ -89,7 +89,7 @@ function SignInForm() {
           </p>
           <Link
             to="/forgot-password"
-            className="text-black/70 font-medium hover:text-[#144DEF] transition-all duration-300 ease-in-out"
+            className="text-[#144DEF] font-medium hover:text-[#144DEF] transition-all duration-300 ease-in-out"
           >
             Forgot Password?
           </Link>
