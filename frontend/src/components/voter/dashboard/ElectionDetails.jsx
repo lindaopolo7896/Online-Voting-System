@@ -23,7 +23,7 @@ function ElectionDetails() {
 
   console.log(totalPositions);
   return (
-    <div className="min-h-screen mt-5 px-20 py-10">
+    <div className="min-h-screen mt-5 px-5 lg:px-20 py-10">
       <div>
         {/* left side  */}
         <div>
@@ -56,7 +56,7 @@ function ElectionDetails() {
       </div>
 
       {/* stats  */}
-      <div className="flex gap-4 py-8">
+      <div className="flex flex-col md:flex-row gap-4 py-8">
         {/* card 1  */}
         <div className=" flex flex-1 border border-white/10 bg-[#040A11] rounded-lg items-center gap-2 p-2">
           <div></div>
@@ -123,8 +123,8 @@ function ElectionDetails() {
           </div>
         </div>
       </div>
-      <div className="w-full flex gap-7">
-        <div className="w-[700px]">
+      <div className="w-full flex flex-col lg:flex-row gap-7">
+        <div className="w-[290px] md:w-full lg:w-[700px]">
           <ProgressCard
             title="Overall Progress"
             current={election.votesCast}

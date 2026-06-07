@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 
-function CandidateCard({ candidate, selectedCandidate, setSelectedCandidate }) {
+function CandidateCard({
+  candidate,
+  selectedCandidate,
+  setSelectedCandidate,
+  onViewInfo,
+}) {
   const isSelected = selectedCandidate?.id === candidate.id;
 
   const handleSelect = () => {
@@ -10,7 +15,7 @@ function CandidateCard({ candidate, selectedCandidate, setSelectedCandidate }) {
 
   return (
     <div
-      className={`relative bg-white rounded-2xl shadow-lg p-3 w-87 md:w-100 h-110 transition-all duration-300 border-2 ${
+      className={`relative  rounded-2xl shadow-lg p-3 w-87 md:w-100 h-110 transition-all duration-300 border-2 ${
         isSelected
           ? "border-[#144DEF]"
           : "border-transparent hover:border-[#144DEF]/40"
@@ -27,17 +32,20 @@ function CandidateCard({ candidate, selectedCandidate, setSelectedCandidate }) {
           className="w-full h-60   object-cover rounded-xl"
         />
 
-        <button className="absolute bottom-3 right-3 bg-[#144DEF] text-white text-sm px-4 py-1 rounded-full hover:bg-[#0F1117] transition-all duration-300">
+        <button
+          onClick={onViewInfo}
+          className="absolute bottom-3 right-3 bg-[#144DEF] text-white text-sm px-4 py-1 rounded-full hover:bg-[#0F1117] transition-all duration-300"
+        >
           View Info
         </button>
       </div>
 
       <div className="mt-4 flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-center text-[#0F1117]">
+        <h1 className="text-2xl font-bold text-center text-[#144DEF]">
           {candidate.name}
         </h1>
 
-        <p className="text-sm text-gray-500 text-center">{candidate.course}</p>
+        <p className="text- text-gray-500 text-center">{candidate.slogan}</p>
 
         <button
           onClick={handleSelect}

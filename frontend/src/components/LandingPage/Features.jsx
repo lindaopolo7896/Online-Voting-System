@@ -1,8 +1,8 @@
 import React from "react";
-import SecureIcon from "../../assets/SecureIcon.png";
-import VoteIcon from "../../assets/VoteIcon.png";
-import TrackingIcon from "../../assets/TrackingIcon.png";
-import ResultIcon from "../../assets/ResultIcon.png";
+import SecureIcon from "../../assets/icons/SecureIcon.png";
+import VoteIcon from "../../assets/icons/VoteIcon.png";
+import TrackingIcon from "../../assets/icons/TrackingIcon.png";
+import ResultIcon from "../../assets/icons/ResultIcon.png";
 
 const features = [
   {

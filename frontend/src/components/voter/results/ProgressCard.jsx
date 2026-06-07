@@ -3,8 +3,7 @@ function ProgressCard({ title, current, total, color = "#144DEF" }) {
 
   return (
     <div
-      className="
-        w-full
+      className="w-full
         bg-[#050B14]
         border border-white/10
         rounded-2xl

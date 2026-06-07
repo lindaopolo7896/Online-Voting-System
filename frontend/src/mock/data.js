@@ -492,3 +492,24 @@ export const guidelines = [
     text: "Keep your credentials secure.",
   },
 ];
+
+export const users = [
+  {
+    id: 1,
+    firstName: "Grace",
+    lastName: "Mwangi",
+    email: "grace@example.com",
+    role: "ELECTION_MANAGER",
+    avatar: null,
+    password: "Manager123",
+  },
+  {
+    id: 2,
+    firstName: "Brian",
+    lastName: "Otieno",
+    email: "brian@example.com",
+    role: "VOTER",
+    avatar: null,
+    password: "Voter123",
+  },
+];

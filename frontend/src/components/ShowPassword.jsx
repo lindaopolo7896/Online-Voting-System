@@ -12,9 +12,9 @@ function ShowPassword({ show, setShow }) {
       onClick={toggle}
     >
       {show ? (
-        <BiHide className="text-xl text-black/60" />
+        <BiHide className="text-xl text-[#6F7995]" />
       ) : (
-        <BiShow className="text-xl text-black/60" />
+        <BiShow className="text-xl text-[#6F7995]" />
       )}
     </button>
   );
