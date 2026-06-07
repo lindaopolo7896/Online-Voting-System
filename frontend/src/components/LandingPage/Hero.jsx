@@ -1,7 +1,7 @@
 import React from "react";
-import BG from "../../assets/bg-landing.png";
+import BG from "../../assets/images/bg-landing.png";
 import { Link } from "react-router-dom";
-import VoteIllustration from "../../assets/vote.png";
+import VoteIllustration from "../../assets/images/vote.png";
 
 function Hero() {
   return (

@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 
-function CandidateCard({ candidate, selectedCandidate, setSelectedCandidate }) {
+function CandidateCard({
+  candidate,
+  selectedCandidate,
+  setSelectedCandidate,
+  onViewInfo,
+}) {
   const isSelected = selectedCandidate?.id === candidate.id;
 
   const handleSelect = () => {
@@ -27,7 +32,10 @@ function CandidateCard({ candidate, selectedCandidate, setSelectedCandidate }) {
           className="w-full h-60   object-cover rounded-xl"
         />
 
-        <button className="absolute bottom-3 right-3 bg-[#144DEF] text-white text-sm px-4 py-1 rounded-full hover:bg-[#0F1117] transition-all duration-300">
+        <button
+          onClick={onViewInfo}
+          className="absolute bottom-3 right-3 bg-[#144DEF] text-white text-sm px-4 py-1 rounded-full hover:bg-[#0F1117] transition-all duration-300"
+        >
           View Info
         </button>
       </div>
