@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import useDashboard from "../../hooks/useDashboard";
 
 import ElectionCard from "../../components/voter/dashboard/ElectionCard";
 import LiveResults from "../../components/voter/dashboard/LiveResults";
@@ -7,7 +8,7 @@ import VotingProcess from "../../components/voter/dashboard/VotingProcess";
 
 import { elections } from "../../mock/data";
 
-function Dashboard() {
+function VoterDashboard() {
   // SORT ELECTIONS
 
   const sortedElections = useMemo(() => {
@@ -30,15 +31,20 @@ function Dashboard() {
 
   const [selectedElection, setSelectedElection] = useState(sortedElections[0]);
 
+  const { setPageTitle, setSubtitle } = useDashboard();
+
+  useEffect(() => {
+    setPageTitle("Dashboard");
+    setSubtitle("Welcome back");
+  }, []);
+
   return (
     <div className="w-full">
-      <TopBar page="Dashboard" />
-
       <div
         className="
         flex flex-col
         md:flex-row
-        mt-20
+        
         lg:mx-10
         gap-6
         "
@@ -77,4 +83,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default VoterDashboard;

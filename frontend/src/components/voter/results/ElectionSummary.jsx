@@ -1,3 +1,4 @@
+import Card from "../../ui/Card";
 import SummaryItem from "./SummaryItem";
 
 function ElectionSummary({ title = "Election Summary", status, items = [] }) {
@@ -8,7 +9,7 @@ function ElectionSummary({ title = "Election Summary", status, items = [] }) {
   };
 
   return (
-    <div
+    <Card
       className="
       w-full
       bg-[#050B14]
@@ -21,7 +22,7 @@ function ElectionSummary({ title = "Election Summary", status, items = [] }) {
       {/* HEADER */}
 
       <div className="flex justify-between items-center">
-        <h1 className="text-white text-xl font-bold">{title}</h1>
+        <h1 className="text-text text-xl font-bold">{title}</h1>
 
         <div
           className={`
@@ -47,7 +48,7 @@ function ElectionSummary({ title = "Election Summary", status, items = [] }) {
           />
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 

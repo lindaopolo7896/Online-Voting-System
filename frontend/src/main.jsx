@@ -8,14 +8,20 @@ import { BrowserRouter } from "react-router-dom";
 
 import { SidebarProvider } from "./providers/SidebarProvider.jsx";
 import { ThemeProvider } from "./providers/ThemeProvider.jsx";
+import AuthProvider from "./providers/AuthProvider.jsx";
+import DashboardProvider from "./providers/DashboardProvider.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <ThemeProvider>
-        <SidebarProvider>
-          <App />
-        </SidebarProvider>
+        <AuthProvider>
+          <DashboardProvider>
+            <SidebarProvider>
+              <App />
+            </SidebarProvider>
+          </DashboardProvider>
+        </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,

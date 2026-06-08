@@ -10,6 +10,11 @@ import LinkVerificationPage from "../pages/Voter/LinkVerificationPage";
 import VotingInstructions from "../pages/Voter/VotingInstructions";
 import VotePage from "../pages/Voter/VotePage";
 import VotingAccess from "../components/vote/VotingAccess";
+import DashboardLayout from "../layouts/DashboardLayout";
+import VoterDashboard from "../pages/Voter/VoterDashboard";
+import ResultsPage from "../pages/Voter/ResultsPage";
+import ResultPage from "../pages/Voter/ResultPage";
+import InstitutionDashboardPage from "../pages/institution/InstitutionDashboardPage";
 
 function AppRoutes() {
   return (
@@ -30,6 +35,20 @@ function AppRoutes() {
       <Route path="/voting-details" element={<VotingAccess />} />
       <Route path="/voting-instructions" element={<VotingInstructions />} />
       <Route path="/vote" element={<VotePage />} />
+
+      {/* Dashboard Layout  */}
+      <Route element={<DashboardLayout />}>
+        {/* Voter  */}
+        <Route path="/voter/dashboard" element={<VoterDashboard />} />
+        <Route path="/voter/results" element={<ResultsPage />} />
+        <Route path="/voter/results/:id" element={<ResultPage />} />
+
+        {/* Institution */}
+        <Route
+          path="/institution/dashboard"
+          element={<InstitutionDashboardPage />}
+        />
+      </Route>
     </Routes>
   );
 }

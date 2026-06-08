@@ -34,13 +34,13 @@ function LiveResults({ election }) {
   return (
     <div
       className="
-      border border-[#144DEF]
+      border border-primary
       rounded-2xl
       px-4 py-6
       sm:px-6 sm:py-8
       md:px-8 md:py-10
       w-full
-      bg-[#050B14]
+      bg-surface
       shadow-[0px_4px_10px_0px_rgba(20,77,239,0.25)]
       "
     >
@@ -48,7 +48,7 @@ function LiveResults({ election }) {
         <div className="min-w-0">
           <p
             className="
-            text-white/50
+            text-muted
             text-xs sm:text-sm
             font-semibold
             tracking-wide
@@ -61,7 +61,7 @@ function LiveResults({ election }) {
             className="
             text-xl sm:text-2xl md:text-3xl
             font-bold
-            text-[#144DEF]
+            text-primary
             break-words
             "
           >
@@ -71,7 +71,7 @@ function LiveResults({ election }) {
           <p
             className="
             font-semibold
-            text-white
+            text-text
             text-base sm:text-lg
             break-words
             "
@@ -87,17 +87,17 @@ function LiveResults({ election }) {
             className={`
               w-8 h-8 sm:w-10 sm:h-10
               rounded-full
-              border border-[#144DEF]
+              border border-primary
               flex items-center justify-center
               transition-all duration-300
               ${
                 currentPosition === 0
                   ? "opacity-40 cursor-not-allowed"
-                  : "hover:bg-[#144DEF]"
+                  : "hover:bg-primary"
               }
             `}
           >
-            <MdOutlineNavigateBefore className="text-lg text-white sm:text-xl" />
+            <MdOutlineNavigateBefore className="text-lg text-text sm:text-xl" />
           </button>
 
           <button
@@ -106,13 +106,13 @@ function LiveResults({ election }) {
             className={`
               w-8 h-8 sm:w-10 sm:h-10
               rounded-full
-              border border-[#144DEF]
+              border border-primary
               flex items-center justify-center
               transition-all duration-300
               ${
                 currentPosition === election.categories.length - 1
                   ? "opacity-40 cursor-not-allowed"
-                  : "hover:bg-[#144DEF]"
+                  : "hover:bg-primary"
               }
             `}
           >
@@ -134,7 +134,7 @@ function LiveResults({ election }) {
             >
               <p
                 className="
-                text-white/70
+                text-muted
                 font-medium
                 break-words
                 max-w-[55%]
@@ -145,11 +145,11 @@ function LiveResults({ election }) {
               </p>
 
               <div className="flex gap-2 sm:gap-3 items-center shrink-0">
-                <p className="font-bold text-white text-sm sm:text-base">
+                <p className="font-bold text-text text-sm sm:text-base">
                   {candidate.votes}
                 </p>
 
-                <p className="text-white/50 text-xs sm:text-sm">
+                <p className="text-muted text-xs sm:text-sm">
                   {candidate.percentage}%
                 </p>
               </div>
@@ -159,7 +159,7 @@ function LiveResults({ election }) {
               className="
               w-full
               h-2.5 sm:h-3
-              bg-white/10
+              bg-[#E9EAE1]
               rounded-full
               overflow-hidden
               "

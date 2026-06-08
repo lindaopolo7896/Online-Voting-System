@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import Card from "../../ui/Card";
 
 function VotingProcess({ election }) {
   // TURNOUT %
@@ -44,14 +45,14 @@ function VotingProcess({ election }) {
   const leader = leaders[currentLeader];
 
   return (
-    <div className="flex flex-col gap-4 font-bold w-full">
+    <div className="flex flex-col gap-4  w-full">
       {/* TITLE */}
 
-      <h1 className="text-white">VOTING PROCESS</h1>
+      <h1 className="text-text font-bold">VOTING PROCESS</h1>
 
       {/* REGISTERED VOTERS */}
 
-      <div
+      <Card
         className="
         w-full
         p-3
@@ -59,75 +60,75 @@ function VotingProcess({ election }) {
         bg-[#050B14]
         border border-white/10
         flex flex-col gap-2
+        font-medium
         "
       >
-        <p className="text-[#144DEF] text-2xl">{election.totalVoters}</p>
+        <p className="text-primary text-2xl">{election.totalVoters}</p>
 
-        <h1 className="text-white">REGISTERED VOTERS</h1>
-      </div>
+        <h1 className="text-text">REGISTERED VOTERS</h1>
+      </Card>
 
       {/* STATS */}
 
       <div className="flex justify-evenly gap-5 items-center w-full">
         {/* VOTES CAST */}
 
-        <div
+        <Card
           className="
           flex flex-col gap-2
-          bg-[#050B14]
           border border-white/10
           w-1/2
           p-3
           rounded-xl
+          font-medium
           "
         >
-          <p className="text-[#144DEF] text-2xl">{election.votesCast}</p>
+          <p className="text-primary text-2xl">{election.votesCast}</p>
 
-          <h1 className="text-white">VOTES CAST</h1>
-        </div>
+          <h1 className="text-text">VOTES CAST</h1>
+        </Card>
 
         {/* TURNOUT RATE */}
 
-        <div
+        <Card
           className="
           flex flex-col gap-2
-          bg-[#050B14]
           border border-white/10
           w-1/2
           p-3
           rounded-xl
+          font-medium
           "
         >
-          <p className="text-[#144DEF] text-2xl">{turnoutRate}%</p>
+          <p className="text-primary text-2xl">{turnoutRate}%</p>
 
-          <h1 className="text-white">TURNOUT RATE</h1>
-        </div>
+          <h1 className="text-text">TURNOUT RATE</h1>
+        </Card>
       </div>
 
       {/* TURNOUT BAR */}
 
-      <div
+      <Card
         className="
         rounded-xl
-        border border-[#144DEF]
-        bg-[#050B14]
         p-3
         flex flex-col gap-2
+        border-none
         "
       >
         <div className="flex justify-between">
-          <h1 className="text-white">VOTER TURNOUT</h1>
+          <h1 className="text-text font-medium">VOTER TURNOUT</h1>
 
-          <p className="text-white/50 font-medium text-sm">
+          <p className="text-muted font-medium text-sm">
             {election.votesCast}/{election.totalVoters}
           </p>
         </div>
 
-        <div className="w-full h-4 rounded-full bg-white/10">
+        <div className="w-full h-4 rounded-full bg-[#E9EAE1]">
           <div
             className="
             h-4
-            bg-[#144DEF]
+            bg-primary
             rounded-full
             transition-all
             duration-500
@@ -139,13 +140,13 @@ function VotingProcess({ election }) {
         </div>
 
         <div className="flex justify-between text-sm font-medium">
-          <p className="text-[#B7C6F2]">0%</p>
+          <p className="text-muted">0%</p>
 
-          <p className="text-white">{turnoutRate}% voted</p>
+          <p className="text-text">{turnoutRate}% voted</p>
 
-          <p className="text-[#B7C6F2]">100%</p>
+          <p className="text-muted">100%</p>
         </div>
-      </div>
+      </Card>
 
       {/* LEADING CANDIDATE */}
 

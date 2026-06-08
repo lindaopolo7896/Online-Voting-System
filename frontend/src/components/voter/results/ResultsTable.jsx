@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import Card from "../../ui/Card";
 
 function ResultsTable({
   title,
@@ -23,11 +24,11 @@ function ResultsTable({
   }, [category, sortType]);
 
   return (
-    <div
+    <Card
       className="
       mt-8
       w-full
-      bg-[#050B14]
+      
       border border-white/10
       rounded-2xl
       p-6
@@ -38,9 +39,9 @@ function ResultsTable({
 
       <div className="flex justify-between items-start flex-wrap gap-4">
         <div>
-          <h1 className="text-white text-xl font-bold">{title}</h1>
+          <h1 className="text-text text-xl font-bold">{title}</h1>
 
-          <p className="text-white/50 text-sm">{subtitle}</p>
+          <p className="text-muted text-sm">{subtitle}</p>
         </div>
 
         {/* SORT */}
@@ -49,11 +50,12 @@ function ResultsTable({
           value={sortType}
           onChange={(e) => setSortType(e.target.value)}
           className="
-          bg-[#0B1220]
+          bg-surface
+          shadow
           border border-white/10
           rounded-lg
           px-4 py-2
-          text-white
+          text-text
           outline-none
           cursor-pointer
           "
@@ -84,8 +86,7 @@ function ResultsTable({
             transition-all
             "
             style={{
-              color:
-                activeTab === index ? accentColor : "rgba(255,255,255,0.5)",
+              color: activeTab === index ? "text-primary" : "text-text",
 
               borderBottom:
                 activeTab === index ? `2px solid ${accentColor}` : "none",
@@ -112,7 +113,7 @@ function ResultsTable({
           grid grid-cols-[60px_1fr_120px_120px]
           px-6 py-4
           border-b border-white/10
-          text-white/50
+          text-muted
           text-sm
           font-semibold
           "
@@ -165,7 +166,7 @@ function ResultsTable({
                 />
 
                 <div className="flex flex-col gap-2 w-full">
-                  <p className="text-white font-semibold">
+                  <p className="text-text font-semibold">
                     {candidate.candidate}
                   </p>
 
@@ -189,7 +190,7 @@ function ResultsTable({
 
               {/* VOTES */}
 
-              <p className="text-white font-bold text-lg">{candidate.votes}</p>
+              <p className="text-text font-bold text-lg">{candidate.votes}</p>
 
               {/* PERCENTAGE */}
 
@@ -214,9 +215,9 @@ function ResultsTable({
           text-sm
           "
         >
-          <p className="text-white/50">
+          <p className="text-muted">
             Total votes for this position:{" "}
-            <span className="text-white font-semibold">
+            <span className="text-text font-semibold">
               {sortedResults.reduce(
                 (total, candidate) => total + candidate.votes,
                 0,
@@ -224,10 +225,10 @@ function ResultsTable({
             </span>
           </p>
 
-          <p className="text-white/40">Valid votes only</p>
+          <p className="text-muted">Valid votes only</p>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
