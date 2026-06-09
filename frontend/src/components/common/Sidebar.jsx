@@ -4,13 +4,13 @@ import { FaClipboardList } from "react-icons/fa";
 import { FaUserAlt } from "react-icons/fa";
 import { FaUsers } from "react-icons/fa";
 import { IoMdSettings } from "react-icons/io";
-import { users } from "../../mock/data";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 
 const electionManagerLinks = [
   {
     label: "Dashboard",
-    path: "/institution",
+    path: "/institution/dashboard",
     icon: RiDashboardFill,
   },
   {
@@ -43,7 +43,7 @@ const electionManagerLinks = [
 const voterLinks = [
   {
     label: "Dashboard",
-    path: "/voter",
+    path: "/voter/dashboard",
     icon: RiDashboardFill,
   },
   {
@@ -59,17 +59,34 @@ const voterLinks = [
 ];
 
 function Sidebar() {
-  const links =
-    users.role === "ELECTION_MANAGER" ? electionManagerLinks : voterLinks;
+  const { user } = useAuth();
+
+  const links = user?.role === "manager" ? electionManagerLinks : voterLinks;
 
   return (
-    <nav className="fixed w-1/3 top-0 left-0 bg-surface min-h-screen flex-col">
-      <div>
+    <nav className="w-72 h-screen bg-surface shadow flex flex-col justify-between sticky top-0 p-6">
+      <div className="flex flex-col gap-2">
         {links.map((link) => (
-          <Link to={link.path}>{link.label}</Link>
+          <NavLink
+            key={link.path}
+            to={link.path}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                isActive
+                  ? "bg-primary text-white"
+                  : "text-text hover:bg-background"
+              }`
+            }
+          >
+            <link.icon />
+            {link.label}
+          </NavLink>
         ))}
       </div>
-      <button>Log out</button>
+
+      <button className="bg-error text-white p-3 rounded-lg text-lg font-medium">
+        Log out
+      </button>
     </nav>
   );
 }

@@ -22,7 +22,7 @@
   --primary-hover: #0c329e;
   --text: #000000;
   --border: hsl(0, 0%, 10%);
-  --muted: hsl(0, 0%, 60%);
+  --muted: hsl(0, 0%, 20%);
   --success: hsl(142, 76%, 36%);
   --error: hsl(0, 72%, 51%);
   --bg-success: hsl(142, 76%, 36%, 12%);

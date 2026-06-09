@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import Card from "../../ui/Card";
 
 function VotesDistribution({ categories, title = "Votes Distribution" }) {
   const [activePosition, setActivePosition] = useState(0);
@@ -33,10 +34,10 @@ function VotesDistribution({ categories, title = "Votes Distribution" }) {
   }, [category]);
 
   return (
-    <div
+    <Card
       className="
       w-full
-      bg-[#050B14]
+      
       border border-white/10
       rounded-2xl
       p-6
@@ -47,7 +48,7 @@ function VotesDistribution({ categories, title = "Votes Distribution" }) {
 
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-white text-xl font-bold">{title}</h1>
+          <h1 className="text-text text-xl font-bold">{title}</h1>
         </div>
 
         {/* POSITION SWITCHER */}
@@ -56,11 +57,12 @@ function VotesDistribution({ categories, title = "Votes Distribution" }) {
           value={activePosition}
           onChange={(e) => setActivePosition(Number(e.target.value))}
           className="
-          bg-[#0B1220]
+          bg-surface
           border border-white/10
+          shadow
           rounded-lg
           px-4 py-2
-          text-white
+          text-text
           outline-none
           cursor-pointer
           "
@@ -102,15 +104,15 @@ function VotesDistribution({ categories, title = "Votes Distribution" }) {
               className="
               w-36 h-36
               rounded-full
-              bg-[#050B14]
+              bg-surface
               border border-white/10
               flex flex-col
               items-center justify-center
               "
             >
-              <h1 className="text-white text-5xl font-bold">{totalVotes}</h1>
+              <h1 className="text-text text-5xl font-bold">{totalVotes}</h1>
 
-              <p className="text-white/50 text-sm">Total Votes</p>
+              <p className="text-muted text-sm">Total Votes</p>
             </div>
           </div>
         </div>
@@ -133,21 +135,21 @@ function VotesDistribution({ categories, title = "Votes Distribution" }) {
                   }}
                 ></div>
 
-                <p className="text-white text-lg font-medium">
+                <p className="text-text text-lg font-medium">
                   {candidate.candidate}
                 </p>
               </div>
 
               {/* RIGHT */}
 
-              <p className="text-white/70 font-semibold">
+              <p className="text-muted font-semibold">
                 {candidate.percentage}% ({candidate.votes})
               </p>
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 

@@ -3,38 +3,40 @@ import { ThemeContext } from "../contexts/ThemeContext";
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    const savedTheme = localStorage.getItem("theme");
-
-    if (savedTheme) {
-      return savedTheme;
-    }
-
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
+    return localStorage.getItem("theme") || "system";
   });
 
   useEffect(() => {
     const html = document.documentElement;
 
-    if (theme === "dark") {
-      html.classList.add("dark");
-    } else {
-      html.classList.remove("dark");
-    }
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const applyTheme = () => {
+      const resolvedTheme =
+        theme === "system" ? (mediaQuery.matches ? "dark" : "light") : theme;
+
+      if (resolvedTheme === "dark") {
+        html.classList.add("dark");
+      } else {
+        html.classList.remove("dark");
+      }
+    };
+
+    applyTheme();
+
+    mediaQuery.addEventListener("change", applyTheme);
 
     localStorage.setItem("theme", theme);
-  }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
-  };
+    return () => {
+      mediaQuery.removeEventListener("change", applyTheme);
+    };
+  }, [theme]);
 
   return (
     <ThemeContext.Provider
       value={{
         theme,
-        toggleTheme,
         setTheme,
       }}
     >
