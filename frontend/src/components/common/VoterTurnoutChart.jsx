@@ -1,56 +1,92 @@
 import { Link } from "react-router-dom";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  LabelList,
-} from "recharts";
-
 import Card from "../ui/Card";
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+import { Bar } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+);
 
 const turnoutData = [
   {
-    election: "2026\nStudent Council\nElections",
+    election: "2026 Student Council Elections",
     turnout: 86,
   },
   {
-    election: "2025\nStudent Council\nElections",
+    election: "2025 Student Council Elections",
     turnout: 64,
   },
   {
-    election: "2024\nStudent Council\nElections",
+    election: "2024 Student Council Elections",
     turnout: 76,
   },
 ];
 
-const CustomTick = ({ x, y, payload }) => {
-  const lines = payload.value.split("\n");
-
-  return (
-    <g transform={`translate(${x},${y})`}>
-      {lines.map((line, index) => (
-        <text
-          key={index}
-          x={0}
-          y={index * 14}
-          dy={16}
-          textAnchor="middle"
-          fill="currentColor"
-          className="text-xs"
-        >
-          {line}
-        </text>
-      ))}
-    </g>
-  );
-};
-
 function VoterTurnoutChart({ data = turnoutData }) {
+  const chartData = {
+    labels: data.map((item) => item.election),
+    datasets: [
+      {
+        label: "Voter Turnout (%)",
+        data: data.map((item) => item.turnout),
+        backgroundColor: "#144DEF",
+        borderRadius: 6,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => `${context.raw}%`,
+        },
+      },
+    },
+
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100,
+        ticks: {
+          callback: (value) => `${value}%`,
+        },
+        grid: {
+          color: "rgba(148,163,184,0.2)",
+        },
+      },
+
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+    },
+  };
+
   return (
-    <Card className="p-6">
+    <Card className="p-6 border-white/10 rounded-xl flex-1">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-xl font-bold text-text">
           Voter Turnout (Comparison)
@@ -65,53 +101,7 @@ function VoterTurnoutChart({ data = turnoutData }) {
       </div>
 
       <div className="h-[350px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={data}
-            margin={{
-              top: 20,
-              right: 20,
-              left: 0,
-              bottom: 20,
-            }}
-          >
-            <CartesianGrid vertical={false} stroke="rgba(148,163,184,0.2)" />
-
-            <XAxis
-              dataKey="election"
-              interval={0}
-              height={80}
-              tick={<CustomTick />}
-              tickLine={false}
-              axisLine={false}
-            />
-
-            <YAxis
-              domain={[0, 100]}
-              ticks={[0, 20, 40, 60, 80, 100]}
-              tickFormatter={(value) => `${value}%`}
-              tickLine={false}
-              axisLine={false}
-            />
-
-            <Bar
-              dataKey="turnout"
-              fill="#144DEF"
-              radius={[6, 6, 0, 0]}
-              barSize={50}
-            >
-              <LabelList
-                dataKey="turnout"
-                position="top"
-                formatter={(value) => `${value}%`}
-                style={{
-                  fontWeight: 700,
-                  fill: "currentColor",
-                }}
-              />
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <Bar data={chartData} options={options} />
       </div>
     </Card>
   );

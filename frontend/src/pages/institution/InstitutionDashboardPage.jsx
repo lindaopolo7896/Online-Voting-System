@@ -11,6 +11,7 @@ import { IoPersonAdd } from "react-icons/io5";
 import { IoCloudUploadOutline } from "react-icons/io5";
 import { LuClipboardList } from "react-icons/lu";
 import VoterTurnoutChart from "../../components/common/VoterTurnoutChart";
+import CandidatesByPositionChart from "../../components/common/CandidatesByPositionChart";
 
 const dashboardStats = [
   {
@@ -158,7 +159,10 @@ function InstitutionDashboardPage() {
       </div>
 
       {/* section 3  */}
-      <div></div>
+      <div className="flex gap-8">
+        <VoterTurnoutChart />
+        <CandidatesByPositionChart />
+      </div>
     </div>
   );
 }

@@ -10,7 +10,7 @@ import useAuth from "../../hooks/useAuth";
 const electionManagerLinks = [
   {
     label: "Dashboard",
-    path: "/institution",
+    path: "/institution/dashboard",
     icon: RiDashboardFill,
   },
   {
