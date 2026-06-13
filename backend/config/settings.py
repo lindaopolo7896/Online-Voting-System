@@ -10,22 +10,35 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
+from datetime import timedelta
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / '.env')
+
+
+def env_bool(key, default=False):
+    return os.environ.get(key, str(default)).lower() in ('1', 'true', 'yes', 'on')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-dcgw#6j%oed_o)eipr^=u$si=h-jbdd$05@5r5j-^*$7tjbb*u'
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-dcgw#6j%oed_o)eipr^=u$si=h-jbdd$05@5r5j-^*$7tjbb*u',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env_bool('DEBUG', True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [h for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h]
 
 
 # Application definition
@@ -127,3 +140,40 @@ STATIC_URL = 'static/'
 
 
 AUTH_USER_MODEL = 'users.User'
+
+
+# Django REST Framework / JWT auth
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.environ.get('JWT_ACCESS_MINUTES', '30'))),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.environ.get('JWT_REFRESH_DAYS', '7'))),
+}
+
+
+# Email — defaults to console backend in dev (prints emails to stdout).
+# Set EMAIL_BACKEND to the SMTP backend in production via .env (see .env.example).
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = env_bool('EMAIL_USE_TLS', True)
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@voting.local')
+
+
+# Passwordless email-OTP login
+OTP_LENGTH = int(os.environ.get('OTP_LENGTH', '6'))
+OTP_TTL_MINUTES = int(os.environ.get('OTP_TTL_MINUTES', '10'))
+OTP_MAX_ATTEMPTS = int(os.environ.get('OTP_MAX_ATTEMPTS', '5'))
+# Lightweight vote hash-chain settings (school-project friendly).
+BLOCKCHAIN_SALT = os.environ.get('BLOCKCHAIN_SALT', 'school-project')
+VOTING_LINK_BASE_URL = os.environ.get('VOTING_LINK_BASE_URL', 'http://localhost:3000/vote')
+VOTING_LINK_TTL_HOURS = int(os.environ.get('VOTING_LINK_TTL_HOURS', '24'))

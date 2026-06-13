@@ -1,13 +1,17 @@
 from rest_framework.viewsets import ModelViewSet
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from apps.users.models import Election, Log, Organisation, Permission, PermissionRecord, User, Membership
+from apps.users.models import Election, Log, Organisation, PermissionRecord, User, Membership
+from apps.elections.models import Participant
 from services.permission_service import assign_election_bulk_permissions_to_membership, assign_org_bulk_permissions_to_membership, revoke_org_bulk_permissions_from_membership, revoke_election_bulk_permissions_from_membership, get_all_permissions_for_membership
-from .serializers import ElectionSerializer, LogSerializer, OrganisationSerializer, PermissionRecordSerializer, PermissionSerializer, UserSerializer, MembershipSerializer, UserMembershipCreateSerializer
+from .serializers import ElectionSerializer, LogSerializer, OrganisationSerializer, PermissionRecordSerializer, UserSerializer, MembershipSerializer, UserMembershipCreateSerializer
 from .permissions import HasPermission, DenyAll
 from services.membership_service import get_user_active_membership, get_user_active_organisation
+from services.blockchain_service import deploy_election_contract
+from services.voting_link_service import create_or_refresh_voting_link, send_voting_invitation_email
+from api.v1.elections.serializers import PositionSerializer, ParticipantSerializer, CandidateSerializer
 
 
 
@@ -57,16 +61,16 @@ class UserViewset(ModelViewSet):
         return User.objects.filter(memberships__organisation=organisation)
     
     #when we delete we make sure its a soft delete for the user and all their memberships
-    def delete(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         user = self.get_object()
         user.is_active = False
-        user.save()
+        user.save(update_fields=['is_active'])
 
         memberships = user.memberships.all()
         for membership in memberships:
             membership.is_active = False
-            membership.save()
-        return Response(status=204) 
+            membership.save(update_fields=['is_active'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class MembershipViewset(ModelViewSet):
@@ -78,9 +82,10 @@ class MembershipViewset(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         organisation = get_user_active_organisation(user.id)
+        active_membership = get_user_active_membership(user.id)
 
         #only admin can see all memberships, others can only see their own membership in the organisation
-        if user.role == 'admin':
+        if active_membership and active_membership.role == 'admin':
             return Membership.objects.filter(organisation=organisation)
         return Membership.objects.filter(organisation=organisation, user=user)
     
@@ -94,22 +99,24 @@ class MembershipViewset(ModelViewSet):
                 'last_name': serializer.validated_data.get('last_name', ''),
                 'phone': serializer.validated_data.get('phone', ''),
                 'bio': serializer.validated_data.get('bio', ''),
-                'password': serializer.validated_data.get('password', ''),
             }
         )
+        if created:
+            user.set_password(serializer.validated_data.get('password', ''))
+            user.save(update_fields=['password'])
         membership = Membership.objects.create(
             user=user,
             organisation=serializer.validated_data['organisation'],
             role=serializer.validated_data['role']
         )
         response_serializer = MembershipSerializer(membership)
-        return Response(response_serializer.data, status=201)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
     
-    def delete(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         membership = self.get_object()
         membership.is_active = False
-        membership.save()
-        return Response(status=204)
+        membership.save(update_fields=['is_active'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     ACTION_PERMISSION_MAP = {
         'create': 'add.membership',
@@ -128,11 +135,6 @@ class MembershipViewset(ModelViewSet):
         serializer = self.get_serializer(memberships, many=True)
         return Response(serializer.data)
     
-class PermissionViewset(ModelViewSet):
-    queryset = Permission.objects.all()
-    serializer_class = PermissionSerializer
-    permission_classes = [DenyAll] #permissions are managed by us, not exposed to be managed by users
-
 class PermissionRecordViewset(ModelViewSet):
     queryset = PermissionRecord.objects.all()
     serializer_class = PermissionRecordSerializer
@@ -140,12 +142,12 @@ class PermissionRecordViewset(ModelViewSet):
 
 
     ACTION_PERMISSION_MAP = {
-        'bulk_assign': 'add.permissionrecord',
-        'bulk_unassign': 'delete.permissionrecord',
-        'get_membership_permissions': 'view.permissionrecord',
+        'bulk_assign': 'assign.permission',
+        'bulk_unassign': 'unassign.permission',
+        'get_membership_permissions': 'view.permission',
     }
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['post'])
     def bulk_assign(self, request):
         type = request.data.get('type')
         membership_id = request.data.get('membership_id')
@@ -158,8 +160,9 @@ class PermissionRecordViewset(ModelViewSet):
             assign_election_bulk_permissions_to_membership(membership_id, permissions, election_id)
         else:            
             return Response({'error': 'Invalid type'}, status=400)
+        return Response({'detail': 'Permissions assigned.'}, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['get'])   
+    @action(detail=False, methods=['post'])   
     def bulk_unassign(self, request):
         type = request.data.get('type')
         membership_id = request.data.get('membership_id')
@@ -172,9 +175,13 @@ class PermissionRecordViewset(ModelViewSet):
             revoke_election_bulk_permissions_from_membership(membership_id, election_id, permissions)
         else:            
             return Response({'error': 'Invalid type'}, status=400)
+        return Response({'detail': 'Permissions removed.'}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
-    def get_membership_permissions(self, request, membership_id):
+    def get_membership_permissions(self, request):
+        membership_id = request.query_params.get('membership_id')
+        if not membership_id:
+            return Response({'detail': 'membership_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
         permissions = get_all_permissions_for_membership(membership_id)
         serializer = self.get_serializer(permissions, many=True)
         return Response(serializer.data)
@@ -194,13 +201,15 @@ class ElectionViewset(ModelViewSet):
         'positions': 'view.position',
         'participants': 'view.participant',
         'candidates': 'view.candidate',
+        'deploy_contract': 'update.election',
+        'send_voter_invites': 'add.voting_link',
     }
 
     def get_queryset(self):
         #we want to return elections that a member is a participant or caidate
         user = self.request.user
         membership = get_user_active_membership(user.id)
-        if user.role == 'admin':
+        if membership and membership.role == 'admin':
             return Election.objects.filter(organisation__memberships=membership).distinct()
         return Election.objects.filter(participants__membership=membership).distinct() | Election.objects.filter(candidates__membership=membership).distinct()
     
@@ -227,6 +236,72 @@ class ElectionViewset(ModelViewSet):
         candidates = election.candidates.all()
         serializer = CandidateSerializer(candidates, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], url_path='deploy-contract')
+    def deploy_contract(self, request, pk=None):
+        election = self.get_object()
+        already_deployed = bool(election.smart_contract_address)
+        if not already_deployed:
+            election.smart_contract_address = deploy_election_contract(election)
+            election.save(update_fields=['smart_contract_address'])
+        return Response(
+            {
+                'election_id': election.id,
+                'smart_contract_address': election.smart_contract_address,
+                'already_deployed': already_deployed,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=['post'], url_path='send-voter-invites')
+    def send_voter_invites(self, request, pk=None):
+        election = self.get_object()
+        generated_by = get_user_active_membership(request.user.id)
+        participants = (
+            Participant.objects
+            .select_related('membership__user')
+            .filter(election=election)
+        )
+        sent_count = 0
+        links_created = 0
+        links_refreshed = 0
+        errors = []
+
+        for participant in participants:
+            try:
+                voting_link, created = create_or_refresh_voting_link(
+                    election=election,
+                    participant=participant,
+                    generated_by=generated_by,
+                )
+                send_voting_invitation_email(
+                    participant=participant,
+                    election=election,
+                    voting_link=voting_link,
+                )
+                sent_count += 1
+                if created:
+                    links_created += 1
+                else:
+                    links_refreshed += 1
+            except Exception as exc:
+                errors.append(
+                    {
+                        'participant_id': participant.id,
+                        'email': participant.membership.user.email,
+                        'reason': str(exc),
+                    }
+                )
+
+        return Response(
+            {
+                'sent_count': sent_count,
+                'links_created': links_created,
+                'links_refreshed': links_refreshed,
+                'errors': errors,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class LogViewset(ModelViewSet):

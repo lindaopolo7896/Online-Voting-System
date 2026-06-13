@@ -7,5 +7,8 @@ requires-python = ">=3.13"
 dependencies = [
     "django>=6.0.5",
     "django-rest-framework>=0.1.0",
+    "djangorestframework-simplejwt>=5.5.1",
+    "openpyxl>=3.1.5",
     "pillow>=12.2.0",
+    "python-dotenv>=1.2.2",
 ]

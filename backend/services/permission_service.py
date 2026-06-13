@@ -1,5 +1,8 @@
 from apps.users.models import PermissionRecord
 
+# Codename convention: "<verb>.<resource>", dot-style, used everywhere
+# (ACTION_PERMISSION_MAPs, defaults, and PermissionRecord.codename).
+
 ORG_PERMISSIONS = [
     # Organisation
     "add.organisation",
@@ -22,12 +25,19 @@ ORG_PERMISSIONS = [
     "view.log",
     "delete.log",
 
-    # Elections
+    # Elections (creation is an org-level act)
     "add.election",
+    "view.election",
+    "update.election",
+    "delete.election",
+
+    # Voting links
+    "add.voting_link",
+    "view.voting_link",
 ]
 
 ELECTION_PERMISSIONS = [
-    # Elections
+    # Election lifecycle
     "view.election",
     "update.election",
     "delete.election",
@@ -44,27 +54,35 @@ ELECTION_PERMISSIONS = [
     # Participants
     "add.participant",
     "view.participant",
+    "update.participant",
     "delete.participant",
 
     # Candidates
-    "approve.candidate",
+    "add.candidate",
     "view.candidate",
-    "reject.candidate"
+    "update.candidate",
+    "delete.candidate",
+    "approve.candidate",
+    "reject.candidate",
 
     # Voting
     "add.vote",
     "view.vote",
+    "update.vote",
+    "delete.vote",
     "view.results",
 
     # Voting links
-    "create.voting_link",
-    "revoke.voting_link",
+    "add.voting_link",
+    "view.voting_link",
+    "update.voting_link",
+    "delete.voting_link",
 ]
 
 
-#role based defaults
+# Role-based defaults. Roles not listed fall back to "others".
 default_org_permissions = {
-    "admin": ORG_PERMISSIONS, # admin gets all permissions
+    "admin": ORG_PERMISSIONS,
     "others": [
         "view.organisation",
         "view.membership",
@@ -78,14 +96,14 @@ default_org_permissions = {
 }
 
 default_election_permissions = {
-    "admin": ELECTION_PERMISSIONS, # admin gets all permissions
+    "admin": ELECTION_PERMISSIONS,
     "others": [
         "view.election",
         "view.position",
         "view.participant",
         "view.candidate",
         "add.vote",
-        "view.results"
+        "view.results",
     ],
     "official": [
         "view.election",
@@ -98,98 +116,84 @@ default_election_permissions = {
         "delete.position",
         "add.participant",
         "view.participant",
+        "update.participant",
         "delete.participant",
-        "approve.candidate",
         "view.candidate",
+        "approve.candidate",
         "reject.candidate",
-        "add.vote",
-        "view.results"
-        "create.voting_link",
-        "revoke.voting_link",
+        "view.results",
+        "add.voting_link",
+        "view.voting_link",
+        "delete.voting_link",
     ],
 }
 
-# What im looking for, assign perm by default role, then assign perms, then unassign perms
 
-def get_permissions_for_role(role, type):
-    if type == "election":
-        return default_election_permissions.get(role, [])
-    else:
-        return default_org_permissions.get(role, [])
-
-def assign_org_default_permissions_to_membership(membership, role):
-    permissions = get_permissions_for_role(role, "organisation")
-    for perm in permissions:
-        if not membership.permissions.filter(codename=perm).exists():
-            permission_record = PermissionRecord.objects.create(
-                membership=membership,
-                codename=perm,
-            )
-            permission_record.save()
-
-def assign_election_default_permissions_to_membership(membership, role):
-    permissions = get_permissions_for_role(role, "election")
-    for perm in permissions:
-        if not membership.permissions.filter(codename=perm).exists():
-            permission_record = PermissionRecord.objects.create(
-                membership=membership,
-                codename=perm,
-            )
-            permission_record.save()
-
-#assigning org level perms
-def assign_org_bulk_permissions_to_membership(membership, permissions):
-    #clear out everything for clean start, then assign new ones
-    old_perms = PermissionRecord.objects.filter(membership=membership)
-    for old_perm in old_perms:
-        old_perm.delete()
-
-    for perm in permissions:
-        if not membership.permissions.filter(codename=perm).exists():
-            permission_record = PermissionRecord.objects.create(
-                membership=membership,
-                codename=perm,
-            )
-            permission_record.save()
+def get_permissions_for_role(role, scope):
+    table = default_election_permissions if scope == "election" else default_org_permissions
+    return table.get(role, table.get("others", []))
 
 
-#assigning election specific perms   
-def assign_election_bulk_permissions_to_membership(membership, election, permissions):
-    #clear out everything for clean start, then assign new ones
-    old_perms = PermissionRecord.objects.filter(membership=membership, election=election)
-    for old_perm in old_perms:
-        old_perm.delete()
+# --- Default seeding (called when a membership / election role is created) ---
 
-    for perm in permissions:
-        if not membership.permissions.filter(codename=perm, election=election).exists():
-            permission_record = PermissionRecord.objects.create(
-                membership=membership,
-                codename=perm,
-                election=election
-            )
-            permission_record.save()
+def assign_org_default_permissions_to_membership(membership_id, role):
+    for codename in get_permissions_for_role(role, "organisation"):
+        PermissionRecord.objects.get_or_create(
+            membership_id=membership_id, codename=codename, election=None
+        )
 
-#removing organisation specific perms   
-def revoke_org_bulk_permissions_from_membership(membership, permissions):
-    for perm in permissions:
-        old_perm = PermissionRecord.objects.filter(membership=membership, codename=perm)
-        if old_perm:
-            old_perm.delete()
 
-#removing election specific perms   
-def revoke_election_bulk_permissions_from_membership(membership, election, permissions):
-    for perm in permissions:
-        old_perm = PermissionRecord.objects.filter(membership=membership, codename=perm, election=election)
-        if old_perm:
-            old_perm.delete()
+def assign_election_default_permissions_to_membership(membership_id, election_id, role):
+    for codename in get_permissions_for_role(role, "election"):
+        PermissionRecord.objects.get_or_create(
+            membership_id=membership_id, codename=codename, election_id=election_id
+        )
 
-#verifying perms
 
-def get_all_permissions_for_membership(membership):
-    return membership.permissions.all()
+# --- Bulk assignment (replaces the membership's perms at the given scope) ---
+
+def assign_org_bulk_permissions_to_membership(membership_id, permissions):
+    PermissionRecord.objects.filter(
+        membership_id=membership_id, election__isnull=True
+    ).delete()
+    for codename in permissions:
+        PermissionRecord.objects.get_or_create(
+            membership_id=membership_id, codename=codename, election=None
+        )
+
+
+def assign_election_bulk_permissions_to_membership(membership_id, election_id, permissions):
+    PermissionRecord.objects.filter(
+        membership_id=membership_id, election_id=election_id
+    ).delete()
+    for codename in permissions:
+        PermissionRecord.objects.get_or_create(
+            membership_id=membership_id, codename=codename, election_id=election_id
+        )
+
+
+# --- Bulk revocation ---
+
+def revoke_org_bulk_permissions_from_membership(membership_id, permissions):
+    PermissionRecord.objects.filter(
+        membership_id=membership_id, codename__in=permissions, election__isnull=True
+    ).delete()
+
+
+def revoke_election_bulk_permissions_from_membership(membership_id, election_id, permissions):
+    PermissionRecord.objects.filter(
+        membership_id=membership_id, codename__in=permissions, election_id=election_id
+    ).delete()
+
+
+# --- Reads / checks ---
+
+def get_all_permissions_for_membership(membership_id):
+    return PermissionRecord.objects.filter(membership_id=membership_id)
+
 
 def check_membership_permission(membership, codename, election=None):
-    if election:
-        return membership.permissions.filter(codename=codename, election=election).exists()
-    else:
-        return membership.permissions.filter(codename=codename, election__isnull=True).exists()
+    qs = membership.permissions.filter(codename=codename)
+    if election is not None:
+        return qs.filter(election=election).exists() or qs.filter(election__isnull=True).exists()
+    return qs.filter(election__isnull=True).exists()

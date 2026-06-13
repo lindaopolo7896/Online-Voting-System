@@ -48,6 +48,7 @@ class ParticipantSerializer(serializers.ModelSerializer):
             'membership_id',
             'election',
             'election_id',
+            'has_voted',
             'created_at',
         ]
         read_only_fields = ['id', 'created_at']
