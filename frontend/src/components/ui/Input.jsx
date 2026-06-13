@@ -1,7 +1,7 @@
 export default function Input({ label, error, ...props }) {
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-text">{label}</label>
+      <label className="text-text font-medium">{label}</label>
 
       <input
         {...props}

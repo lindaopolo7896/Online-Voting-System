@@ -5,6 +5,10 @@ import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import PasswordInput from "../../components/ui/PasswordInput";
 import AuthHeader from "../../components/ui/AuthHeader";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+
+import { useRegisterOrganisation } from "../../hooks/useRegisterOrganisation";
 
 function SignUpForm() {
   const {
@@ -14,28 +18,44 @@ function SignUpForm() {
     formState: { errors },
   } = useForm({ mode: "onChange" });
 
+  const registerOrganisation = useRegisterOrganisation();
+  const navigate = useNavigate();
+
   function onSubmit(data) {
-    console.log(data);
-    reset();
+    registerOrganisation.mutate(data, {
+      onSuccess: () => {
+        toast.success("User registered successfully");
+
+        reset();
+
+        setTimeout(() => {
+          navigate("/sign-in");
+        }, 3000);
+      },
+
+      onError: (error) => {
+        toast.error(error?.response?.data?.message || "Registration failed");
+      },
+    });
   }
 
   return (
     <AuthLayout>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="  w-full max-w-lg m-auto rounded-xl flex flex-col p-10 gap-6 shadow-2xl "
+        className="  w-full max-w-xl m-auto rounded-xl flex flex-col p-10 gap-6  "
       >
         <AuthHeader
           heading="Welcome to Votex"
-          subHeading="Sign in to manage your elections"
+          subHeading="Sign up to manage your elections"
         />
 
         <Input
-          type="name"
-          label="Name"
+          type="text"
+          label="Institution Name"
           placeholder="Enter your name"
-          error={errors.name?.message}
-          {...register("name", {
+          error={errors.organisation_name?.message}
+          {...register("organisation_name", {
             required: "Name is required",
           })}
         />
@@ -64,7 +84,10 @@ function SignUpForm() {
             },
           })}
         />
-        <Button name="Sign Up" />
+        <Button
+          name={registerOrganisation.isPending ? "Signing Up..." : "Sign Up"}
+          disabled={registerOrganisation.isPending}
+        />
         <p className="font-medium text-primary">
           Have an Account?{" "}
           <Link
