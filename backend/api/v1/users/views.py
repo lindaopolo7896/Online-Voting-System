@@ -1,11 +1,14 @@
+from django.db import transaction
+from rest_framework.permissions import AllowAny
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.users.models import Election, Log, Organisation, PermissionRecord, User, Membership
+from apps.users.models import Election, Log, Organisation, PermissionRecord, User, Membership, ROLE_CHOICES
 from apps.elections.models import Participant
-from services.permission_service import assign_election_bulk_permissions_to_membership, assign_org_bulk_permissions_to_membership, revoke_org_bulk_permissions_from_membership, revoke_election_bulk_permissions_from_membership, get_all_permissions_for_membership
+from services.permission_service import assign_election_bulk_permissions_to_membership, assign_org_bulk_permissions_to_membership, revoke_org_bulk_permissions_from_membership, revoke_election_bulk_permissions_from_membership, get_all_permissions_for_membership, assign_org_default_permissions_to_membership, assign_election_default_permissions_to_membership
 from .serializers import ElectionSerializer, LogSerializer, OrganisationSerializer, PermissionRecordSerializer, UserSerializer, MembershipSerializer, UserMembershipCreateSerializer
 from .permissions import HasPermission, DenyAll
 from services.membership_service import get_user_active_membership, get_user_active_organisation
@@ -31,11 +34,70 @@ class OrganisationViewSet(ModelViewSet):
         'destroy': 'delete.organisation',
     }
 
+    def get_permissions(self):
+        if self.action == 'register_org':
+            return [AllowAny()]
+        return super().get_permissions()
+
     #in this case we want to fetch organisations a person is a member of
     def get_queryset(self):
         user = self.request.user
         
         return Organisation.objects.filter(memberships__user=user)
+
+    @action(detail=False, methods=['post'], url_path='register-org')
+    def register_org(self, request):
+        organisation_name = str(request.data.get('organisation_name') or request.data.get('name') or '').strip()
+        organisation_description = str(request.data.get('organisation_description') or request.data.get('description') or '').strip()
+        email = str(request.data.get('email') or '').strip().lower()
+        password = str(request.data.get('password') or '')
+        first_name = str(request.data.get('first_name') or '').strip()
+        last_name = str(request.data.get('last_name') or '').strip()
+        phone = str(request.data.get('phone') or '').strip()
+        bio = str(request.data.get('bio') or '').strip()
+
+        if not organisation_name:
+            return Response({'detail': 'organisation_name is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not email:
+            return Response({'detail': 'email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not password:
+            return Response({'detail': 'password is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(email=email).exists():
+            return Response({'detail': 'A user with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            organisation = Organisation.objects.create(
+                name=organisation_name,
+                description=organisation_description or None,
+            )
+            user = User.objects.create_user(
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                phone=phone or None,
+                bio=bio or None,
+            )
+            membership = Membership.objects.create(
+                organisation=organisation,
+                user=user,
+                role='admin',
+                currently_active=True,
+                is_active=True,
+            )
+            assign_org_default_permissions_to_membership(membership.id, membership.role)
+
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+                'detail': 'Organisation registered successfully.',
+                'organisation': OrganisationSerializer(organisation).data,
+                'membership': MembershipSerializer(membership).data,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 #we will come back to this as membership is what we are looking at exactly
 class UserViewset(ModelViewSet):
@@ -203,6 +265,7 @@ class ElectionViewset(ModelViewSet):
         'candidates': 'view.candidate',
         'deploy_contract': 'update.election',
         'send_voter_invites': 'add.voting_link',
+        'enroll_all_members': 'add.participant',
     }
 
     def get_queryset(self):
@@ -249,6 +312,58 @@ class ElectionViewset(ModelViewSet):
                 'election_id': election.id,
                 'smart_contract_address': election.smart_contract_address,
                 'already_deployed': already_deployed,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=['post'], url_path='enroll-all-members')
+    def enroll_all_members(self, request, pk=None):
+        election = self.get_object()
+        roles = request.data.get('roles')
+        allowed_roles = {role for role, _ in ROLE_CHOICES}
+
+        memberships = Membership.objects.filter(
+            organisation=election.organisation,
+            is_active=True,
+        )
+
+        if roles is not None:
+            if not isinstance(roles, list):
+                return Response({'detail': 'roles must be a list.'}, status=status.HTTP_400_BAD_REQUEST)
+            invalid_roles = [role for role in roles if role not in allowed_roles]
+            if invalid_roles:
+                return Response(
+                    {'detail': f'Invalid roles: {invalid_roles}'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            memberships = memberships.filter(role__in=roles)
+
+        created_participants = 0
+        existing_participants = 0
+
+        with transaction.atomic():
+            for membership in memberships:
+                _, created = Participant.objects.get_or_create(
+                    election=election,
+                    membership=membership,
+                )
+                if created:
+                    created_participants += 1
+                else:
+                    existing_participants += 1
+                assign_election_default_permissions_to_membership(
+                    membership.id,
+                    election.id,
+                    membership.role,
+                )
+
+        return Response(
+            {
+                'election_id': election.id,
+                'memberships_processed': memberships.count(),
+                'created_participants': created_participants,
+                'existing_participants': existing_participants,
+                'note': 'Candidates are included by default as long as they are active organisation members.',
             },
             status=status.HTTP_200_OK,
         )

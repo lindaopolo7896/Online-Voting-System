@@ -12,6 +12,7 @@ from apps.elections.models import Position, Participant, Candidate
 from api.v1.users.permissions import HasPermission
 from apps.users.models import Election, Membership, User
 from services.membership_service import get_user_active_membership
+from services.permission_service import assign_election_default_permissions_to_membership
 from services.voting_link_service import create_or_refresh_voting_link, send_voting_invitation_email
 from .serializers import PositionSerializer, ParticipantSerializer, CandidateSerializer
 
@@ -117,9 +118,15 @@ class ParticipantViewSet(ModelViewSet):
         payload['election_id'] = election_id
         serializer = self.get_serializer(data=payload)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        participant = serializer.save()
+        assign_election_default_permissions_to_membership(
+            participant.membership_id,
+            participant.election_id,
+            participant.membership.role,
+        )
+        response_serializer = self.get_serializer(participant)
+        headers = self.get_success_headers(response_serializer.data)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=False, methods=['post'], url_path='bulk-upload')
     def bulk_upload(self, request, election_id=None):
@@ -208,6 +215,11 @@ class ParticipantViewSet(ModelViewSet):
                     created_participants += 1
                 else:
                     existing_participants += 1
+                assign_election_default_permissions_to_membership(
+                    membership.id,
+                    election.id,
+                    membership.role,
+                )
 
         response_status = status.HTTP_201_CREATED if created_participants else status.HTTP_200_OK
         return Response(
