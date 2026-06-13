@@ -11,7 +11,7 @@ export default function PasswordInput({
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-text">{label}</label>
+      <label className="text-text font-meduum">{label}</label>
 
       <div className="relative w-full">
         <input
