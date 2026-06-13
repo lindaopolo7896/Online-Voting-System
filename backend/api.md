@@ -1,4 +1,4 @@
-# Voting Backend API Documentation
+# Voting Backend API Documentation V1.0.1
 
 Short description:
 This API manages organisations, elections, participants, candidates, voting links, OTP login, and anonymous vote submission with blockchain-style vote anchoring.
@@ -102,6 +102,33 @@ Read or modify one organisation record.
   - PUT/PATCH body: organisation fields
 - Response:
   - `GET 200`, `PUT/PATCH 200`, `DELETE 204`
+
+### 2.3 Register organisation (public)
+Short description:
+Creates a new organisation, creates the first user, makes that user an admin membership, seeds default org permissions, and returns JWT tokens.
+
+- Method: `POST`
+- Path: `/api/v1/organisations/register-org/`
+- Parameters:
+  - Body:
+    - `organisation_name` (string, required) or `name`
+    - `organisation_description` (string, optional) or `description`
+    - `email` (string, required)
+    - `password` (string, required)
+    - `first_name` (string, optional)
+    - `last_name` (string, optional)
+    - `phone` (string, optional)
+    - `bio` (string, optional)
+- Response:
+  - `201`:
+    - `detail`
+    - `organisation`
+    - `membership`
+    - `access`
+    - `refresh`
+  - `400` examples:
+    - missing required fields
+    - existing email
 
 ---
 
@@ -297,6 +324,26 @@ Generates or refreshes voting links for all election participants and sends invi
     - `links_created`
     - `links_refreshed`
     - `errors` (list)
+
+### 6.6 Enroll all organisation members as participants
+Short description:
+Adds all active organisation memberships to the election as participants and seeds default election permissions for each membership. Candidates are included by default.
+
+- Method: `POST`
+- Path: `/api/v1/elections/{id}/enroll-all-members/`
+- Parameters:
+  - Path: `id`
+  - Body (optional):
+    - `roles` (array of role names) to enroll only selected roles
+- Response:
+  - `200`:
+    - `election_id`
+    - `memberships_processed`
+    - `created_participants`
+    - `existing_participants`
+    - `note`
+  - `400`:
+    - invalid `roles` format or values
 
 ---
 
