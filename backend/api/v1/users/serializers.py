@@ -102,6 +102,8 @@ class ElectionSerializer(serializers.ModelSerializer):
     winner_id = serializers.PrimaryKeyRelatedField(
         source='winner', queryset=Candidate.objects.all(), write_only=True, required=False, allow_null=True
     )
+    description = serializers.CharField(required=False, allow_blank=True)
+    
 
     class Meta:
         model = Election

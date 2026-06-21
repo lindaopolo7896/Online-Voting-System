@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from apps.users.models import User
 from apps.elections.models import Candidate
 from services.otp_service import issue_otp, verify_otp
+from services.membership_service import get_user_active_membership, switch_active_membership
 from services.voting_link_service import resolve_voting_link
 from .serializers import RequestOTPSerializer, VerifyOTPSerializer
 
@@ -50,6 +51,7 @@ class VerifyOTPView(APIView):
             return Response({'detail': 'Invalid or expired code.'}, status=400)
         eligibility = None
         ballot = None
+        active_membership = get_user_active_membership(user.id)
         if voting_token:
             link = resolve_voting_link(voting_token, require_active=True)
             if link is None or link.participant.membership.user_id != user.id:
@@ -57,6 +59,7 @@ class VerifyOTPView(APIView):
             if link.participant.has_voted:
                 return Response({'detail': 'You are not eligible to vote: ballot already cast.'}, status=400)
 
+            active_membership = switch_active_membership(user.id, link.participant.membership.id)
             candidates = (
                 Candidate.objects
                 .select_related('position', 'membership__user')
@@ -82,7 +85,21 @@ class VerifyOTPView(APIView):
         response_payload = {
             'access': str(refresh.access_token),
             'refresh': str(refresh),
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+            },
+            'membership': None,
         }
+        if active_membership is not None:
+            response_payload['membership'] = {
+                'id': active_membership.id,
+                'organisation_id': active_membership.organisation_id,
+                'role': active_membership.role,
+                'currently_active': active_membership.currently_active,
+            }
         if eligibility is not None:
             response_payload['eligibility'] = eligibility
             response_payload['ballot'] = ballot

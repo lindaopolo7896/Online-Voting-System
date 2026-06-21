@@ -1,5 +1,6 @@
 from django.db import transaction
-from rest_framework.permissions import AllowAny
+from datetime import datetime
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
 from rest_framework.decorators import action
@@ -11,7 +12,7 @@ from apps.elections.models import Participant
 from services.permission_service import assign_election_bulk_permissions_to_membership, assign_org_bulk_permissions_to_membership, revoke_org_bulk_permissions_from_membership, revoke_election_bulk_permissions_from_membership, get_all_permissions_for_membership, assign_org_default_permissions_to_membership, assign_election_default_permissions_to_membership
 from .serializers import ElectionSerializer, LogSerializer, OrganisationSerializer, PermissionRecordSerializer, UserSerializer, MembershipSerializer, UserMembershipCreateSerializer
 from .permissions import HasPermission, DenyAll
-from services.membership_service import get_user_active_membership, get_user_active_organisation
+from services.membership_service import get_user_active_membership, get_user_active_organisation, switch_active_membership
 from services.blockchain_service import deploy_election_contract
 from services.voting_link_service import create_or_refresh_voting_link, send_voting_invitation_email
 from api.v1.elections.serializers import PositionSerializer, ParticipantSerializer, CandidateSerializer
@@ -24,6 +25,7 @@ class OrganisationViewSet(ModelViewSet):
     queryset = Organisation.objects.all()
     serializer_class = OrganisationSerializer
     permission_classes = [HasPermission]
+    filterset_fields = ['name']
 
     ACTION_PERMISSION_MAP = {
         'create': 'add.organisation',
@@ -88,6 +90,7 @@ class OrganisationViewSet(ModelViewSet):
             assign_org_default_permissions_to_membership(membership.id, membership.role)
 
         refresh = RefreshToken.for_user(user)
+        switch_active_membership(user.id, membership.id)
         return Response(
             {
                 'detail': 'Organisation registered successfully.',
@@ -98,12 +101,34 @@ class OrganisationViewSet(ModelViewSet):
             },
             status=status.HTTP_201_CREATED,
         )
+    
+    #an endpoint to get election statistics for the organisation
+    @action(detail=True, methods=['get'], url_path='election-stats')
+    def election_stats(self, request, pk=None):
+        organisation = self.get_object()
+        elections = Election.objects.filter(organisation=organisation)
+        total_elections = elections.count()
+        incoming_elections = elections.filter(date_time_occuring__gt=datetime.now()).count()
+        ongoing_election = elections.filter(date_time_occuring__lte=datetime.now(), date_time_ending__gte=datetime.now()).count()
+        completed_elections = elections.filter(date_time_ending__lt=datetime.now()).count()
+
+
+        return Response(
+            {
+                'total_elections': total_elections,
+                'incoming_elections': incoming_elections,
+                'ongoing_election': ongoing_election,
+                'completed_elections': completed_elections,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 #we will come back to this as membership is what we are looking at exactly
 class UserViewset(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [HasPermission]
+    filterset_fields = ['email', 'first_name', 'last_name', 'is_active']
 
     ACTION_PERMISSION_MAP = {
         'create': 'add.membership',
@@ -139,6 +164,22 @@ class MembershipViewset(ModelViewSet):
     queryset = Membership.objects.all()
     serializer_class = MembershipSerializer
     permission_classes = [HasPermission]
+    filterset_fields = ['organisation_id', 'user_id', 'role', 'is_active']
+
+    ACTION_PERMISSION_MAP = {
+        'create': 'add.membership',
+        'list': 'view.membership',
+        'retrieve': 'view.membership',
+        'update': 'update.membership',
+        'partial_update': 'update.membership',
+        'destroy': 'delete.membership',
+        'my_memberships': 'view.membership',
+    }
+
+    def get_permissions(self):
+        if self.action == 'switch_membership':
+            return [IsAuthenticated()]
+        return super().get_permissions()
     
     # we want to scope it to the current organisation
     def get_queryset(self):
@@ -180,22 +221,20 @@ class MembershipViewset(ModelViewSet):
         membership.save(update_fields=['is_active'])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    ACTION_PERMISSION_MAP = {
-        'create': 'add.membership',
-        'list': 'view.membership',
-        'retrieve': 'view.membership',
-        'update': 'update.membership',
-        'partial_update': 'update.membership',
-        'destroy': 'delete.membership',
-        'my_memberships': 'view.membership',
-    }
-
-
     @action(detail=False, methods=['get'])
     def my_memberships(self, request):
         memberships = Membership.objects.filter(user=request.user)
         serializer = self.get_serializer(memberships, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'], url_path='switch-membership')
+    def switch_membership(self, request, pk=None):
+        membership = self.get_object()
+        switched_membership = switch_active_membership(request.user.id, membership.id)
+        if switched_membership:
+            serializer = self.get_serializer(switched_membership)
+            return Response(serializer.data)
+        return Response({'detail': 'Membership not found or does not belong to user.'}, status=status.HTTP_400_BAD_REQUEST)
     
 class PermissionRecordViewset(ModelViewSet):
     queryset = PermissionRecord.objects.all()
@@ -252,6 +291,7 @@ class ElectionViewset(ModelViewSet):
     queryset = Election.objects.all()
     serializer_class = ElectionSerializer
     permission_classes = [HasPermission]
+    filterset_fields = ['organisation_id', 'date_time_occuring', 'date_time_ending', 'winner_id']
 
     ACTION_PERMISSION_MAP = {
         'create': 'add.election',
@@ -276,6 +316,42 @@ class ElectionViewset(ModelViewSet):
             return Election.objects.filter(organisation__memberships=membership).distinct()
         return Election.objects.filter(participants__membership=membership).distinct() | Election.objects.filter(candidates__membership=membership).distinct()
     
+    def perform_create(self, serializer):
+        user = self.request.user
+        membership = get_user_active_membership(user.id)
+        election = serializer.save()
+        if membership is not None:
+            assign_election_default_permissions_to_membership(
+                membership.id,
+                election.id,
+                membership.role,
+            )
+
+    #we get the voter turnout in all the elctions of an organisation
+    @action(detail=False, methods=['get'], url_path='voter-turnout')
+    def voter_turnout(self, request):
+        organisation = get_user_active_organisation(request.user.id)
+        if organisation is None:
+            return Response([], status=status.HTTP_200_OK)
+
+        elections = organisation.elections.all()
+        turnout_data = []
+        for election in elections:
+            total_participants = election.participants.count()
+            total_votes = election.votes.count()
+            turnout = (total_votes / total_participants * 100) if total_participants > 0 else 0
+            turnout_data.append(
+                {
+                    'id': election.id,
+                    'name': election.name,
+                    'total_participants': total_participants,
+                    'total_votes': total_votes,
+                    'turnout': turnout,
+                }
+            )
+
+        return Response(turnout_data, status=status.HTTP_200_OK)
+
     #we get the positions of an election
     @action(detail=True, methods=['get'], url_path='positions')
     def positions(self, request, pk=None):
@@ -422,6 +498,12 @@ class ElectionViewset(ModelViewSet):
 class LogViewset(ModelViewSet):
     queryset = Log.objects.all()
     serializer_class = LogSerializer
+    permission_classes = [HasPermission]
+
+    ACTION_PERMISSION_MAP = {
+        'membership_logs': 'view.log',
+        'membership_logs_by_election': 'view.log',
+    }
 
 
     @action(detail=False, methods=['get'], url_path='membership-logs')
