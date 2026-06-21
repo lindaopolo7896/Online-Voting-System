@@ -26,7 +26,7 @@ function ResetPassword() {
     <AuthLayout>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-xl m-auto rounded-xl flex flex-col p-10 gap-6 shadow-2xl"
+        className="w-full max-w-xl m-auto rounded-xl flex flex-col p-10 gap-6"
       >
         <AuthHeader
           heading="Create New Password"
