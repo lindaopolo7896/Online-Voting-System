@@ -25,10 +25,10 @@ function ForgotPasword() {
     <AuthLayout>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="  w-full max-w-lg m-auto rounded-xl flex flex-col p-10 gap-4 shadow-2xl "
+        className="w-full max-w-lg m-auto rounded-xl flex flex-col p-10 gap-4"
       >
         <div
-          className="p-2 w-[40px] h-[40px] rounded-full border border-primary flex justify-center items-center cursor-pointer hover:bg-primary/30 transition-all duration-300 ease-in-out"
+          className="p-2 w-10 h-10 rounded-full border border-primary flex justify-center items-center cursor-pointer hover:bg-primary/30 transition-all duration-300 ease-in-out"
           onClick={() => {
             navigate("/sign-in");
           }}
