@@ -1,6 +1,6 @@
 from rest_framework.permissions import BasePermission
 
-from services.permission_service import check_membership_permission
+from services.permission_service import check_membership_permission, log
 from services.membership_service import get_user_active_membership
 
 class HasPermission(BasePermission):
@@ -26,8 +26,15 @@ class HasPermission(BasePermission):
             if model is not None and model.__name__ == 'Election':
                 election_id = view.kwargs.get('pk')
         if election_id:
-            return check_membership_permission(active_membership, required_permission, election_id)
-        return check_membership_permission(active_membership, required_permission)
+            permission_check =  check_membership_permission(active_membership, required_permission, election_id)
+            if permission_check:
+                log(active_membership, required_permission, election_id)
+        else:
+            permission_check =  check_membership_permission(active_membership, required_permission)
+            if permission_check:
+                log(active_membership, required_permission, election_id)
+        
+        return permission_check
 
 
 class DenyAll(BasePermission):

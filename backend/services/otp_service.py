@@ -15,6 +15,16 @@ def _generate_code():
     return ''.join(secrets.choice('0123456789') for _ in range(length))
 
 
+def _send_otp_email(user, code, ttl):
+    send_mail(
+        subject='Your login code',
+        message=f'Your one-time login code is {code}. It expires in {ttl} minutes.',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=False,
+    )
+
+
 def issue_otp(user):
     """Invalidate any outstanding codes, mint a fresh one, email it, return the raw code."""
     EmailOTP.objects.filter(user=user, is_used=False).update(is_used=True)
@@ -29,15 +39,6 @@ def issue_otp(user):
     _send_otp_email(user, code, ttl)
     return code
 
-
-def _send_otp_email(user, code, ttl):
-    send_mail(
-        subject='Your login code',
-        message=f'Your one-time login code is {code}. It expires in {ttl} minutes.',
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        fail_silently=False,
-    )
 
 
 def verify_otp(user, code):

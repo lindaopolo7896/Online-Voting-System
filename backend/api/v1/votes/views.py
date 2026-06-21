@@ -16,6 +16,7 @@ class VoteViewSet(ModelViewSet):
     queryset = Vote.objects.all()
     serializer_class = VoteSerializer
     permission_classes = [HasPermission]
+    filterset_fields = ['election_id', 'position_id', 'voted_for_id']
 
     ACTION_PERMISSION_MAP = {
         'list': 'view.vote',
@@ -95,6 +96,7 @@ class VotingLinkViewSet(ModelViewSet):
     queryset = VotingLink.objects.all()
     serializer_class = VotingLinkSerializer
     permission_classes = [HasPermission]
+    filterset_fields = ['election_id', 'participant_id', 'generated_by_id', 'is_used', 'expires_at']
 
 
     ACTION_PERMISSION_MAP = {
@@ -115,3 +117,4 @@ class VotingLinkViewSet(ModelViewSet):
         serializer = self.get_serializer(links, many=True)
         return Response(serializer.data)
     
+

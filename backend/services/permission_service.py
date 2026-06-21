@@ -1,4 +1,5 @@
-from apps.users.models import PermissionRecord
+from apps.users.models import PermissionRecord, Log
+
 
 # Codename convention: "<verb>.<resource>", dot-style, used everywhere
 # (ACTION_PERMISSION_MAPs, defaults, and PermissionRecord.codename).
@@ -197,3 +198,11 @@ def check_membership_permission(membership, codename, election=None):
     if election is not None:
         return qs.filter(election=election).exists() or qs.filter(election__isnull=True).exists()
     return qs.filter(election__isnull=True).exists()
+
+
+def log(membership, codename, election_id = None):
+    Log.objects.create(
+        membership=membership,
+        election_id=election_id,
+        codename=codename,
+    )

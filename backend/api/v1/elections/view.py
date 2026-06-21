@@ -76,6 +76,7 @@ class PositionViewSet(ModelViewSet):
     queryset = Position.objects.all()
     serializer_class = PositionSerializer
     permission_classes = [HasPermission]
+    filterset_fields = ['organisation_id', 'election_id', 'status', 'name']
 
     ACTION_PERMISSION_MAP = {
         'list': 'view.position',
@@ -96,12 +97,14 @@ class ParticipantViewSet(ModelViewSet):
     queryset = Participant.objects.all()
     serializer_class = ParticipantSerializer
     permission_classes = [HasPermission]
+    filterset_fields = ['membership_id', 'election_id', 'has_voted']
 
     ACTION_PERMISSION_MAP = {
         'list': 'view.participant',
         'retrieve': 'view.participant',
         'create': 'add.participant',
         'bulk_upload': 'add.participant',
+        'convert_to_candidate': 'add.participant',
         'send_invitations': 'add.voting_link',
         'update': 'update.participant',
         'partial_update': 'update.participant',
@@ -286,11 +289,53 @@ class ParticipantViewSet(ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+    @action(detail=True, methods=['post'], url_path='convert-to-candidate')
+    def convert_to_candidate(self, request, election_id=None, pk=None):
+        participant = self.get_object()
+        position_id = request.data.get('position_id')
+        if not position_id:
+            return Response({'detail': 'position_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        position = Position.objects.filter(id=position_id, election_id=participant.election_id).first()
+        if position is None:
+            return Response(
+                {'detail': 'Position not found in this election.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if Candidate.objects.filter(
+            election_id=participant.election_id,
+            membership_id=participant.membership_id,
+            position_id=position.id,
+        ).exists():
+            return Response(
+                {'detail': 'Participant is already a candidate for this position.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        candidate_data = {
+            'membership_id': participant.membership_id,
+            'election_id': participant.election_id,
+            'position_id': position.id,
+            'manifesto': request.data.get('manifesto') or None,
+            'slogan': request.data.get('slogan') or None,
+            'status': request.data.get('status') or 'active',
+        }
+        campaign_photos = request.data.get('campaign_photos')
+        if campaign_photos not in (None, ''):
+            candidate_data['campaign_photos'] = campaign_photos
+
+        serializer = CandidateSerializer(data=candidate_data)
+        serializer.is_valid(raise_exception=True)
+        candidate = serializer.save()
+        return Response(CandidateSerializer(candidate).data, status=status.HTTP_201_CREATED)
+
 
 class CandidateViewSet(ModelViewSet):
     queryset = Candidate.objects.all()
     serializer_class = CandidateSerializer
     permission_classes = [HasPermission]
+    filterset_fields = ['membership_id', 'election_id', 'position_id', 'status']
 
     ACTION_PERMISSION_MAP = {
         'list': 'view.candidate',
