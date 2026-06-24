@@ -19,11 +19,13 @@ import InstitutionElectionsPage from "../pages/institution/InstitutionElectionsP
 import InstitutionCandidatesPage from "../pages/institution/InstitutionCandidatesPage";
 import InstitutionVotersPage from "../pages/institution/InstitutionVotersPage";
 import CreateElectionPage from "../pages/institution/CreateElectionPage";
+import ComingSoon from "../pages/ComingSoon";
 
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      {/* <Route path="/" element={<LandingPage />} /> */}
+      <Route path="/" element={<ComingSoon />} />
 
       {/* auth pages  */}
       <Route path="/sign-in" element={<SignInForm />} />
