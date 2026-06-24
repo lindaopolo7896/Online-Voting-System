@@ -184,7 +184,7 @@ export default function ComingSoon() {
           text-sm
         "
         >
-          © 2026 Your Brand
+          © 2026 Votex
         </div>
       </div>
     </div>
