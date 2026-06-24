@@ -100,7 +100,7 @@ function VoterTurnoutChart({ data = turnoutData }) {
         </Link>
       </div>
 
-      <div className="h-[350px]">
+      <div className="h-[200px] sm:h-[280px] lg:h-[350px]">
         <Bar data={chartData} options={options} />
       </div>
     </Card>

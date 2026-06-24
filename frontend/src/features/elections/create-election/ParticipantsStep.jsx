@@ -31,6 +31,7 @@ function ParticipantsStep({
   setParticipantsFile,
   onBack,
   onNext,
+  isCreating,
 }) {
   const [mode, setMode] = useState("select");
   const [search, setSearch] = useState("");
@@ -177,48 +178,85 @@ function ParticipantsStep({
                   ? "No members match your search."
                   : "No members found in this organisation."}
               </p>
-            ) : (
-              <ul className="divide-y divide-border max-h-80 overflow-y-auto">
-                {filtered.map((m) => {
-                  const isSelected = selectedMemberIds.has(m.id);
-                  const fullName =
-                    `${m.user?.first_name ?? ""} ${m.user?.last_name ?? ""}`.trim() ||
-                    "Unknown";
-                  return (
-                    <li
-                      key={m.id}
-                      onClick={() => toggle(m.id)}
-                      className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
-                        isSelected ? "bg-primary/8" : "hover:bg-background"
-                      }`}
-                    >
+            ) : (() => {
+                const allSelected =
+                  filtered.length > 0 &&
+                  filtered.every((m) => selectedMemberIds.has(m.id));
+                const someSelected = filtered.some((m) =>
+                  selectedMemberIds.has(m.id),
+                );
+                return (
+                  <>
+                    {/* Select-all header row */}
+                    <div className="flex items-center gap-3 px-4 py-2.5 bg-background border-b border-border sticky top-0">
                       <input
                         type="checkbox"
-                        checked={isSelected}
-                        onChange={() => toggle(m.id)}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-4 h-4 accent-primary shrink-0"
+                        checked={allSelected}
+                        ref={(el) => {
+                          if (el)
+                            el.indeterminate = someSelected && !allSelected;
+                        }}
+                        onChange={() =>
+                          allSelected ? deselectAll() : selectAll()
+                        }
+                        className="w-4 h-4 accent-primary shrink-0 cursor-pointer"
                       />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-text text-sm font-medium truncate">
-                          {fullName}
-                        </p>
-                        <p className="text-muted text-xs truncate">
-                          {m.user?.email}
-                        </p>
-                      </div>
-                      <span
-                        className={`shrink-0 px-2 py-0.5 rounded text-xs font-medium capitalize ${
-                          ROLE_BADGE[m.role] ?? "bg-white/10 text-muted"
-                        }`}
-                      >
-                        {m.role}
+                      <span className="text-xs font-semibold text-muted uppercase flex-1">
+                        {allSelected
+                          ? "Deselect all"
+                          : someSelected
+                            ? `${selectedMemberIds.size} selected — select all`
+                            : `Select all ${filtered.length} members`}
                       </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+                      <span className="text-xs font-semibold text-muted uppercase shrink-0">
+                        Role
+                      </span>
+                    </div>
+
+                    <ul className="divide-y divide-border max-h-80 overflow-y-auto">
+                      {filtered.map((m) => {
+                        const isSelected = selectedMemberIds.has(m.id);
+                        const fullName =
+                          `${m.user?.first_name ?? ""} ${m.user?.last_name ?? ""}`.trim() ||
+                          "Unknown";
+                        return (
+                          <li
+                            key={m.id}
+                            onClick={() => toggle(m.id)}
+                            className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
+                              isSelected ? "bg-primary/8" : "hover:bg-background"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggle(m.id)}
+                              onClick={(e) => e.stopPropagation()}
+                              className="w-4 h-4 accent-primary shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-text text-sm font-medium truncate">
+                                {fullName}
+                              </p>
+                              <p className="text-muted text-xs truncate">
+                                {m.user?.email}
+                              </p>
+                            </div>
+                            <span
+                              className={`shrink-0 px-2 py-0.5 rounded text-xs font-medium capitalize ${
+                                ROLE_BADGE[m.role] ?? "bg-white/10 text-muted"
+                              }`}
+                            >
+                              {m.role}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </>
+                );
+              })()
+            }
           </div>
         </>
       )}
@@ -319,9 +357,10 @@ function ParticipantsStep({
         </button>
         <button
           onClick={onNext}
-          className="rounded-lg bg-primary px-6 py-2 text-white text-sm hover:bg-primary/90 transition"
+          disabled={isCreating}
+          className="rounded-lg bg-primary px-6 py-2 text-white text-sm hover:bg-primary/90 transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          Save & Continue
+          {isCreating ? "Creating Election…" : "Save & Continue"}
         </button>
       </div>
     </Card>

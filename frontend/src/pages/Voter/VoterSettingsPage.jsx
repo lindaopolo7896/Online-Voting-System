@@ -8,6 +8,8 @@ import Input from "../../components/ui/Input";
 import PasswordInput from "../../components/ui/PasswordInput";
 import Button from "../../components/ui/Button";
 import ProfileImg from "../../components/ui/ProfileImg";
+import { updateUser } from "../../api/organisationApi";
+import { changePassword } from "../../api/authApi";
 
 function Section({ title, subtitle, children }) {
   return (
@@ -41,25 +43,46 @@ function VoterSettingsPage() {
 
   const passwordForm = useForm({ mode: "onChange" });
 
-  function handleProfileSave(data) {
+  async function handleProfileSave(data) {
     setSavingProfile(true);
-    // Will connect to backend later
-    setTimeout(() => {
+    try {
+      await updateUser(user.id, {
+        first_name: data.firstName,
+        last_name: data.lastName,
+      });
       login({ ...user, firstName: data.firstName, lastName: data.lastName });
       toast.success("Profile updated.");
       setEditingProfile(false);
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.detail || "Failed to update profile.",
+      );
+    } finally {
       setSavingProfile(false);
-    }, 600);
+    }
   }
 
-  function handlePasswordSave(data) {
+  async function handlePasswordSave(data) {
     if (data.newPassword !== data.confirmPassword) {
-      passwordForm.setError("confirmPassword", { message: "Passwords do not match." });
+      passwordForm.setError("confirmPassword", {
+        message: "Passwords do not match.",
+      });
       return;
     }
-    // Will connect to backend later
-    toast.success("Password changed successfully.");
-    passwordForm.reset();
+    try {
+      await changePassword({
+        old_password: data.currentPassword,
+        new_password: data.newPassword,
+      });
+      toast.success("Password changed successfully.");
+      passwordForm.reset();
+    } catch (err) {
+      const msg =
+        err?.response?.data?.detail ||
+        err?.response?.data?.old_password?.[0] ||
+        "Failed to change password.";
+      passwordForm.setError("currentPassword", { message: msg });
+    }
   }
 
   return (
@@ -106,10 +129,16 @@ function VoterSettingsPage() {
               placeholder="Email"
             />
             <div className="flex gap-3">
-              <Button name={savingProfile ? "Saving..." : "Save Changes"} disabled={savingProfile} />
+              <Button
+                name={savingProfile ? "Saving..." : "Save Changes"}
+                disabled={savingProfile}
+              />
               <button
                 type="button"
-                onClick={() => { setEditingProfile(false); profileForm.reset(); }}
+                onClick={() => {
+                  setEditingProfile(false);
+                  profileForm.reset();
+                }}
                 className="px-4 py-2 rounded-lg border border-border text-text text-sm hover:bg-background transition"
               >
                 Cancel
@@ -152,7 +181,9 @@ function VoterSettingsPage() {
             label="Current Password"
             placeholder="Enter current password"
             error={passwordForm.formState.errors.currentPassword?.message}
-            {...passwordForm.register("currentPassword", { required: "Required" })}
+            {...passwordForm.register("currentPassword", {
+              required: "Required",
+            })}
           />
           <PasswordInput
             label="New Password"
@@ -167,11 +198,17 @@ function VoterSettingsPage() {
             label="Confirm New Password"
             placeholder="Confirm new password"
             error={passwordForm.formState.errors.confirmPassword?.message}
-            {...passwordForm.register("confirmPassword", { required: "Required" })}
+            {...passwordForm.register("confirmPassword", {
+              required: "Required",
+            })}
           />
           <div>
             <Button
-              name={passwordForm.formState.isSubmitting ? "Saving..." : "Change Password"}
+              name={
+                passwordForm.formState.isSubmitting
+                  ? "Saving..."
+                  : "Change Password"
+              }
               disabled={passwordForm.formState.isSubmitting}
             />
           </div>

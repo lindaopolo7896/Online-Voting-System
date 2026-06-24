@@ -15,14 +15,10 @@ import ElectionStepper from "../../features/elections/create-election/ElectionSt
 import ElectionInfoStep from "../../features/elections/create-election/ElectionInfoStep";
 import PositionsStep from "../../features/elections/create-election/PositionsStep";
 import ParticipantsStep from "../../features/elections/create-election/ParticipantsStep";
+import CandidatesStep from "../../features/elections/create-election/CandidatesStep";
 import NotificationsStep from "../../features/elections/create-election/NotificationsStep";
 import ElectionSummary from "../../features/elections/create-election/ElectionSummary";
 
-// Org-level permission set that gives the admin all election-management rights.
-// Used as a safety net because perform_create in ElectionViewset seeds these
-// automatically, but silently skips if get_user_active_membership returns None.
-// Using org-scope (election=null) avoids the swapped-args bug in the backend's
-// election-scoped bulk_assign view.
 const ADMIN_ORG_PERMISSIONS = [
   "add.organisation",
   "view.organisation",
@@ -95,22 +91,17 @@ function CreateElectionPage() {
     sendResults: false,
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Set after the election is created at the step 3 → 4 transition.
+  const [createdElectionId, setCreatedElectionId] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
 
-  async function handleSubmit() {
-    if (!formData.title.trim()) {
-      toast.error("Election title is required.");
-      return;
-    }
-    if (!formData.startDate || !formData.endDate) {
-      toast.error("Start and end date are required.");
-      return;
-    }
-
-    setIsSubmitting(true);
+  // Called when the admin clicks "Save & Continue" on ParticipantsStep (step 3).
+  // Creates the election, positions, participants, and bulk-uploads the file so
+  // that the CandidatesStep (step 4) can fetch real participant IDs from the API.
+  async function handleCreateAndUpload() {
+    setIsCreating(true);
     try {
-      // 1. Create the election — perform_create on the backend seeds the
-      //    creator's election-level permissions automatically.
+      // 1. Create election
       const election = await createElection({
         name: formData.title.trim(),
         description: formData.description?.trim() || "",
@@ -119,9 +110,7 @@ function CreateElectionPage() {
         organisation_id: user.organisationId,
       });
 
-      // 2. Safety net: expand the admin's org-level permissions to include
-      //    all election-management rights so subsequent steps work even if
-      //    perform_create silently skipped the seeding step.
+      // 2. Safety-net: ensure admin has all election-management permissions
       await bulkAssignPermissions({
         type: "organisation",
         membership_id: user.membershipId,
@@ -143,19 +132,15 @@ function CreateElectionPage() {
         await createParticipant(election.id, membershipId);
       }
 
-      // 5. Bulk upload participants file (CSV/XLSX).
-      //    The `role` column in the file determines each person's role:
-      //      participant → voter
-      //      candidate   → will stand for a position (assign via Candidates page)
-      //      official    → election official
-      //    New users and org memberships are created automatically by the backend.
+      // 5. Bulk upload CSV/XLSX file (creates users + memberships server-side).
+      //    role=candidate rows will be assignable in the next step.
       if (participantsFile) {
         await bulkUploadParticipants(election.id, participantsFile);
       }
 
       queryClient.invalidateQueries({ queryKey: ["elections"] });
-      toast.success("Election created successfully!");
-      navigate("/organisation/elections");
+      setCreatedElectionId(election.id);
+      setCurrentStep(4);
     } catch (err) {
       const msg =
         err?.response?.data?.detail ||
@@ -163,8 +148,14 @@ function CreateElectionPage() {
         "Failed to create election. Please try again.";
       toast.error(msg);
     } finally {
-      setIsSubmitting(false);
+      setIsCreating(false);
     }
+  }
+
+  // Called from the final Notifications step — election already exists.
+  function handleFinish() {
+    toast.success("Election created successfully!");
+    navigate("/organisation/elections");
   }
 
   return (
@@ -191,7 +182,8 @@ function CreateElectionPage() {
           />
         )}
 
-        {/* Step 3 — Participants (existing members + file upload) */}
+        {/* Step 3 — Participants (existing members + file upload).
+            "Save & Continue" triggers election creation so step 4 has a real ID. */}
         {currentStep === 3 && (
           <ParticipantsStep
             selectedMemberIds={selectedMemberIds}
@@ -199,18 +191,28 @@ function CreateElectionPage() {
             participantsFile={participantsFile}
             setParticipantsFile={setParticipantsFile}
             onBack={() => setCurrentStep(2)}
-            onNext={() => setCurrentStep(4)}
+            onNext={handleCreateAndUpload}
+            isCreating={isCreating}
           />
         )}
 
-        {/* Step 4 — Notifications */}
+        {/* Step 4 — Candidates: assign uploaded candidate participants to positions */}
         {currentStep === 4 && (
+          <CandidatesStep
+            electionId={createdElectionId}
+            onNext={() => setCurrentStep(5)}
+          />
+        )}
+
+        {/* Step 5 — Notifications: election already created, just finish */}
+        {currentStep === 5 && (
           <NotificationsStep
             notifications={notifications}
             setNotifications={setNotifications}
-            onBack={() => setCurrentStep(3)}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
+            onBack={() => setCurrentStep(4)}
+            onSubmit={handleFinish}
+            isSubmitting={false}
+            submitLabel="Finish"
           />
         )}
 
