@@ -1,4 +1,4 @@
-import MailIcon from "../../assets/icons/MailIcon.png";
+import MailIcon from "../../assets/icons/mail.png";
 import maskEmail from "../../helpers/maskEmail";
 import Button from "../../components/ui/Button";
 import AuthLayout from "../../layouts/AuthLayout";
