@@ -3,6 +3,7 @@ import io
 from pathlib import Path
 
 from django.db import transaction
+from django.utils.crypto import get_random_string
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
 from rest_framework.decorators import action
@@ -174,7 +175,7 @@ class ParticipantViewSet(ModelViewSet):
 
                 user = User.objects.filter(email=email).first()
                 if user is None:
-                    temp_password = User.objects.make_random_password()
+                    temp_password = get_random_string(32)
                     user = User.objects.create_user(
                         email=email,
                         password=temp_password,
