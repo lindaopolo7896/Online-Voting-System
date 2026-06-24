@@ -333,13 +333,13 @@ Read election-linked resources from top-level election route.
 
 - Method: `GET`
 - Paths:
-  - `/api/v1/elections/{id}/positions/`
-  - `/api/v1/elections/{id}/participants/`
-  - `/api/v1/elections/{id}/candidates/`
+  - `/api/v1/elections/{id}/election-positions/`
+  - `/api/v1/elections/{id}/election-participants/`
+  - `/api/v1/elections/{id}/election-candidates/`
 - Required permission:
-  - `/positions/`: `view.position`
-  - `/participants/`: `view.participant`
-  - `/candidates/`: `view.candidate`
+  - `/election-positions/`: `view.position`
+  - `/election-participants/`: `view.participant`
+  - `/election-candidates/`: `view.candidate`
 - Parameters:
   - Path: `id`
 - Response:
