@@ -31,7 +31,7 @@ function ElectionFilters({ table }) {
         </div>
 
         <Link
-          to="/organization/elections/create"
+          to="/organisation/elections/create"
           className="flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-white shadow transition-all duration-300 hover:bg-primary/90"
         >
           <Plus size={18} />

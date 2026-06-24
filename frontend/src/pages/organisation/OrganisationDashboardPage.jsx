@@ -8,7 +8,7 @@ import ProgressCard from "../../components/voter/results/ProgressCard";
 import ProfileImg from "../../components/ui/ProfileImg";
 import Divider from "../../components/ui/Divider";
 import { IoMdAdd } from "react-icons/io";
-import { IoPersonAdd } from "react-icons/io5";
+import { IoPersonAdd, IoPersonAddOutline } from "react-icons/io5";
 import { IoCloudUploadOutline } from "react-icons/io5";
 import { LuClipboardList } from "react-icons/lu";
 import VoterTurnoutChart from "../../components/common/VoterTurnoutChart";
@@ -31,6 +31,11 @@ const actions = [
     icon: IoPersonAdd,
     actionName: "Add Candidates",
     link: "/organisation/candidates",
+  },
+  {
+    icon: IoPersonAddOutline,
+    actionName: "Add Member",
+    link: "/organisation/voters",
   },
   {
     icon: IoCloudUploadOutline,

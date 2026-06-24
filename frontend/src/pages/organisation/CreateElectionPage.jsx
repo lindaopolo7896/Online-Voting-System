@@ -24,18 +24,45 @@ import ElectionSummary from "../../features/elections/create-election/ElectionSu
 // Using org-scope (election=null) avoids the swapped-args bug in the backend's
 // election-scoped bulk_assign view.
 const ADMIN_ORG_PERMISSIONS = [
-  "add.organisation", "view.organisation", "update.organisation", "delete.organisation",
-  "add.membership", "view.membership", "update.membership", "delete.membership",
-  "assign.permission", "view.permission", "unassign.permission",
-  "view.log", "delete.log",
-  "add.election", "view.election", "update.election", "delete.election",
-  "add.voting_link", "view.voting_link",
-  "start.election", "close.election", "publish.results",
-  "add.position", "view.position", "update.position", "delete.position",
-  "add.participant", "view.participant", "update.participant", "delete.participant",
-  "add.candidate", "view.candidate", "update.candidate", "delete.candidate",
-  "approve.candidate", "reject.candidate",
-  "view.results", "update.voting_link", "delete.voting_link",
+  "add.organisation",
+  "view.organisation",
+  "update.organisation",
+  "delete.organisation",
+  "add.membership",
+  "view.membership",
+  "update.membership",
+  "delete.membership",
+  "assign.permission",
+  "view.permission",
+  "unassign.permission",
+  "view.log",
+  "delete.log",
+  "add.election",
+  "view.election",
+  "update.election",
+  "delete.election",
+  "add.voting_link",
+  "view.voting_link",
+  "start.election",
+  "close.election",
+  "publish.results",
+  "add.position",
+  "view.position",
+  "update.position",
+  "delete.position",
+  "add.participant",
+  "view.participant",
+  "update.participant",
+  "delete.participant",
+  "add.candidate",
+  "view.candidate",
+  "update.candidate",
+  "delete.candidate",
+  "approve.candidate",
+  "reject.candidate",
+  "view.results",
+  "update.voting_link",
+  "delete.voting_link",
 ];
 
 function CreateElectionPage() {
@@ -123,9 +150,7 @@ function CreateElectionPage() {
       //      official    → election official
       //    New users and org memberships are created automatically by the backend.
       if (participantsFile) {
-        const fd = new FormData();
-        fd.append("file", participantsFile);
-        await bulkUploadParticipants(election.id, fd);
+        await bulkUploadParticipants(election.id, participantsFile);
       }
 
       queryClient.invalidateQueries({ queryKey: ["elections"] });

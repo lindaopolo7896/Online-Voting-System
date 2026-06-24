@@ -10,32 +10,32 @@ import useAuth from "../../hooks/useAuth";
 const electionManagerLinks = [
   {
     label: "Dashboard",
-    path: "/institution/dashboard",
+    path: "/organisation/dashboard",
     icon: RiDashboardFill,
   },
   {
     label: "Elections",
-    path: "/institution/elections",
+    path: "/organisation/elections",
     icon: MdHowToVote,
   },
   {
     label: "Candidates",
-    path: "/institution/candidates",
+    path: "/organisation/candidates",
     icon: FaUserAlt,
   },
   {
     label: "Voters",
-    path: "/institution/voters",
+    path: "/organisation/voters",
     icon: FaUsers,
   },
   {
     label: "Results",
-    path: "/institution/results",
+    path: "/organisation/results",
     icon: FaClipboardList,
   },
   {
     label: "Settings",
-    path: "/institution/settings",
+    path: "/organisation/settings",
     icon: IoMdSettings,
   },
 ];
@@ -61,7 +61,7 @@ const voterLinks = [
 function Sidebar() {
   const { user } = useAuth();
 
-  const links = user?.role === "manager" ? electionManagerLinks : voterLinks;
+  const links = user?.role === "admin" ? electionManagerLinks : voterLinks;
 
   return (
     <nav className="w-72 h-screen bg-surface shadow flex flex-col justify-between sticky top-0 p-6">

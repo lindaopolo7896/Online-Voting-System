@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 function VerificationCountdown() {
-  const [time, setTime] = useState(5 * 60);
+  const [time, setTime] = useState(10 * 60);
 
   useEffect(() => {
     const timer = setInterval(() => {
