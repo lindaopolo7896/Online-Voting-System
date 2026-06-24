@@ -14,11 +14,14 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import VoterDashboard from "../pages/Voter/VoterDashboard";
 import ResultsPage from "../pages/Voter/ResultsPage";
 import ResultPage from "../pages/Voter/ResultPage";
-import InstitutionDashboardPage from "../pages/institution/InstitutionDashboardPage";
-import InstitutionElectionsPage from "../pages/institution/InstitutionElectionsPage";
-import InstitutionCandidatesPage from "../pages/institution/InstitutionCandidatesPage";
-import InstitutionVotersPage from "../pages/institution/InstitutionVotersPage";
-import CreateElectionPage from "../pages/institution/CreateElectionPage";
+import OrganisationDashboardPage from "../pages/organisation/OrganisationDashboardPage";
+import OrganisationElectionsPage from "../pages/organisation/OrganisationElectionsPage";
+import OrganisationCandidatesPage from "../pages/organisation/OrganisationCandidatesPage";
+import OrganisationVotersPage from "../pages/organisation/OrganisationVotersPage";
+import OrganisationPermissionsPage from "../pages/organisation/OrganisationPermissionsPage";
+import OrganisationResultsPage from "../pages/organisation/OrganisationResultsPage";
+import OrganisationSettingsPage from "../pages/organisation/OrganisationSettingsPage";
+import CreateElectionPage from "../pages/organisation/CreateElectionPage";
 import ComingSoon from "../pages/ComingSoon";
 
 function AppRoutes() {
@@ -49,24 +52,15 @@ function AppRoutes() {
         <Route path="/voter/results" element={<ResultsPage />} />
         <Route path="/voter/results/:id" element={<ResultPage />} />
 
-        {/* Institution */}
-        <Route
-          path="/institution/dashboard"
-          element={<InstitutionDashboardPage />}
-        />
-        <Route
-          path="/institution/elections"
-          element={<InstitutionElectionsPage />}
-        />
-        <Route
-          path="/institution/elections/create"
-          element={<CreateElectionPage />}
-        />
-        <Route
-          path="/institution/candidates"
-          element={<InstitutionCandidatesPage />}
-        />
-        <Route path="/institution/voters" element={<InstitutionVotersPage />} />
+        {/* Organisation */}
+        <Route path="/organisation/dashboard" element={<OrganisationDashboardPage />} />
+        <Route path="/organisation/elections" element={<OrganisationElectionsPage />} />
+        <Route path="/organisation/elections/create" element={<CreateElectionPage />} />
+        <Route path="/organisation/candidates" element={<OrganisationCandidatesPage />} />
+        <Route path="/organisation/voters" element={<OrganisationVotersPage />} />
+        <Route path="/organisation/permissions" element={<OrganisationPermissionsPage />} />
+        <Route path="/organisation/results" element={<OrganisationResultsPage />} />
+        <Route path="/organisation/settings" element={<OrganisationSettingsPage />} />
       </Route>
     </Routes>
   );

@@ -56,11 +56,6 @@ function ElectionSummary({ formData }) {
             <p className="mt-1 text-sm">{formData.endDate || "-"}</p>
           </div>
 
-          <div>
-            <p className="text-xs uppercase text-slate-500">Timezone</p>
-
-            <p className="mt-1 text-sm">{formData.timezone || "-"}</p>
-          </div>
         </div>
       )}
     </Card>

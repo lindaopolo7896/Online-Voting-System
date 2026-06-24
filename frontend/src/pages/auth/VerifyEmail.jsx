@@ -10,6 +10,7 @@ import Button from "../../components/ui/Button";
 import { requestOtp, verifyOtp } from "../../api/authApi";
 import VerificationCountdown from "../../helpers/VerificationCountdown";
 import maskEmail from "../../helpers/maskEmail";
+import useAuth from "../../hooks/useAuth";
 
 const OTP_LENGTH = 6;
 
@@ -17,6 +18,7 @@ function VerifyEmail() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const email = state?.email;
+  const { login } = useAuth();
 
   // Redirect back to sign-in if arrived without an email
   useEffect(() => {
@@ -64,16 +66,25 @@ function VerifyEmail() {
   const verifyMutation = useMutation({
     mutationFn: ({ email, otp }) => verifyOtp({ email, otp }),
     onSuccess: (data) => {
-      // Store tokens
-      const access = data?.tokens?.access ?? data?.access ?? "";
-      const refresh = data?.tokens?.refresh ?? data?.refresh ?? "";
+      const access = data?.access ?? "";
+      const refresh = data?.refresh ?? "";
       if (access) localStorage.setItem("access_token", access);
       if (refresh) localStorage.setItem("refresh_token", refresh);
 
-      // Role-based redirect
-      const role = data?.user?.role ?? data?.role ?? "";
-      if (role === "ADMIN") {
-        navigate("/institution/dashboard", { replace: true });
+      const role = data?.membership?.role ?? "";
+      const firstName = data?.user?.first_name ?? "";
+      const lastName = data?.user?.last_name ?? "";
+      login({
+        id: data?.user?.id,
+        name: `${firstName} ${lastName}`.trim() || data?.user?.email,
+        email: data?.user?.email,
+        role,
+        membershipId: data?.membership?.id,
+        organisationId: data?.membership?.organisation_id,
+      });
+
+      if (role === "admin") {
+        navigate("/organisation/dashboard", { replace: true });
       } else {
         navigate("/voter/dashboard", { replace: true });
       }

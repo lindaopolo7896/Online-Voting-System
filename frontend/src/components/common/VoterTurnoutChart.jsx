@@ -93,7 +93,7 @@ function VoterTurnoutChart({ data = turnoutData }) {
         </h2>
 
         <Link
-          to="/institution/reports"
+          to="/organisation/reports"
           className="text-primary font-medium hover:underline"
         >
           View Reports →
