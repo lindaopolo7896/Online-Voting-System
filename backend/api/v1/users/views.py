@@ -353,7 +353,7 @@ class ElectionViewset(ModelViewSet):
         return Response(turnout_data, status=status.HTTP_200_OK)
 
     #we get the positions of an election
-    @action(detail=True, methods=['get'], url_path='positions')
+    @action(detail=True, methods=['get'], url_path='election-positions')
     def positions(self, request, pk=None):
         election = self.get_object()
         positions = election.positions.all()
@@ -361,7 +361,7 @@ class ElectionViewset(ModelViewSet):
         return Response(serializer.data)
     
     #get all the participants of an election
-    @action(detail=True, methods=['get'], url_path='participants')
+    @action(detail=True, methods=['get'], url_path='election-participants')
     def participants(self, request, pk=None):
         election = self.get_object()
         participants = election.participants.all()
@@ -369,7 +369,7 @@ class ElectionViewset(ModelViewSet):
         return Response(serializer.data)
     
     #gets all the candidates of an election
-    @action(detail=True, methods=['get'], url_path='candidates')
+    @action(detail=True, methods=['get'], url_path='election-candidates')
     def candidates(self, request, pk=None):
         election = self.get_object()
         candidates = election.candidates.all()
