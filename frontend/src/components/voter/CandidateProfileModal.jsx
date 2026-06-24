@@ -20,11 +20,19 @@ function CandidateProfileModal({ candidate, onClose, onSelect }) {
         <div className="grid lg:grid-cols-2 gap-8 p-8">
           {/* Left */}
           <div className="flex flex-col items-center gap-5">
-            <img
-              src={candidate.image}
-              alt={candidate.name}
-              className="w-full max-w-md h-[320px] object-cover rounded-2xl"
-            />
+            {candidate.image ? (
+              <img
+                src={candidate.image}
+                alt={candidate.name}
+                className="w-full max-w-md h-[320px] object-cover rounded-2xl"
+              />
+            ) : (
+              <div className="w-full max-w-md h-[320px] rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <span className="text-primary text-9xl font-bold">
+                  {candidate.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
 
             <div className="text-center">
               <h1 className="text-3xl font-bold text-primary">

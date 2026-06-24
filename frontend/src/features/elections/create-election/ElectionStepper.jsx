@@ -13,13 +13,13 @@ const steps = [
   },
   {
     id: 3,
-    title: "Candidates",
-    subtitle: "Add candidates",
+    title: "Participants",
+    subtitle: "Upload participants",
   },
   {
     id: 4,
-    title: "Voters",
-    subtitle: "Upload voter list",
+    title: "Candidates",
+    subtitle: "Assign candidates",
   },
   {
     id: 5,

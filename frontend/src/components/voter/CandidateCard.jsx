@@ -26,11 +26,19 @@ function CandidateCard({
       )}
 
       <div className="relative">
-        <img
-          src={candidate.image}
-          alt={candidate.name}
-          className="w-full h-60   object-cover rounded-xl"
-        />
+        {candidate.image ? (
+          <img
+            src={candidate.image}
+            alt={candidate.name}
+            className="w-full h-60 object-cover rounded-xl"
+          />
+        ) : (
+          <div className="w-full h-60 rounded-xl bg-[#144DEF]/10 border border-[#144DEF]/20 flex items-center justify-center">
+            <span className="text-[#144DEF] text-7xl font-bold">
+              {candidate.name.charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
 
         <button
           onClick={onViewInfo}

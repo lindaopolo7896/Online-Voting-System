@@ -65,6 +65,7 @@ function NotificationsStep({
   onBack,
   onSubmit,
   isSubmitting,
+  submitLabel = "Create Election",
 }) {
   function toggle(key) {
     setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -138,7 +139,7 @@ function NotificationsStep({
           disabled={isSubmitting}
           className="rounded-lg bg-primary px-6 py-2 text-white text-sm hover:bg-primary/90 transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? "Creating Election..." : "Create Election"}
+          {isSubmitting ? "Creating Election..." : submitLabel}
         </button>
       </div>
     </Card>

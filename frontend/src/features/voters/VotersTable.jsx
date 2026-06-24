@@ -1,176 +1,157 @@
-import { useState } from "react";
-import {
-  getCoreRowModel,
-  getFilteredRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-
+import { useState, useMemo } from "react";
+import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Pencil, MoreVertical } from "lucide-react";
-
 import DataTable from "../../components/ui/DataTable";
 import VoterFilters from "./VoterFilters";
 
+function voterName(p) {
+  const u = p.membership?.user ?? p.user ?? {};
+  return (
+    `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim() ||
+    u.email ||
+    `Voter #${p.id}`
+  );
+}
+
+function voterEmail(p) {
+  return p.membership?.user?.email ?? p.user?.email ?? "—";
+}
+
+const ROLE_BADGE = {
+  admin: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+  official: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+  candidate: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+  participant: "bg-green-500/10 text-green-600 border-green-500/20",
+};
+
 const columns = [
   {
-    accessorKey: "name",
+    id: "name",
     header: "VOTER",
-    cell: ({ row }) => (
-      <div className="flex items-center gap-3">
-        <img
-          src={row.original.avatar}
-          alt={row.original.name}
-          className="h-12 w-12 rounded-full object-cover"
-        />
-
-        <span className="font-medium">{row.original.name}</span>
-      </div>
-    ),
-  },
-
-  {
-    accessorKey: "email",
-    header: "EMAIL",
-  },
-
-  {
-    accessorKey: "phone",
-    header: "PHONE",
-  },
-
-  {
-    accessorKey: "election",
-    header: "ELECTION",
-    filterFn: "equals",
-  },
-
-  {
-    accessorKey: "status",
-    header: "STATUS",
+    accessorFn: (row) => voterName(row),
     cell: ({ row }) => {
-      const styles = {
-        active: "bg-green-50 border-green-500 text-green-600",
-        inactive: "bg-red-50 border-red-500 text-red-600",
-      };
-
+      const name = voterName(row.original);
+      const email = voterEmail(row.original);
+      return (
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+            {name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <p className="font-medium text-text">{name}</p>
+            <p className="text-xs text-muted">{email}</p>
+          </div>
+        </div>
+      );
+    },
+  },
+  {
+    id: "role",
+    header: "ROLE",
+    accessorFn: (row) => row.role ?? "participant",
+    cell: ({ row }) => {
+      const role = row.original.role ?? "participant";
       return (
         <span
-          className={`inline-flex min-w-[90px] justify-center rounded-md border px-3 py-1 text-xs font-semibold uppercase ${styles[row.original.status]}`}
+          className={`inline-flex rounded border px-2 py-0.5 text-xs font-semibold capitalize ${
+            ROLE_BADGE[role] ?? "bg-slate-50 border-slate-300 text-slate-600"
+          }`}
         >
-          {row.original.status}
+          {role}
         </span>
       );
     },
   },
-
   {
-    accessorKey: "linkStatus",
-    header: "LINK STATUS",
-    cell: ({ row }) => {
-      const styles = {
-        sent: "bg-green-50 border-green-500 text-green-600",
-        voted: "bg-blue-50 border-blue-500 text-blue-600",
-        not_sent: "bg-red-50 border-red-500 text-red-600",
-      };
-
-      return (
-        <span
-          className={`inline-flex min-w-[90px] justify-center rounded-md border px-3 py-1 text-xs font-semibold uppercase ${styles[row.original.linkStatus]}`}
-        >
-          {row.original.linkStatus.replace("_", " ")}
+    id: "voted",
+    header: "VOTED",
+    accessorFn: (row) => row.has_voted,
+    cell: ({ row }) =>
+      row.original.has_voted ? (
+        <span className="inline-flex rounded border border-green-500 bg-green-50 px-3 py-1 text-xs font-semibold uppercase text-green-600">
+          Yes
         </span>
-      );
-    },
+      ) : (
+        <span className="inline-flex rounded border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase text-slate-500">
+          No
+        </span>
+      ),
   },
-
+  {
+    id: "link",
+    header: "VOTING LINK",
+    cell: ({ row }) =>
+      row.original.voting_link ? (
+        <span className="inline-flex rounded border border-blue-500 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase text-blue-600">
+          Sent
+        </span>
+      ) : (
+        <span className="inline-flex rounded border border-orange-400 bg-orange-50 px-3 py-1 text-xs font-semibold uppercase text-orange-500">
+          Not Sent
+        </span>
+      ),
+  },
   {
     id: "actions",
     header: "ACTIONS",
     cell: () => (
       <div className="flex items-center gap-2">
         <button className="flex h-8 w-8 items-center justify-center rounded border border-slate-200 hover:bg-slate-50">
-          <Pencil size={16} />
+          <Pencil size={15} />
         </button>
-
         <button className="flex h-8 w-8 items-center justify-center rounded border border-slate-200 hover:bg-slate-50">
-          <MoreVertical size={16} />
+          <MoreVertical size={15} />
         </button>
       </div>
     ),
   },
 ];
 
-const data = [
-  {
-    id: 1,
-    avatar: "https://i.pravatar.cc/150?img=1",
-    name: "Elijah Kitaka",
-    email: "elijahkitaka@gmail.com",
-    phone: "0712345678",
-    election: "2026 Student Council Elections",
-    status: "active",
-    linkStatus: "sent",
-  },
-
-  {
-    id: 2,
-    avatar: "https://i.pravatar.cc/150?img=2",
-    name: "Sarah Njeri",
-    email: "sarah@gmail.com",
-    phone: "0711111111",
-    election: "2026 Student Council Elections",
-    status: "active",
-    linkStatus: "voted",
-  },
-
-  {
-    id: 3,
-    avatar: "https://i.pravatar.cc/150?img=3",
-    name: "John Mwangi",
-    email: "john@gmail.com",
-    phone: "0722222222",
-    election: "2026 Student Council Elections",
-    status: "active",
-    linkStatus: "not_sent",
-  },
-
-  {
-    id: 4,
-    avatar: "https://i.pravatar.cc/150?img=4",
-    name: "Grace Wanjiru",
-    email: "grace@gmail.com",
-    phone: "0733333333",
-    election: "2026 Student Council Elections",
-    status: "active",
-    linkStatus: "sent",
-  },
-];
-
-function VotersTable() {
-  const [columnFilters, setColumnFilters] = useState([]);
+function VotersTable({
+  participants = [],
+  elections = [],
+  selectedElectionId,
+  onElectionChange,
+  isLoading,
+}) {
   const [search, setSearch] = useState("");
 
-  const filteredData = data.filter(
-    (voter) =>
-      voter.name.toLowerCase().includes(search.toLowerCase()) ||
-      voter.email.toLowerCase().includes(search.toLowerCase()),
+  const filteredData = useMemo(
+    () =>
+      search
+        ? participants.filter((p) => {
+            const name = voterName(p).toLowerCase();
+            const email = voterEmail(p).toLowerCase();
+            const q = search.toLowerCase();
+            return name.includes(q) || email.includes(q);
+          })
+        : participants,
+    [participants, search],
   );
 
   const table = useReactTable({
     data: filteredData,
     columns,
-    state: {
-      columnFilters,
-    },
-    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
   });
 
   return (
     <div className="space-y-4">
-      <VoterFilters table={table} search={search} setSearch={setSearch} />
+      <VoterFilters
+        search={search}
+        setSearch={setSearch}
+        elections={elections}
+        selectedElectionId={selectedElectionId}
+        onElectionChange={onElectionChange}
+      />
 
-      <DataTable table={table} />
+      {isLoading ? (
+        <p className="py-10 text-center text-sm text-muted">
+          Loading voters…
+        </p>
+      ) : (
+        <DataTable table={table} />
+      )}
     </div>
   );
 }

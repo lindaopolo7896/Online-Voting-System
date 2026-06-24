@@ -4,10 +4,10 @@ import Card from "../../ui/Card";
 function VotingProcess({ election }) {
   // TURNOUT %
 
-  const turnoutRate = (
-    (election.votesCast / election.totalVoters) *
-    100
-  ).toFixed(0);
+  const turnoutRate =
+    election.totalVoters > 0
+      ? ((election.votesCast / election.totalVoters) * 100).toFixed(0)
+      : "0";
 
   // GET LEADING CANDIDATES
 
@@ -152,62 +152,40 @@ function VotingProcess({ election }) {
 
       {leader && (
         <div
-          className="
-          relative
-          overflow-hidden
-          rounded-2xl
-          border border-white/10
-          bg-cover
-          bg-center
-          min-h-[320px]
-          transition-all
-          duration-700
-          "
-          style={{
-            backgroundImage: `url(${leader.image})`,
-          }}
+          className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#050B14] bg-cover bg-center min-h-[280px] transition-all duration-700"
+          style={leader.image ? { backgroundImage: `url(${leader.image})` } : {}}
         >
-          <div className="absolute inset-0 bg-[#050B14]/82 backdrop-blur-[2px]"></div>
+          <div className="absolute inset-0 bg-[#050B14]/82 backdrop-blur-[2px]" />
 
           <div className="relative z-10 p-4 flex flex-col gap-5 h-full">
             <div className="flex items-center justify-between">
               <h1 className="text-white">LEADING CANDIDATE</h1>
-
-              <p
-                className="
-                text-[#144DEF]
-                text-sm
-                bg-[#144DEF]/10
-                border border-[#144DEF]/20
-                px-3 py-1
-                rounded-full
-                "
-              >
+              <p className="text-[#144DEF] text-sm bg-[#144DEF]/10 border border-[#144DEF]/20 px-3 py-1 rounded-full">
                 {leader.position}
               </p>
             </div>
 
-            <div className="flex items-center gap-4 mt-15">
-              <img
-                src={leader.image}
-                alt={leader.candidate}
-                className="
-                w-18 h-18
-                rounded-2xl
-                object-cover
-                border border-white/10
-                shadow-lg
-                "
-              />
+            <div className="flex items-center gap-4 mt-8">
+              {leader.image ? (
+                <img
+                  src={leader.image}
+                  alt={leader.candidate}
+                  className="w-16 h-16 rounded-2xl object-cover border border-white/10 shadow-lg shrink-0"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">
+                  <span className="text-primary text-xl font-bold">
+                    {leader.candidate.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
 
-              <div className="flex flex-col ">
-                <h1 className="text-white text-xl font-bold">
+              <div className="flex flex-col min-w-0">
+                <h1 className="text-white text-xl font-bold truncate">
                   {leader.candidate}
                 </h1>
-
                 <div className="flex gap-3 text-sm mt-1">
                   <p className="text-white/70">{leader.votes} votes</p>
-
                   <p className="text-[#144DEF] font-semibold">
                     {leader.percentage}%
                   </p>
@@ -218,22 +196,12 @@ function VotingProcess({ election }) {
             <div className="mt-auto flex flex-col gap-2">
               <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
                 <div
-                  className="
-                  h-full
-                  bg-[#144DEF]
-                  rounded-full
-                  transition-all
-                  duration-700
-                  "
-                  style={{
-                    width: `${leader.percentage}%`,
-                  }}
-                ></div>
+                  className="h-full bg-[#144DEF] rounded-full transition-all duration-700"
+                  style={{ width: `${leader.percentage}%` }}
+                />
               </div>
-
               <div className="flex justify-between text-xs text-white/50">
                 <p>Current Lead</p>
-
                 <p>{leader.percentage}%</p>
               </div>
             </div>
@@ -242,15 +210,10 @@ function VotingProcess({ election }) {
               {leaders.map((_, index) => (
                 <div
                   key={index}
-                  className={`
-                    h-2 rounded-full transition-all duration-300
-                    ${
-                      currentLeader === index
-                        ? "w-6 bg-[#144DEF]"
-                        : "w-2 bg-white/30"
-                    }
-                  `}
-                ></div>
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    currentLeader === index ? "w-6 bg-[#144DEF]" : "w-2 bg-white/30"
+                  }`}
+                />
               ))}
             </div>
           </div>

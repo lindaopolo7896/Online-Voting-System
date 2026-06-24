@@ -203,6 +203,9 @@ export const switchMembership = (id) =>
 export const getUsers = (params) =>
   apiClient.get("/users/", { params }).then((r) => r.data?.results ?? r.data);
 
+export const updateUser = (id, data) =>
+  apiClient.patch(`/users/${id}/`, data).then((r) => r.data);
+
 export const deactivateUser = (id) =>
   apiClient.delete(`/users/${id}/`).then((r) => r.data);
 
@@ -241,6 +244,16 @@ export const formatElectionDate = (iso) => {
     timeStyle: "short",
   });
 };
+
+// Voting
+
+export const getMyVotingLinks = () =>
+  apiClient
+    .get("/voting-links/my-links/")
+    .then((r) => r.data?.results ?? r.data);
+
+export const castVote = (data) =>
+  apiClient.post("/votes/", data).then((r) => r.data);
 
 //  Logs
 

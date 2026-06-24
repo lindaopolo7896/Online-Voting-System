@@ -1,196 +1,132 @@
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import SecureIcon from "../../assets/icons/SecureIcon.png";
-import VoteIcon from "../../assets/icons/VoteIcon.png";
-import TrackingIcon from "../../assets/icons/TrackingIcon.png";
-import ResultIcon from "../../assets/icons/ResultIcon.png";
 
-const features = [
+const steps = [
   {
-    id: 1,
-    icon: SecureIcon,
-    name: "Secure Authentication",
+    number: "01",
+    label: "Register",
+    title: "Get Added to an Election",
     description:
-      "Only authorized voters can access the system using unique links and OTP verification.",
+      "Your organisation administrator enrolls you as a participant. You receive a secure, unique voting link — no password required.",
+    icon: (
+      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+      </svg>
+    ),
   },
   {
-    id: 2,
-    icon: VoteIcon,
-    name: "One Person, One Vote",
+    number: "02",
+    label: "Authenticate",
+    title: "Verify Your Identity",
     description:
-      "Each voter can cast a single vote, enforced through secure token validation.",
+      "Click your unique link and complete OTP verification. The system confirms you are the intended voter before granting ballot access.",
+    icon: (
+      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    ),
   },
   {
-    id: 3,
-    icon: TrackingIcon,
-    name: "Real-Time Monitoring",
+    number: "03",
+    label: "Cast Vote",
+    title: "Select Your Candidates",
     description:
-      "Track voter participation and election progress as it happens across the entire election.",
+      "Browse candidates per position, read their profiles, and cast your ballot. Your vote is encrypted and submitted in seconds.",
+    icon: (
+      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+      </svg>
+    ),
   },
   {
-    id: 4,
-    icon: ResultIcon,
-    name: "Verifiable Results",
+    number: "04",
+    label: "Verify",
+    title: "Your Vote on the Blockchain",
     description:
-      "Votes are securely recorded and can be audited for transparency and accuracy.",
+      "Every submitted vote is anchored immutably on-chain. Results are verifiable, auditable, and tamper-proof — permanently.",
+    icon: (
+      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+      </svg>
+    ),
   },
 ];
 
-const SLIDE_MS = 500;
-const n = features.length;
-const cloned = [...features, ...features, ...features];
-
 const ease = [0.22, 1, 0.36, 1];
 
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } },
+};
+
+const item = {
+  hidden: { opacity: 0, y: 32 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease } },
+};
+
 function Features() {
-  const [idx, setIdx] = useState(n);
-  const [animated, setAnimated] = useState(true);
-  const [paused, setPaused] = useState(false);
-  const [cardW, setCardW] = useState(0);
-  const wrapRef = useRef(null);
-
-  const measure = useCallback(() => {
-    if (!wrapRef.current) return;
-    const w = window.innerWidth;
-    const cols = w < 640 ? 1 : w < 1024 ? 2 : 3;
-    setCardW(wrapRef.current.offsetWidth / cols);
-  }, []);
-
-  useLayoutEffect(() => { measure(); }, [measure]);
-  useEffect(() => {
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [measure]);
-
-  useEffect(() => {
-    if (idx >= n * 2) {
-      const t = setTimeout(() => {
-        setAnimated(false);
-        setIdx((i) => i - n);
-      }, SLIDE_MS);
-      return () => clearTimeout(t);
-    }
-    if (idx < n) {
-      const t = setTimeout(() => {
-        setAnimated(false);
-        setIdx((i) => i + n);
-      }, SLIDE_MS);
-      return () => clearTimeout(t);
-    }
-  }, [idx]);
-
-  useEffect(() => {
-    if (!animated) {
-      const t = setTimeout(() => setAnimated(true), 50);
-      return () => clearTimeout(t);
-    }
-  }, [animated]);
-
-  const next = () => { setAnimated(true); setIdx((i) => i + 1); };
-  const prev = () => { setAnimated(true); setIdx((i) => i - 1); };
-
-  useEffect(() => {
-    if (paused || !cardW) return;
-    const t = setInterval(next, 3500);
-    return () => clearInterval(t);
-  }, [paused, cardW]);
-
-  const dotIdx = ((idx - n) % n + n) % n;
-
   return (
-    <section id="features" className="bg-[#F0F4FF] py-16">
-      {/* Heading — scroll reveal */}
-      <motion.div
-        initial={{ opacity: 0, y: 28 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.6, ease }}
-        className="text-center mb-12 px-6"
-      >
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-          Why Choose <span className="text-[#144DEF]">Votex</span>?
-        </h2>
-        <p className="text-gray-500 mt-3 text-base md:text-lg max-w-xl mx-auto">
-          Built for organizations that demand trust, security, and simplicity in every election.
-        </p>
-      </motion.div>
-
-      {/* Carousel — CSS transitions kept intact; only the container fades in */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, amount: 0.1 }}
-        transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
-        className="relative px-6 md:px-16 lg:px-32"
-      >
-        <div
-          ref={wrapRef}
-          className="overflow-hidden mx-10"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
+    <section id="journey" className="bg-[#F0F4FF] py-20 px-6 md:px-16 lg:px-32">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.6, ease }}
+          className="mb-14"
         >
-          <div
-            className="flex"
-            style={{
-              transform: cardW ? `translateX(${-idx * cardW}px)` : "none",
-              transition: animated ? `transform ${SLIDE_MS}ms cubic-bezier(0.22, 1, 0.36, 1)` : "none",
-            }}
-          >
-            {cloned.map((f, i) => (
-              <div key={i} style={{ width: cardW, flexShrink: 0 }} className="px-3">
-                <div className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-sm h-full">
-                  <img src={f.icon} alt={f.name} className="w-16 h-16 object-contain" />
-                  <h3 className="text-[#144DEF] text-lg font-bold text-center">{f.name}</h3>
-                  <p className="text-center text-gray-500 text-sm leading-relaxed">{f.description}</p>
-                </div>
-              </div>
-            ))}
+          <div className="flex items-center gap-3 text-[#144DEF] text-xs font-bold tracking-[0.2em] uppercase mb-5">
+            <div className="h-px w-8 bg-[#144DEF]" />
+            Voter Journey
           </div>
-        </div>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 leading-snug max-w-sm">
+              From registration to{" "}
+              <span className="text-[#144DEF]">verified vote</span>
+            </h2>
+            <p className="text-gray-500 text-base max-w-sm leading-relaxed">
+              Four steps. Full transparency. Cryptographic proof at every stage of the process.
+            </p>
+          </div>
+        </motion.div>
 
-        {/* Prev arrow */}
-        <motion.button
-          onClick={prev}
-          aria-label="Previous"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.93 }}
-          transition={{ duration: 0.15 }}
-          className="absolute left-6 md:left-16 lg:left-32 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-sm text-gray-600 hover:text-[#144DEF] hover:border-[#144DEF] transition-colors"
+        {/* Step grid — gap-px creates hairline separators */}
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.15 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-gray-200 rounded-2xl overflow-hidden border border-gray-200 shadow-sm"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </motion.button>
+          {steps.map((step) => (
+            <motion.div
+              key={step.number}
+              variants={item}
+              className="bg-white p-8 flex flex-col gap-5 group hover:bg-[#F0F4FF] transition-colors duration-300 cursor-default"
+            >
+              {/* Icon + step number */}
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-xl bg-[#144DEF]/10 border border-[#144DEF]/15 flex items-center justify-center text-[#144DEF]">
+                  {step.icon}
+                </div>
+                <span className="text-5xl font-extrabold text-gray-100 group-hover:text-[#144DEF]/12 transition-colors duration-300 select-none">
+                  {step.number}
+                </span>
+              </div>
 
-        {/* Next arrow */}
-        <motion.button
-          onClick={next}
-          aria-label="Next"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.93 }}
-          transition={{ duration: 0.15 }}
-          className="absolute right-6 md:right-16 lg:right-32 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-sm text-gray-600 hover:text-[#144DEF] hover:border-[#144DEF] transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </motion.button>
-      </motion.div>
+              {/* Label pill */}
+              <span className="inline-flex w-fit text-[#144DEF] text-xs font-bold tracking-widest uppercase bg-[#144DEF]/10 px-3 py-1 rounded-full">
+                {step.label}
+              </span>
 
-      {/* Dot indicators */}
-      <div className="flex justify-center gap-2 mt-8">
-        {features.map((_, i) => (
-          <motion.button
-            key={i}
-            onClick={() => { setAnimated(true); setIdx(n + i); }}
-            aria-label={`Go to slide ${i + 1}`}
-            whileHover={{ scale: 1.3 }}
-            transition={{ duration: 0.15 }}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              i === dotIdx ? "bg-[#144DEF] w-6" : "bg-gray-300 w-2"
-            }`}
-          />
-        ))}
+              {/* Text */}
+              <div className="flex flex-col gap-2">
+                <h3 className="text-gray-900 font-bold text-lg leading-snug">{step.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{step.description}</p>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );

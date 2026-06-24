@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import useDashboard from "../../hooks/useDashboard";
 import useAuth from "../../hooks/useAuth";
+import { updateUser } from "../../api/organisationApi";
+import { changePassword } from "../../api/authApi";
 import Card from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
 import PasswordInput from "../../components/ui/PasswordInput";
@@ -41,25 +43,57 @@ function OrganisationSettingsPage() {
 
   const passwordForm = useForm({ mode: "onChange" });
 
-  function handleProfileSave(data) {
-    setSavingProfile(true);
-    // Will connect to backend later
-    setTimeout(() => {
-      login({ ...user, firstName: data.firstName, lastName: data.lastName });
-      toast.success("Profile updated.");
-      setEditingProfile(false);
-      setSavingProfile(false);
-    }, 600);
-  }
-
-  function handlePasswordSave(data) {
-    if (data.newPassword !== data.confirmPassword) {
-      passwordForm.setError("confirmPassword", { message: "Passwords do not match." });
+  async function handleProfileSave(data) {
+    if (!user?.id) {
+      toast.error("User ID not found. Please sign in again.");
       return;
     }
-    // Will connect to backend later
-    toast.success("Password changed successfully.");
-    passwordForm.reset();
+    setSavingProfile(true);
+    try {
+      const updated = await updateUser(user.id, {
+        first_name: data.firstName,
+        last_name: data.lastName,
+      });
+      login({
+        ...user,
+        firstName: updated.first_name ?? data.firstName,
+        lastName: updated.last_name ?? data.lastName,
+      });
+      toast.success("Profile updated.");
+      setEditingProfile(false);
+    } catch (err) {
+      const msg =
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        "Failed to update profile.";
+      toast.error(msg);
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
+  async function handlePasswordSave(data) {
+    if (data.newPassword !== data.confirmPassword) {
+      passwordForm.setError("confirmPassword", {
+        message: "Passwords do not match.",
+      });
+      return;
+    }
+    try {
+      await changePassword({
+        old_password: data.currentPassword,
+        new_password: data.newPassword,
+      });
+      toast.success("Password changed successfully.");
+      passwordForm.reset();
+    } catch (err) {
+      const msg =
+        err?.response?.data?.detail ||
+        err?.response?.data?.old_password?.[0] ||
+        err?.response?.data?.message ||
+        "Failed to change password.";
+      toast.error(msg);
+    }
   }
 
   return (
@@ -106,10 +140,16 @@ function OrganisationSettingsPage() {
               placeholder="Email"
             />
             <div className="flex gap-3">
-              <Button name={savingProfile ? "Saving..." : "Save Changes"} disabled={savingProfile} />
+              <Button
+                name={savingProfile ? "Saving..." : "Save Changes"}
+                disabled={savingProfile}
+              />
               <button
                 type="button"
-                onClick={() => { setEditingProfile(false); profileForm.reset(); }}
+                onClick={() => {
+                  setEditingProfile(false);
+                  profileForm.reset();
+                }}
                 className="px-4 py-2 rounded-lg border border-border text-text text-sm hover:bg-background transition"
               >
                 Cancel
@@ -171,7 +211,11 @@ function OrganisationSettingsPage() {
           />
           <div>
             <Button
-              name={passwordForm.formState.isSubmitting ? "Saving..." : "Change Password"}
+              name={
+                passwordForm.formState.isSubmitting
+                  ? "Saving..."
+                  : "Change Password"
+              }
               disabled={passwordForm.formState.isSubmitting}
             />
           </div>
@@ -188,7 +232,9 @@ function OrganisationSettingsPage() {
             </p>
           </div>
           <button
-            onClick={() => toast.error("Account deletion is not yet available.")}
+            onClick={() =>
+              toast.error("Account deletion is not yet available.")
+            }
             className="shrink-0 px-4 py-2 rounded-lg border border-error text-error text-sm hover:bg-error/10 transition"
           >
             Delete Account

@@ -1,173 +1,168 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { UserCheck, ChevronRight } from "lucide-react";
 import Card from "../../../components/ui/Card";
+import {
+  getParticipants,
+  getPositions,
+  convertToCandidate,
+} from "../../../api/organisationApi";
 
-function CandidatesStep({
-  positions,
-  candidates,
-  setCandidates,
-  onBack,
-  onNext,
-}) {
-  const [mode, setMode] = useState("manual");
+function CandidatesStep({ electionId, onNext }) {
+  const [assignments, setAssignments] = useState({});
+  const [assigning, setAssigning] = useState({});
+  const [assigned, setAssigned] = useState({});
 
-  const addCandidate = (position) => {
-    setCandidates((prev) => ({
-      ...prev,
-      [position]: [...(prev[position] || []), ""],
-    }));
-  };
+  const { data: participants = [], isLoading: loadingP } = useQuery({
+    queryKey: ["participants", electionId],
+    queryFn: () => getParticipants(electionId),
+    enabled: !!electionId,
+  });
 
-  const updateCandidate = (position, index, value) => {
-    setCandidates((prev) => {
-      const updated = [...(prev[position] || [])];
-      updated[index] = value;
+  const { data: positions = [], isLoading: loadingPos } = useQuery({
+    queryKey: ["positions", electionId],
+    queryFn: () => getPositions(electionId),
+    enabled: !!electionId,
+  });
 
-      return {
-        ...prev,
-        [position]: updated,
-      };
-    });
-  };
+  const candidateParticipants = useMemo(
+    () => participants.filter((p) => p.role === "candidate"),
+    [participants],
+  );
 
-  const removeCandidate = (position, index) => {
-    setCandidates((prev) => ({
-      ...prev,
-      [position]: prev[position].filter((_, i) => i !== index),
-    }));
-  };
+  async function handleAssign(participantId) {
+    const positionId = assignments[participantId];
+    if (!positionId) {
+      toast.error("Select a position first.");
+      return;
+    }
+    setAssigning((prev) => ({ ...prev, [participantId]: true }));
+    try {
+      await convertToCandidate(electionId, participantId, {
+        position_id: parseInt(positionId, 10),
+      });
+      setAssigned((prev) => ({ ...prev, [participantId]: true }));
+      toast.success("Candidate registered for position.");
+    } catch (err) {
+      const msg =
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        "Failed to register candidate.";
+      toast.error(msg);
+    } finally {
+      setAssigning((prev) => ({ ...prev, [participantId]: false }));
+    }
+  }
+
+  const isLoading = loadingP || loadingPos;
+  const assignedCount = Object.values(assigned).filter(Boolean).length;
 
   return (
     <Card className="p-6 border-white/10 rounded-xl">
-      {/* Header */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold">Candidates</h2>
-
-        <p className="text-sm text-slate-500">
-          Add candidates for each position
+        <h2 className="text-lg font-semibold text-text">Register Candidates</h2>
+        <p className="mt-1 text-sm text-muted">
+          Assign uploaded candidates to their respective positions. You can also
+          do this later from the Candidates page.
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="mb-6 flex items-center gap-6 border-b border-slate-200">
-        <button
-          onClick={() => setMode("manual")}
-          className={`pb-3 text-sm font-medium ${
-            mode === "manual"
-              ? "border-b-2 border-primary text-primary"
-              : "text-slate-500"
-          }`}
-        >
-          Add Manually
-        </button>
+      {isLoading ? (
+        <p className="py-10 text-center text-sm text-muted">
+          Loading participants…
+        </p>
+      ) : candidateParticipants.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border p-10 text-center">
+          <UserCheck size={32} className="mx-auto mb-3 text-muted" />
+          <p className="font-medium text-text">No candidate participants found</p>
+          <p className="mt-1 text-sm text-muted">
+            Upload participants with{" "}
+            <span className="font-mono text-primary">role=candidate</span> in
+            the CSV to register them here, or skip and assign from the
+            Candidates page after creation.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {candidateParticipants.map((p) => {
+            const name =
+              `${p.user?.first_name ?? ""} ${p.user?.last_name ?? ""}`.trim() ||
+              p.user?.email ||
+              `Participant #${p.id}`;
+            const isAssigned = !!assigned[p.id];
+            const isBusy = !!assigning[p.id];
 
-        <button
-          onClick={() => setMode("upload")}
-          className={`pb-3 text-sm font-medium ${
-            mode === "upload"
-              ? "border-b-2 border-primary text-primary"
-              : "text-slate-500"
-          }`}
-        >
-          Upload Candidates
-        </button>
-      </div>
+            return (
+              <div
+                key={p.id}
+                className={`flex flex-wrap items-center gap-4 rounded-xl border p-4 transition-colors ${
+                  isAssigned
+                    ? "border-green-400/30 bg-green-500/5"
+                    : "border-border"
+                }`}
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                  {name.charAt(0).toUpperCase()}
+                </div>
 
-      {/* Content */}
-      <div className="rounded-lg border border-slate-200 p-5">
-        {mode === "manual" ? (
-          <div className="space-y-8">
-            {positions.map((position) => (
-              <div key={position}>
-                <div className="mb-3 flex items-center gap-2">
-                  <h3 className="font-semibold">{position}</h3>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-text">
+                    {name}
+                  </p>
+                  <p className="truncate text-xs text-muted">{p.user?.email}</p>
+                </div>
 
-                  <span className="rounded bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                    Required
+                {isAssigned ? (
+                  <span className="shrink-0 rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-600">
+                    Assigned
                   </span>
-                </div>
+                ) : (
+                  <div className="flex shrink-0 items-center gap-2">
+                    <select
+                      value={assignments[p.id] ?? ""}
+                      onChange={(e) =>
+                        setAssignments((prev) => ({
+                          ...prev,
+                          [p.id]: e.target.value,
+                        }))
+                      }
+                      className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text focus:outline-none focus:border-primary"
+                    >
+                      <option value="">Select position</option>
+                      {positions.map((pos) => (
+                        <option key={pos.id} value={pos.id}>
+                          {pos.name}
+                        </option>
+                      ))}
+                    </select>
 
-                <div className="space-y-3">
-                  {(candidates[position] || []).map((candidate, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <input
-                        type="text"
-                        value={candidate}
-                        onChange={(e) =>
-                          updateCandidate(position, index, e.target.value)
-                        }
-                        placeholder="Candidate name"
-                        className="flex-1 rounded-lg border border-slate-200 px-4 py-3 outline-none focus:border-primary"
-                      />
-
-                      <button
-                        onClick={() => removeCandidate(position, index)}
-                        className="rounded-lg border border-red-200 px-4 py-3 text-red-500 hover:bg-red-50"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-
-                  <button
-                    onClick={() => addCandidate(position)}
-                    className="rounded-lg border border-dashed border-primary px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5"
-                  >
-                    + Add Candidate
-                  </button>
-                </div>
+                    <button
+                      onClick={() => handleAssign(p.id)}
+                      disabled={isBusy || !assignments[p.id]}
+                      className="rounded-lg bg-primary px-4 py-2 text-sm text-white hover:bg-primary/90 transition disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isBusy ? "…" : "Assign"}
+                    </button>
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="rounded-xl border-2 border-dashed border-slate-300 p-10 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                📄
-              </div>
+            );
+          })}
+        </div>
+      )}
 
-              <h3 className="font-semibold">Upload Candidate List</h3>
-
-              <p className="mt-2 text-sm text-slate-500">
-                Upload a CSV file containing candidate information.
-              </p>
-
-              <button className="mt-5 rounded-lg bg-primary px-5 py-2 text-white">
-                Choose File
-              </button>
-
-              <p className="mt-3 text-xs text-slate-500">
-                Supported format: CSV
-              </p>
-            </div>
-
-            <div className="rounded-lg bg-slate-50 p-4">
-              <h4 className="mb-2 font-medium">Required CSV Columns</h4>
-
-              <ul className="space-y-1 text-sm text-slate-600">
-                <li>• Full Name</li>
-                <li>• Email Address</li>
-                <li>• Phone Number</li>
-                <li>• Position</li>
-              </ul>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
       <div className="mt-8 flex items-center justify-between">
-        <button
-          onClick={onBack}
-          className="rounded-lg border border-slate-200 px-6 py-2"
-        >
-          Back
-        </button>
+        <p className="text-xs text-muted">
+          {assignedCount} of {candidateParticipants.length} candidate
+          {candidateParticipants.length !== 1 ? "s" : ""} assigned
+        </p>
 
         <button
           onClick={onNext}
-          className="rounded-lg bg-primary px-6 py-2 text-white"
+          className="flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm text-white hover:bg-primary/90 transition"
         >
-          Save & Continue
+          Continue <ChevronRight size={16} />
         </button>
       </div>
     </Card>

@@ -154,16 +154,20 @@ function ResultsTable({
               {/* CANDIDATE */}
 
               <div className="flex items-center gap-4">
-                <img
-                  src={candidate.image}
-                  alt={candidate.candidate}
-                  className="
-                  w-12 h-12
-                  rounded-full
-                  object-cover
-                  border border-white/10
-                  "
-                />
+                {candidate.image ? (
+                  <img
+                    src={candidate.image}
+                    alt={candidate.candidate}
+                    className="w-12 h-12 rounded-full object-cover border border-white/10 shrink-0"
+                  />
+                ) : (
+                  <div
+                    className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center shrink-0 text-white font-bold text-lg"
+                    style={{ backgroundColor: accentColor + "33" }}
+                  >
+                    {candidate.candidate.charAt(0).toUpperCase()}
+                  </div>
+                )}
 
                 <div className="flex flex-col gap-2 w-full">
                   <p className="text-text font-semibold">
