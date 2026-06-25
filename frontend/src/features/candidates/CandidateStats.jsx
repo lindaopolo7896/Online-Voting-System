@@ -4,18 +4,18 @@ import Card from "../../components/ui/Card";
 function CandidateStats({ candidates = [] }) {
   const stats = useMemo(() => {
     const total = candidates.length;
-    const approved = candidates.filter((c) => c.status === "approved").length;
-    const pending = candidates.filter((c) => c.status === "pending").length;
-    const rejected = candidates.filter((c) => c.status === "rejected").length;
+    const active = candidates.filter((c) => c.status === "active").length;
+    const withdrawn = candidates.filter((c) => c.status === "withdrawn").length;
+    const disqualified = candidates.filter((c) => c.status === "disqualified").length;
 
     const pct = (n) =>
       total > 0 ? `${Math.round((n / total) * 100)}% of total` : "No candidates yet";
 
     return [
       { title: "Total Candidates", value: total, subtitle: "Across all positions" },
-      { title: "Approved", value: approved, subtitle: pct(approved) },
-      { title: "Pending Review", value: pending, subtitle: pct(pending) },
-      { title: "Rejected", value: rejected, subtitle: pct(rejected) },
+      { title: "Active", value: active, subtitle: pct(active) },
+      { title: "Withdrawn", value: withdrawn, subtitle: pct(withdrawn) },
+      { title: "Disqualified", value: disqualified, subtitle: pct(disqualified) },
     ];
   }, [candidates]);
 

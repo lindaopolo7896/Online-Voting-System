@@ -98,7 +98,9 @@ function memberName(m) {
   const u = m.user ?? {};
   const first = u.first_name ?? "";
   const last = u.last_name ?? "";
-  return first || last ? `${first} ${last}`.trim() : u.email ?? `Member #${m.id}`;
+  return first || last
+    ? `${first} ${last}`.trim()
+    : (u.email ?? `Member #${m.id}`);
 }
 
 function OrganisationPermissionsPage() {
@@ -129,8 +131,6 @@ function OrganisationPermissionsPage() {
     queryKey: ["member-permissions", selectedMemberId],
     queryFn: () => getMembershipPermissions(selectedMemberId),
     enabled: !!selectedMemberId,
-    // Prevent background refetch while the user is editing checkboxes.
-    // We manually invalidate after a successful save.
     staleTime: Infinity,
   });
 
@@ -148,7 +148,9 @@ function OrganisationPermissionsPage() {
 
     initializedForRef.current = selectedMemberId;
     setPendingSet(
-      new Set(permissionRecords.map((p) => p.codename ?? p.permission_codename ?? "")),
+      new Set(
+        permissionRecords.map((p) => p.codename ?? p.permission_codename ?? ""),
+      ),
     );
     setDirty(false);
   }, [selectedMemberId, permissionRecords, permsLoading]);
@@ -163,7 +165,9 @@ function OrganisationPermissionsPage() {
   }
 
   function getCodenames(records) {
-    return new Set(records.map((p) => p.codename ?? p.permission_codename ?? ""));
+    return new Set(
+      records.map((p) => p.codename ?? p.permission_codename ?? ""),
+    );
   }
 
   function cancel() {

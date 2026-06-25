@@ -6,6 +6,7 @@ import ElectionsTable from "../../features/elections/ElectionsTable";
 import {
   getElections,
   getElectionParticipants,
+  getElectionCandidates,
 } from "../../api/organisationApi";
 
 function OrganisationElectionsPage() {
@@ -31,16 +32,20 @@ function OrganisationElectionsPage() {
     })),
   });
 
+  const candidateQueries = useQueries({
+    queries: elections.map((e) => ({
+      queryKey: ["candidates", e.id],
+      queryFn: () => getElectionCandidates(e.id),
+    })),
+  });
+
   return (
     <div className="p-4 sm:p-6 flex flex-col gap-5">
-      <ElectionStats
-        elections={elections}
-        participantQueries={participantQueries}
-        isLoading={isLoading}
-      />
+      <ElectionStats elections={elections} isLoading={isLoading} />
       <ElectionsTable
         elections={elections}
         participantQueries={participantQueries}
+        candidateQueries={candidateQueries}
         isLoading={isLoading}
         isError={isError}
       />

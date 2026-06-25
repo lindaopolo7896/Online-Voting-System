@@ -9,6 +9,7 @@ import { MdDarkMode } from "react-icons/md";
 import { MdLightMode } from "react-icons/md";
 import { MdComputer } from "react-icons/md";
 import { FaCheck } from "react-icons/fa";
+import OrgSwitcher from "./OrgSwitcher";
 
 function TopBar({ onMenuClick }) {
   const [open, setOpen] = useState(false);
@@ -41,7 +42,10 @@ function TopBar({ onMenuClick }) {
         </div>
       </div>
 
-      <div className="relative">
+      <div className="flex items-center gap-3">
+        {user?.role === "admin" && <OrgSwitcher />}
+
+        <div className="relative">
         <button
           onClick={() => setOpen(!open)}
           className="flex items-center gap-3"
@@ -121,6 +125,7 @@ function TopBar({ onMenuClick }) {
             </div>
           </div>
         )}
+        </div>
       </div>
     </header>
   );

@@ -34,7 +34,13 @@ function SignUpForm() {
       },
 
       onError: (error) => {
-        toast.error(error?.response?.data?.message || "Registration failed");
+        const data = error?.response?.data;
+        const msg =
+          data?.detail ||
+          data?.message ||
+          (typeof data === "string" ? data : null) ||
+          "Registration failed";
+        toast.error(msg);
       },
     });
   }

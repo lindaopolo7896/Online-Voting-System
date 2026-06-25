@@ -8,9 +8,9 @@ import ProgressCard from "../../components/voter/results/ProgressCard";
 import ProfileImg from "../../components/ui/ProfileImg";
 import Divider from "../../components/ui/Divider";
 import { IoMdAdd } from "react-icons/io";
-import { IoPersonAdd, IoPersonAddOutline } from "react-icons/io5";
 import { IoCloudUploadOutline } from "react-icons/io5";
 import { LuClipboardList } from "react-icons/lu";
+import { MdSecurity } from "react-icons/md";
 import VoterTurnoutChart from "../../components/common/VoterTurnoutChart";
 import CandidatesByPositionChart from "../../components/common/CandidatesByPositionChart";
 import {
@@ -23,24 +23,19 @@ import {
 
 const actions = [
   {
-    icon: IoMdAdd,
-    actionName: "Create new election",
-    link: "/organisation/elections/create",
-  },
-  {
-    icon: IoPersonAdd,
-    actionName: "Add Candidates",
-    link: "/organisation/candidates",
-  },
-  {
-    icon: IoPersonAddOutline,
-    actionName: "Add Member",
-    link: "/organisation/voters",
-  },
-  {
     icon: IoCloudUploadOutline,
-    actionName: "Upload Voters",
-    link: "/organisation/voters",
+    actionName: "Upload Members",
+    link: "/organisation/members",
+  },
+  {
+    icon: IoMdAdd,
+    actionName: "Create Election",
+    link: "/organisation/create-election",
+  },
+  {
+    icon: MdSecurity,
+    actionName: "Manage Permissions",
+    link: "/organisation/permissions",
   },
   {
     icon: LuClipboardList,
@@ -56,7 +51,7 @@ function OrganisationDashboardPage() {
     setSubtitle("Here is what is happening with your elections");
   }, [setPageTitle, setSubtitle]);
 
-  // ── Elections list ────────────────────────────────────────────────────────
+  // Elections list
   const {
     data: elections = [],
     isLoading: electionsLoading,
@@ -71,26 +66,29 @@ function OrganisationDashboardPage() {
     (e) => getElectionStatus(e) === "live",
   ).length;
 
-  // Most recent completed election — fallback for charts when nothing is live
-  const mostRecentCompleted = [...elections]
-    .filter((e) => getElectionStatus(e) === "completed")
-    .sort((a, b) => new Date(b.date_time_ending) - new Date(a.date_time_ending))[0] ?? null;
+  // Most recent completed election
+  const mostRecentCompleted =
+    [...elections]
+      .filter((e) => getElectionStatus(e) === "completed")
+      .sort(
+        (a, b) => new Date(b.date_time_ending) - new Date(a.date_time_ending),
+      )[0] ?? null;
 
-  // Chart election: live takes priority, then most recent completed
+  // Chart election
   const chartElection = liveElection ?? mostRecentCompleted ?? null;
 
-  // ── Candidates for chart election (for "by position" doughnut) ───────────
+  //  Candidates for chart election
   const { data: chartCandidates = [] } = useQuery({
     queryKey: ["candidates", chartElection?.id],
     queryFn: () => getElectionCandidates(chartElection.id),
     enabled: !!chartElection,
   });
 
-  // Dashboard stat card uses live election candidates only
+  // Dashboard stat card
   const liveCandidates =
     liveElection?.id === chartElection?.id ? chartCandidates : [];
 
-  // ── Participants for ALL elections (for turnout comparison bar chart) ─────
+  //  Participants for ALL elections
   const allParticipantQueries = useQueries({
     queries: elections.map((e) => ({
       queryKey: ["participants", e.id],
@@ -100,11 +98,25 @@ function OrganisationDashboardPage() {
 
   // Live election participants for stat cards
   const liveIdx = elections.findIndex((e) => e.id === liveElection?.id);
-  const participants = liveIdx >= 0 ? (allParticipantQueries[liveIdx]?.data ?? []) : [];
+  const participants =
+    liveIdx >= 0 ? (allParticipantQueries[liveIdx]?.data ?? []) : [];
   const votesCast = participants.filter((p) => p.has_voted).length;
   const totalVoters = participants.length;
 
-  // ── Derived chart data ────────────────────────────────────────────────────
+  // Election shown in the highlight card — live, or fall back to most recent completed
+  const featuredElection = liveElection ?? mostRecentCompleted;
+  const featuredIsLive = !!liveElection;
+  const featuredIdx = elections.findIndex(
+    (e) => e.id === featuredElection?.id,
+  );
+  const featuredParticipants =
+    featuredIdx >= 0 ? (allParticipantQueries[featuredIdx]?.data ?? []) : [];
+  const featuredVotesCast = featuredParticipants.filter(
+    (p) => p.has_voted,
+  ).length;
+  const featuredTotalVoters = featuredParticipants.length;
+
+  // Derived chart data
 
   // Voter turnout per election
   const turnoutChartData = elections.map((e, i) => {
@@ -126,7 +138,7 @@ function OrganisationDashboardPage() {
     }, {}),
   ).map(([position, count]) => ({ position, count }));
 
-  // ── Dashboard stat cards ──────────────────────────────────────────────────
+  // Dashboard stat cards
   const dashboardStats = [
     {
       title: "Active Elections",
@@ -143,7 +155,7 @@ function OrganisationDashboardPage() {
     {
       title: "Enrolled Voters",
       value: liveElection ? totalVoters : "—",
-      link: "/organisation/voters",
+      link: "/organisation/members",
       sub: liveElection ? "In current election" : "No active election",
     },
     {
@@ -192,31 +204,46 @@ function OrganisationDashboardPage() {
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
         {/* live election card */}
         <Card className="border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col gap-5 flex-1">
-          <h1 className="text-text text-lg font-bold">Current Live Election</h1>
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-text text-lg font-bold">
+              {featuredIsLive ? "Current Live Election" : "Most Recent Election"}
+            </h1>
+            {featuredElection && (
+              <span
+                className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
+                  featuredIsLive
+                    ? "bg-blue-500/12 text-blue-500"
+                    : "bg-green-500/12 text-green-500"
+                }`}
+              >
+                {featuredIsLive ? "Live" : "Completed"}
+              </span>
+            )}
+          </div>
 
           {electionsLoading ? (
             <p className="text-muted">Loading...</p>
-          ) : liveElection ? (
+          ) : featuredElection ? (
             <>
               <div className="flex gap-4">
                 <ProfileImg className="w-16 h-16 sm:w-20 sm:h-20 p-2 shrink-0" />
 
                 <div className="flex flex-col gap-2 min-w-0">
                   <h1 className="text-primary font-medium leading-tight">
-                    {liveElection.name}
+                    {featuredElection.name}
                   </h1>
                   <div className="flex flex-wrap gap-4">
                     <div>
                       <h4 className="text-muted text-xs">Start Date</h4>
                       <p className="text-text text-sm">
-                        {formatElectionDate(liveElection.date_time_occuring)}
+                        {formatElectionDate(featuredElection.date_time_occuring)}
                       </p>
                     </div>
                     <Divider />
                     <div>
                       <h4 className="text-muted text-xs">End Date</h4>
                       <p className="text-text text-sm">
-                        {formatElectionDate(liveElection.date_time_ending)}
+                        {formatElectionDate(featuredElection.date_time_ending)}
                       </p>
                     </div>
                   </div>
@@ -225,8 +252,8 @@ function OrganisationDashboardPage() {
 
               <ProgressCard
                 title="Voter Turnout"
-                current={votesCast}
-                total={totalVoters || 1}
+                current={featuredVotesCast}
+                total={featuredTotalVoters || 1}
               />
 
               <Link
@@ -237,7 +264,7 @@ function OrganisationDashboardPage() {
               </Link>
             </>
           ) : (
-            <p className="text-muted">No live election at the moment.</p>
+            <p className="text-muted">No elections yet.</p>
           )}
         </Card>
 

@@ -27,7 +27,7 @@ function CandidatesStep({ electionId, onNext }) {
   });
 
   const candidateParticipants = useMemo(
-    () => participants.filter((p) => p.role === "candidate"),
+    () => participants.filter((p) => p.membership?.role === "candidate"),
     [participants],
   );
 
@@ -86,9 +86,10 @@ function CandidatesStep({ electionId, onNext }) {
       ) : (
         <div className="space-y-3">
           {candidateParticipants.map((p) => {
+            const u = p.membership?.user ?? {};
             const name =
-              `${p.user?.first_name ?? ""} ${p.user?.last_name ?? ""}`.trim() ||
-              p.user?.email ||
+              `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim() ||
+              u.email ||
               `Participant #${p.id}`;
             const isAssigned = !!assigned[p.id];
             const isBusy = !!assigning[p.id];
@@ -110,7 +111,7 @@ function CandidatesStep({ electionId, onNext }) {
                   <p className="truncate text-sm font-medium text-text">
                     {name}
                   </p>
-                  <p className="truncate text-xs text-muted">{p.user?.email}</p>
+                  <p className="truncate text-xs text-muted">{u.email}</p>
                 </div>
 
                 {isAssigned ? (
