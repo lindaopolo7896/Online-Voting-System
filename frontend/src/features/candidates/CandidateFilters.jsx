@@ -58,9 +58,9 @@ function CandidateFilters({
           className="h-10 rounded-lg border border-white/10 bg-surface px-3 text-sm text-text focus:outline-none focus:border-primary"
         >
           <option value="">All Statuses</option>
-          <option value="approved">Approved</option>
-          <option value="pending">Pending</option>
-          <option value="rejected">Rejected</option>
+          <option value="active">Active</option>
+          <option value="withdrawn">Withdrawn</option>
+          <option value="disqualified">Disqualified</option>
         </select>
 
         {/* Search */}

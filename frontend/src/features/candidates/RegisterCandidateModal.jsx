@@ -40,7 +40,7 @@ function RegisterCandidateModal({
     () =>
       participants.filter(
         (p) =>
-          p.role === "candidate" &&
+          p.membership?.role === "candidate" &&
           !registeredMembershipIds.has(p.membership?.id),
       ),
     [participants, registeredMembershipIds],

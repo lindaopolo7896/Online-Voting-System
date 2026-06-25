@@ -4,8 +4,10 @@ import {
   getFilteredRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Users, Trash2 } from "lucide-react";
+import DropdownPortal from "../../components/ui/DropdownPortal";
 
+import { useNavigate } from "react-router-dom";
 import DataTable from "../../components/ui/DataTable";
 import ElectionFilters from "./ElectionFilters";
 import Card from "../../components/ui/Card";
@@ -20,7 +22,21 @@ const STATUS_STYLES = {
   completed: "bg-green-50 text-green-600 border-green-500",
 };
 
-function ElectionsTable({ elections = [], participantQueries = [], isLoading, isError }) {
+function ActionsMenu({ election, onView, onEdit, onManageMembers, onDelete }) {
+  const locked = election.status === "live" || election.status === "completed";
+
+  const items = [
+    { label: "View Election",   icon: Eye,    onClick: () => onView(election),          disabled: false,  danger: false },
+    { label: "Edit Election",   icon: Pencil, onClick: () => onEdit(election),          disabled: locked, danger: false },
+    { label: "Manage Members",  icon: Users,  onClick: () => onManageMembers(election), disabled: locked, danger: false },
+    { label: "Delete Election", icon: Trash2, onClick: () => onDelete(election),        disabled: locked, danger: true  },
+  ];
+
+  return <DropdownPortal items={items} />;
+}
+
+function ElectionsTable({ elections = [], participantQueries = [], candidateQueries = [], isLoading, isError }) {
+  const navigate = useNavigate();
   const [columnFilters, setColumnFilters] = useState([]);
   const [viewing, setViewing] = useState(null);
   const [editing, setEditing] = useState(null);
@@ -34,15 +50,17 @@ function ElectionsTable({ elections = [], participantQueries = [], isLoading, is
         const votesCast = parts.filter((p) => p.has_voted).length;
         const turnout =
           totalVoters > 0 ? Math.round((votesCast / totalVoters) * 100) : 0;
+        const totalCandidates = candidateQueries[i]?.data?.length ?? 0;
         return {
           ...e,
           status: getElectionStatus(e),
           turnout,
           votesCast,
           totalVoters,
+          totalCandidates,
         };
       }),
-    [elections, participantQueries],
+    [elections, participantQueries, candidateQueries],
   );
 
   const columns = [
@@ -78,6 +96,24 @@ function ElectionsTable({ elections = [], participantQueries = [], isLoading, is
       ),
     },
     {
+      accessorKey: "totalCandidates",
+      header: "CANDIDATES",
+      cell: ({ row }) => (
+        <span className="text-sm font-semibold text-text">
+          {row.original.totalCandidates}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "totalVoters",
+      header: "VOTERS",
+      cell: ({ row }) => (
+        <span className="text-sm font-semibold text-text">
+          {row.original.totalVoters}
+        </span>
+      ),
+    },
+    {
       accessorKey: "turnout",
       header: "VOTER TURNOUT",
       cell: ({ row }) => {
@@ -100,45 +136,16 @@ function ElectionsTable({ elections = [], participantQueries = [], isLoading, is
     },
     {
       id: "actions",
-      header: "ACTIONS",
-      cell: ({ row }) => {
-        const isEditable = row.original.status === "upcoming";
-        return (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewing(row.original)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border hover:bg-background transition"
-              title="View"
-            >
-              <Eye size={16} />
-            </button>
-            <button
-              onClick={() => isEditable && setEditing(row.original)}
-              disabled={!isEditable}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
-                isEditable
-                  ? "border-border hover:bg-background"
-                  : "cursor-not-allowed border-border opacity-40"
-              }`}
-              title="Edit"
-            >
-              <Pencil size={16} />
-            </button>
-            <button
-              onClick={() => isEditable && setDeleting(row.original)}
-              disabled={!isEditable}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
-                isEditable
-                  ? "border-red-200 text-red-500 hover:bg-red-50"
-                  : "cursor-not-allowed border-red-200 text-red-500 opacity-40"
-              }`}
-              title="Delete"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        );
-      },
+      header: "",
+      cell: ({ row }) => (
+        <ActionsMenu
+          election={row.original}
+          onView={setViewing}
+          onEdit={setEditing}
+          onManageMembers={(e) => navigate(`/organisation/members?election_id=${e.id}`)}
+          onDelete={setDeleting}
+        />
+      ),
     },
   ];
 

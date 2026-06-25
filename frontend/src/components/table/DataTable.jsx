@@ -2,7 +2,7 @@ import { flexRender } from "@tanstack/react-table";
 
 function DataTable({ table }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-background">
       <table className="w-full">
         <thead className="bg-slate-50">
           {table.getHeaderGroups().map((headerGroup) => (

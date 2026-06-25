@@ -33,13 +33,13 @@ import VoterSettingsPage from "../pages/Voter/VoterSettingsPage";
 import OrganisationDashboardPage from "../pages/organisation/OrganisationDashboardPage";
 import OrganisationElectionsPage from "../pages/organisation/OrganisationElectionsPage";
 import OrganisationCandidatesPage from "../pages/organisation/OrganisationCandidatesPage";
-import OrganisationVotersPage from "../pages/organisation/OrganisationVotersPage";
+import OrganisationMembersPage from "../pages/organisation/OrganisationMembersPage";
 import OrganisationPermissionsPage from "../pages/organisation/OrganisationPermissionsPage";
 import OrganisationResultsPage from "../pages/organisation/OrganisationResultsPage";
+import OrganisationAnalyticsPage from "../pages/organisation/OrganisationAnalyticsPage";
 import OrganisationSettingsPage from "../pages/organisation/OrganisationSettingsPage";
 import CreateElectionPage from "../pages/organisation/CreateElectionPage";
 
-import LandingPage from "../pages/LandingPage";
 import ComingSoon from "../pages/ComingSoon";
 
 function AppRoutes() {
@@ -92,7 +92,7 @@ function AppRoutes() {
             element={<OrganisationElectionsPage />}
           />
           <Route
-            path="/organisation/elections/create"
+            path="/organisation/create-election"
             element={<CreateElectionPage />}
           />
           <Route
@@ -100,8 +100,8 @@ function AppRoutes() {
             element={<OrganisationCandidatesPage />}
           />
           <Route
-            path="/organisation/voters"
-            element={<OrganisationVotersPage />}
+            path="/organisation/members"
+            element={<OrganisationMembersPage />}
           />
           <Route
             path="/organisation/permissions"
@@ -110,6 +110,10 @@ function AppRoutes() {
           <Route
             path="/organisation/results"
             element={<OrganisationResultsPage />}
+          />
+          <Route
+            path="/organisation/analytics"
+            element={<OrganisationAnalyticsPage />}
           />
           <Route
             path="/organisation/settings"

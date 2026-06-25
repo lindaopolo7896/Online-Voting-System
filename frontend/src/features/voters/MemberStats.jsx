@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import Card from "../../components/ui/Card";
 
-function VoterStats({ members = [] }) {
+function MemberStats({ members = [] }) {
   const stats = useMemo(() => {
     const total = members.length;
     const active = members.filter((m) => m.is_active).length;
@@ -12,10 +12,10 @@ function VoterStats({ members = [] }) {
       total > 0 ? `${Math.round((n / total) * 100)}% of total` : "No members yet";
 
     return [
-      { title: "Total Members", value: total, subtitle: "In this organisation" },
-      { title: "Active",        value: active,    subtitle: pct(active)    },
-      { title: "Officials",     value: officials,  subtitle: pct(officials) },
-      { title: "Admins",        value: admins,     subtitle: pct(admins)    },
+      { title: "Total Members", value: total,     subtitle: "In this organisation" },
+      { title: "Active",        value: active,    subtitle: pct(active)            },
+      { title: "Officials",     value: officials, subtitle: pct(officials)         },
+      { title: "Admins",        value: admins,    subtitle: pct(admins)            },
     ];
   }, [members]);
 
@@ -32,4 +32,4 @@ function VoterStats({ members = [] }) {
   );
 }
 
-export default VoterStats;
+export default MemberStats;
