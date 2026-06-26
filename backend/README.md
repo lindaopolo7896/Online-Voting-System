@@ -64,7 +64,9 @@ Common settings:
 3. Deploy election contract address (dev stub):
    - `POST /api/v1/elections/{id}/deploy-contract/`
 4. Send invite links:
-   - `POST /api/v1/elections/{id}/send-voter-invites/`
+   - Manual now: `POST /api/v1/elections/{id}/send-voter-invites/`
+   - Or scheduled at election start using:
+     - `uv run --project . python manage.py dispatch_scheduled_voter_invites`
 5. Voter OTP:
    - `POST /api/v1/auth/request-otp/`
    - `POST /api/v1/auth/verify-otp/`
@@ -75,6 +77,15 @@ Common settings:
 
 Full endpoint documentation is in:
 - `api.md`
+
+## Scheduled voter-invite dispatch
+
+Voting links are not sent when participants are created. They are sent when you:
+- call the invite endpoint manually, or
+- run the scheduler command once elections reach `date_time_occuring`.
+
+Recommended cron setup (every minute):
+- `* * * * * cd /path/to/backend && uv run --project . python manage.py dispatch_scheduled_voter_invites >> /tmp/voter_invites.log 2>&1`
 
 ## CSV/XLSX participant import format
 

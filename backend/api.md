@@ -43,7 +43,7 @@ Sends a one-time login code to email (or silently ignores if account/token is in
 
 ### 1.2 Verify OTP
 Short description:
-Validates OTP and returns JWT tokens. When `voting_token` is provided, also returns voter eligibility and ballot data.
+Validates OTP and returns JWT tokens. On first successful verification, the user is marked as email-verified. When `voting_token` is provided, also returns voter eligibility and ballot data.
 
 - Method: `POST`
 - Path: `/api/v1/auth/verify-otp/`
@@ -56,6 +56,7 @@ Validates OTP and returns JWT tokens. When `voting_token` is provided, also retu
 - Response:
   - `200`:
     - `access`, `refresh`
+    - `user.is_verified`
     - If voting token is supplied and valid:
       - `eligibility`: `{ "eligible": true, "election_id": <id> }`
       - `ballot`: list of `{candidate_id, position_id, position_name, candidate_name, slogan}`
@@ -118,7 +119,7 @@ Read or modify one organisation record.
 
 ### 2.3 Register organisation (public)
 Short description:
-Creates a new organisation, creates the first user, makes that user an admin membership, seeds default org permissions, and returns JWT tokens.
+Creates a new organisation, creates the first user as unverified, makes that user an admin membership, seeds default org permissions, and sends an OTP verification code to email.
 
 - Method: `POST`
 - Path: `/api/v1/organisations/register-org/`
@@ -128,7 +129,6 @@ Creates a new organisation, creates the first user, makes that user an admin mem
     - `organisation_name` (string, required) or `name`
     - `organisation_description` (string, optional) or `description`
     - `email` (string, required)
-    - `password` (string, required)
     - `first_name` (string, optional)
     - `last_name` (string, optional)
     - `phone` (string, optional)
@@ -138,8 +138,7 @@ Creates a new organisation, creates the first user, makes that user an admin mem
     - `detail`
     - `organisation`
     - `membership`
-    - `access`
-    - `refresh`
+    - `verification_sent` (`true`)
   - `400` examples:
     - missing required fields
     - existing email
@@ -162,6 +161,7 @@ Lists users in active organisation context; create behavior depends on permissio
     - `email`, `first_name`, `last_name`, `is_active`
   - POST body:
     - `email`, `first_name`, `last_name`, `phone`, `bio`, `password` and related fields
+    - `role` values for organisation memberships: `admin`, `official`, `member`
 - Response:
   - `GET 200`: list
   - `POST 201`: created user
@@ -204,7 +204,7 @@ Lists memberships in active org scope. Create can onboard a new user + membershi
     - `email` (string, required)
     - `password` (string, required)
     - `organisation_id` (int, required)
-    - `role` (string, required)
+    - `role` (string, required: `admin` | `official` | `member`)
     - `phone`, `bio` (optional)
 - Response:
   - `GET 200`: list
@@ -237,6 +237,32 @@ Returns memberships for current authenticated user.
   - None
 - Response:
   - `200`: list of memberships
+
+### 4.4 Bulk upload organisation members
+Short description:
+Uploads a member roster for the active organisation and creates/updates organisation memberships.
+
+- Method: `POST`
+- Path: `/api/v1/memberships/bulk-upload/`
+- Required permission: `add.membership`
+- Parameters:
+  - Body (multipart/form-data):
+    - `file` (required, `.csv` or `.xlsx`)
+    - `organisation_id` (optional, must match active organisation if provided)
+  - Required columns in file:
+    - `email`
+  - Optional columns:
+    - `first_name`, `last_name`, `phone`, `bio`
+    - `role` (`admin` | `official` | `member`, defaults to `member`)
+    - `is_active` (`true`/`false`, defaults to `true`)
+- Response:
+  - `201` or `200`:
+    - `organisation_id`
+    - `created_users`
+    - `created_memberships`
+    - `existing_memberships`
+    - `updated_memberships`
+    - `skipped_rows`
 
 ---
 
@@ -307,6 +333,8 @@ Lists elections in user scope, or creates a new election.
     - `date_time_ending` (datetime, required)
     - `organisation_id` (int, required)
     - `winner_id` (int, optional candidate id)
+  - Response election payload includes:
+    - `voter_invites_sent_at` (datetime or `null`) — set after invite links are dispatched.
 - Response:
   - `GET 200`: list
   - `POST 201`: election object
@@ -362,7 +390,7 @@ Creates and stores a development smart contract address for election.
 
 ### 6.5 Send voter invites
 Short description:
-Generates or refreshes voting links for all election participants and sends invitation emails.
+Generates or refreshes voting links for all election participants and sends invitation emails. This also marks the election as invite-dispatched (`voter_invites_sent_at`) so scheduled start-time dispatch does not run again for that election.
 
 - Method: `POST`
 - Path: `/api/v1/elections/{id}/send-voter-invites/`
@@ -375,6 +403,7 @@ Generates or refreshes voting links for all election participants and sends invi
     - `links_created`
     - `links_refreshed`
     - `errors` (list)
+    - `already_dispatched` (boolean)
 
 ### 6.6 Enroll all organisation members as participants
 Short description:
@@ -386,7 +415,7 @@ Adds all active organisation memberships to the election as participants and see
 - Parameters:
   - Path: `id`
   - Body (optional):
-    - `roles` (array of role names) to enroll only selected roles
+    - `roles` (array of `admin` | `official` | `member`) to enroll only selected organisation roles
 - Response:
   - `200`:
     - `election_id`
@@ -469,7 +498,7 @@ CRUD participants and run bulk participant onboarding from CSV/XLSX.
 
 #### Bulk upload participants
 Short description:
-Uploads roster file and creates users/memberships/participants.
+Uploads a roster for an election. Every valid row becomes a participant in the target election.
 
 - Method: `POST`
 - Path: `/api/v1/elections/{election_id}/participants/bulk-upload/`
@@ -481,7 +510,8 @@ Uploads roster file and creates users/memberships/participants.
   - Required columns in file:
     - `email`
   - Optional columns:
-    - `first_name`, `last_name`, `role`, `phone`, `bio`
+    - `first_name`, `last_name`, `phone`, `bio`
+    - `role` (`admin` | `official` | `member`, defaults to `member`) for organisation membership role only
 - Response:
   - `201` or `200`:
     - `created_users`
@@ -492,7 +522,7 @@ Uploads roster file and creates users/memberships/participants.
 
 #### Send invitations (nested)
 Short description:
-Generates/refreshes voting links and emails for participants in this election.
+Generates/refreshes voting links and emails for participants in this election. Like the top-level invite endpoint, it marks `voter_invites_sent_at` when dispatch occurs.
 
 - Method: `POST`
 - Path: `/api/v1/elections/{election_id}/participants/send-invitations/`
@@ -500,7 +530,7 @@ Generates/refreshes voting links and emails for participants in this election.
 - Parameters:
   - Path: `election_id`
 - Response:
-  - `200`: same summary fields as top-level invite endpoint
+  - `200`: same summary fields as top-level invite endpoint, including `already_dispatched`
 
 #### Convert participant to candidate
 Short description:
@@ -738,4 +768,17 @@ Returns logs for current user by election id.
   - Path: `election_id`
 - Response:
   - `200`: list of logs
+
+---
+
+## 11) Scheduled operations
+
+### 11.1 Auto-send voter invites at election start
+Short description:
+Runs the start-time dispatch flow for elections whose `date_time_occuring` has passed and that have not yet dispatched invites (`voter_invites_sent_at` is `null`).
+
+- Command:
+  - `python manage.py dispatch_scheduled_voter_invites`
+- Scheduling:
+  - Run this command on an interval (for example, every minute via cron).
 

@@ -6,6 +6,7 @@ from apps.users.models import (
     PermissionRecord,
     Log,
     Election,
+    ROLE_CHOICES,
 )
 from apps.elections.models import Candidate
 
@@ -19,7 +20,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     organisation_id = serializers.CharField(write_only=True, required=False)
-    role = serializers.CharField(write_only=True, required=False)
+    role = serializers.ChoiceField(choices=ROLE_CHOICES, write_only=True, required=False)
     class Meta:
         model = User
         fields = [
@@ -33,8 +34,9 @@ class UserSerializer(serializers.ModelSerializer):
             'organisation_id',
             'role',
             'is_active',
+            'is_verified',
         ]
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'is_verified']
         extra_kwargs = {
             'password': {'write_only': True},
         }
@@ -76,7 +78,7 @@ class UserMembershipCreateSerializer(serializers.ModelSerializer):
     organisation_id = serializers.PrimaryKeyRelatedField(
         source='organisation', queryset=Organisation.objects.all(), write_only=True
     )
-    role = serializers.CharField(write_only=True)
+    role = serializers.ChoiceField(choices=ROLE_CHOICES, write_only=True)
     is_active = serializers.BooleanField(default=True)
 
     class Meta:
@@ -117,9 +119,10 @@ class ElectionSerializer(serializers.ModelSerializer):
             'organisation_id',
             'winner',
             'winner_id',
+            'voter_invites_sent_at',
             'created_at',
         ]
-        read_only_fields = ['id', 'created_at']
+        read_only_fields = ['id', 'voter_invites_sent_at', 'created_at']
 
 
 class PermissionRecordSerializer(serializers.ModelSerializer):

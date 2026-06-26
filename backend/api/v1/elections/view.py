@@ -14,10 +14,10 @@ from api.v1.users.permissions import HasPermission
 from apps.users.models import Election, Membership, User
 from services.membership_service import get_user_active_membership
 from services.permission_service import assign_election_default_permissions_to_membership
-from services.voting_link_service import create_or_refresh_voting_link, send_voting_invitation_email
+from services.voting_link_service import dispatch_voter_invites_for_election
 from .serializers import PositionSerializer, ParticipantSerializer, CandidateSerializer
 
-ALLOWED_ROLE_CHOICES = {'admin', 'candidate', 'participant', 'official'}
+ALLOWED_ROLE_CHOICES = {'admin', 'official', 'member'}
 
 
 def _normalize_column_name(value):
@@ -118,7 +118,17 @@ class ParticipantViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         election_id = self.kwargs.get('election_id')
-        payload = request.data.copy()
+        if request.data is None:
+            payload = {}
+        elif hasattr(request.data, 'copy'):
+            payload = request.data.copy()
+        elif isinstance(request.data, dict):
+            payload = dict(request.data)
+        else:
+            return Response(
+                {'detail': 'Request body must be a JSON object.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         payload['election_id'] = election_id
         serializer = self.get_serializer(data=payload)
         serializer.is_valid(raise_exception=True)
@@ -163,7 +173,7 @@ class ParticipantViewSet(ModelViewSet):
                     skipped_rows.append({'row': row_number, 'reason': 'email is required'})
                     continue
 
-                role = str(row.get('role') or 'participant').strip().lower()
+                role = str(row.get('role') or 'member').strip().lower()
                 if role not in ALLOWED_ROLE_CHOICES:
                     skipped_rows.append({'row': row_number, 'reason': f'invalid role: {role}'})
                     continue
@@ -185,13 +195,18 @@ class ParticipantViewSet(ModelViewSet):
                         bio=bio,
                     )
                     created_users += 1
+                has_active_membership = Membership.objects.filter(
+                    user=user,
+                    currently_active=True,
+                    is_active=True,
+                ).exists()
 
                 membership, membership_created = Membership.objects.get_or_create(
                     organisation=election.organisation,
                     user=user,
                     defaults={
                         'role': role,
-                        'currently_active': True,
+                        'currently_active': not has_active_membership,
                         'is_active': True,
                     },
                 )
@@ -202,12 +217,17 @@ class ParticipantViewSet(ModelViewSet):
                     if membership.role != role:
                         membership.role = role
                         updates.append('role')
-                    if not membership.currently_active:
-                        membership.currently_active = True
-                        updates.append('currently_active')
                     if not membership.is_active:
                         membership.is_active = True
                         updates.append('is_active')
+                    has_other_active_membership = Membership.objects.filter(
+                        user=user,
+                        currently_active=True,
+                        is_active=True,
+                    ).exclude(id=membership.id).exists()
+                    if membership.is_active and not membership.currently_active and not has_other_active_membership:
+                        membership.currently_active = True
+                        updates.append('currently_active')
                     if updates:
                         membership.save(update_fields=updates)
 
@@ -244,51 +264,12 @@ class ParticipantViewSet(ModelViewSet):
             return Response({'detail': 'Election not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         generated_by = get_user_active_membership(request.user.id)
-        participants = (
-            Participant.objects
-            .select_related('membership__user')
-            .filter(election=election)
+        summary = dispatch_voter_invites_for_election(
+            election=election,
+            generated_by=generated_by,
+            skip_if_already_dispatched=False,
         )
-        sent_count = 0
-        links_created = 0
-        links_refreshed = 0
-        errors = []
-
-        for participant in participants:
-            try:
-                voting_link, created = create_or_refresh_voting_link(
-                    election=election,
-                    participant=participant,
-                    generated_by=generated_by,
-                )
-                send_voting_invitation_email(
-                    participant=participant,
-                    election=election,
-                    voting_link=voting_link,
-                )
-                sent_count += 1
-                if created:
-                    links_created += 1
-                else:
-                    links_refreshed += 1
-            except Exception as exc:
-                errors.append(
-                    {
-                        'participant_id': participant.id,
-                        'email': participant.membership.user.email,
-                        'reason': str(exc),
-                    }
-                )
-
-        return Response(
-            {
-                'sent_count': sent_count,
-                'links_created': links_created,
-                'links_refreshed': links_refreshed,
-                'errors': errors,
-            },
-            status=status.HTTP_200_OK,
-        )
+        return Response(summary, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], url_path='convert-to-candidate')
     def convert_to_candidate(self, request, election_id=None, pk=None):
