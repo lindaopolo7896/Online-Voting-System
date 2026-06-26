@@ -1,21 +1,85 @@
+import csv
+import io
+from pathlib import Path
 from django.db import transaction
 from datetime import datetime
+from django.utils.crypto import get_random_string
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.users.models import Election, Log, Organisation, PermissionRecord, User, Membership, ROLE_CHOICES
 from apps.elections.models import Participant
+from services.otp_service import issue_otp
 from services.permission_service import assign_election_bulk_permissions_to_membership, assign_org_bulk_permissions_to_membership, revoke_org_bulk_permissions_from_membership, revoke_election_bulk_permissions_from_membership, get_all_permissions_for_membership, assign_org_default_permissions_to_membership, assign_election_default_permissions_to_membership
 from .serializers import ElectionSerializer, LogSerializer, OrganisationSerializer, PermissionRecordSerializer, UserSerializer, MembershipSerializer, UserMembershipCreateSerializer
 from .permissions import HasPermission, DenyAll
 from services.membership_service import get_user_active_membership, get_user_active_organisation, switch_active_membership
 from services.blockchain_service import deploy_election_contract
-from services.voting_link_service import create_or_refresh_voting_link, send_voting_invitation_email
+from services.voting_link_service import dispatch_voter_invites_for_election
 from api.v1.elections.serializers import PositionSerializer, ParticipantSerializer, CandidateSerializer
+
+ORG_ALLOWED_ROLE_CHOICES = {role for role, _ in ROLE_CHOICES}
+
+
+def _normalize_column_name(value):
+    return str(value or '').strip().lower().replace(' ', '_')
+
+
+def _parse_csv_rows(uploaded_file):
+    uploaded_file.seek(0)
+    text = uploaded_file.read().decode('utf-8-sig')
+    reader = csv.DictReader(io.StringIO(text))
+    rows = []
+    for row in reader:
+        if not row or not any(v not in (None, '') for v in row.values()):
+            continue
+        rows.append({_normalize_column_name(k): v for k, v in row.items()})
+    return rows
+
+
+def _parse_xlsx_rows(uploaded_file):
+    try:
+        from openpyxl import load_workbook
+    except ImportError as exc:
+        raise ValueError('XLSX upload requires openpyxl to be installed.') from exc
+
+    uploaded_file.seek(0)
+    workbook = load_workbook(uploaded_file, data_only=True)
+    worksheet = workbook.active
+    raw_rows = list(worksheet.iter_rows(values_only=True))
+    if not raw_rows:
+        return []
+
+    headers = [_normalize_column_name(header) for header in raw_rows[0]]
+    rows = []
+    for row in raw_rows[1:]:
+        if not row or not any(v not in (None, '') for v in row):
+            continue
+        parsed_row = {}
+        for idx, header in enumerate(headers):
+            if not header:
+                continue
+            parsed_row[header] = row[idx] if idx < len(row) else None
+        rows.append(parsed_row)
+    return rows
+
+
+def _parse_upload_rows(uploaded_file):
+    extension = Path(uploaded_file.name).suffix.lower()
+    if extension == '.csv':
+        return _parse_csv_rows(uploaded_file)
+    if extension in {'.xlsx', '.xlsm', '.xltx', '.xltm'}:
+        return _parse_xlsx_rows(uploaded_file)
+    raise ValueError('Unsupported file type. Please upload .csv or .xlsx.')
+
+
+def _parse_bool(value, default=True):
+    if value in (None, ''):
+        return default
+    return str(value).strip().lower() in {'1', 'true', 'yes', 'on'}
 
 
 
@@ -52,7 +116,6 @@ class OrganisationViewSet(ModelViewSet):
         organisation_name = str(request.data.get('organisation_name') or request.data.get('name') or '').strip()
         organisation_description = str(request.data.get('organisation_description') or request.data.get('description') or '').strip()
         email = str(request.data.get('email') or '').strip().lower()
-        password = str(request.data.get('password') or '')
         first_name = str(request.data.get('first_name') or '').strip()
         last_name = str(request.data.get('last_name') or '').strip()
         phone = str(request.data.get('phone') or '').strip()
@@ -62,8 +125,6 @@ class OrganisationViewSet(ModelViewSet):
             return Response({'detail': 'organisation_name is required.'}, status=status.HTTP_400_BAD_REQUEST)
         if not email:
             return Response({'detail': 'email is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        if not password:
-            return Response({'detail': 'password is required.'}, status=status.HTTP_400_BAD_REQUEST)
         if User.objects.filter(email=email).exists():
             return Response({'detail': 'A user with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -74,11 +135,12 @@ class OrganisationViewSet(ModelViewSet):
             )
             user = User.objects.create_user(
                 email=email,
-                password=password,
+                password=None,
                 first_name=first_name,
                 last_name=last_name,
                 phone=phone or None,
                 bio=bio or None,
+                is_verified=False,
             )
             membership = Membership.objects.create(
                 organisation=organisation,
@@ -88,16 +150,15 @@ class OrganisationViewSet(ModelViewSet):
                 is_active=True,
             )
             assign_org_default_permissions_to_membership(membership.id, membership.role)
+            transaction.on_commit(lambda: issue_otp(user))
 
-        refresh = RefreshToken.for_user(user)
         switch_active_membership(user.id, membership.id)
         return Response(
             {
-                'detail': 'Organisation registered successfully.',
+                'detail': 'Organisation registered. A verification code has been sent to your email.',
                 'organisation': OrganisationSerializer(organisation).data,
                 'membership': MembershipSerializer(membership).data,
-                'access': str(refresh.access_token),
-                'refresh': str(refresh),
+                'verification_sent': True,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -168,6 +229,7 @@ class MembershipViewset(ModelViewSet):
 
     ACTION_PERMISSION_MAP = {
         'create': 'add.membership',
+        'bulk_upload': 'add.membership',
         'list': 'view.membership',
         'retrieve': 'view.membership',
         'update': 'update.membership',
@@ -184,6 +246,8 @@ class MembershipViewset(ModelViewSet):
     # we want to scope it to the current organisation
     def get_queryset(self):
         user = self.request.user
+        if self.action == 'switch_membership':
+            return Membership.objects.filter(user=user, is_active=True)
         organisation = get_user_active_organisation(user.id)
         active_membership = get_user_active_membership(user.id)
 
@@ -207,13 +271,153 @@ class MembershipViewset(ModelViewSet):
         if created:
             user.set_password(serializer.validated_data.get('password', ''))
             user.save(update_fields=['password'])
+        membership_is_active = serializer.validated_data.get('is_active', True)
+        has_active_membership = Membership.objects.filter(
+            user=user,
+            currently_active=True,
+            is_active=True,
+        ).exists()
         membership = Membership.objects.create(
             user=user,
             organisation=serializer.validated_data['organisation'],
-            role=serializer.validated_data['role']
+            role=serializer.validated_data['role'],
+            is_active=membership_is_active,
+            currently_active=membership_is_active and not has_active_membership,
         )
+        assign_org_default_permissions_to_membership(membership.id, membership.role)
         response_serializer = MembershipSerializer(membership)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['post'], url_path='bulk-upload')
+    def bulk_upload(self, request):
+        upload = request.FILES.get('file')
+        if upload is None:
+            return Response({'detail': 'file is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        active_organisation = get_user_active_organisation(request.user.id)
+        if active_organisation is None:
+            return Response({'detail': 'No active organisation found.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        organisation_id = request.data.get('organisation_id')
+        if organisation_id not in (None, '', str(active_organisation.id), active_organisation.id):
+            return Response(
+                {'detail': 'organisation_id must match your active organisation.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            rows = _parse_upload_rows(upload)
+        except ValueError as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        if not rows:
+            return Response({'detail': 'The uploaded file has no member rows.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        created_users = 0
+        created_memberships = 0
+        existing_memberships = 0
+        updated_memberships = 0
+        skipped_rows = []
+
+        with transaction.atomic():
+            for row_number, row in enumerate(rows, start=2):
+                email = str(row.get('email') or '').strip().lower()
+                if not email:
+                    skipped_rows.append({'row': row_number, 'reason': 'email is required'})
+                    continue
+
+                role = str(row.get('role') or 'member').strip().lower()
+                if role not in ORG_ALLOWED_ROLE_CHOICES:
+                    skipped_rows.append({'row': row_number, 'reason': f'invalid role: {role}'})
+                    continue
+
+                first_name = str(row.get('first_name') or '').strip()
+                last_name = str(row.get('last_name') or '').strip()
+                phone = str(row.get('phone') or '').strip() or None
+                bio = str(row.get('bio') or '').strip() or None
+                is_active = _parse_bool(row.get('is_active'), default=True)
+
+                user = User.objects.filter(email=email).first()
+                if user is None:
+                    user = User.objects.create_user(
+                        email=email,
+                        password=get_random_string(32),
+                        first_name=first_name,
+                        last_name=last_name,
+                        phone=phone,
+                        bio=bio,
+                        is_verified=False,
+                    )
+                    created_users += 1
+                else:
+                    user_updates = []
+                    if first_name and user.first_name != first_name:
+                        user.first_name = first_name
+                        user_updates.append('first_name')
+                    if last_name and user.last_name != last_name:
+                        user.last_name = last_name
+                        user_updates.append('last_name')
+                    if phone and user.phone != phone:
+                        user.phone = phone
+                        user_updates.append('phone')
+                    if bio and user.bio != bio:
+                        user.bio = bio
+                        user_updates.append('bio')
+                    if user_updates:
+                        user.save(update_fields=user_updates)
+
+                has_active_membership = Membership.objects.filter(
+                    user=user,
+                    currently_active=True,
+                    is_active=True,
+                ).exists()
+                membership, membership_created = Membership.objects.get_or_create(
+                    organisation=active_organisation,
+                    user=user,
+                    defaults={
+                        'role': role,
+                        'is_active': is_active,
+                        'currently_active': is_active and not has_active_membership,
+                    },
+                )
+
+                if membership_created:
+                    created_memberships += 1
+                else:
+                    existing_memberships += 1
+                    updates = []
+                    if membership.role != role:
+                        membership.role = role
+                        updates.append('role')
+                    if membership.is_active != is_active:
+                        membership.is_active = is_active
+                        updates.append('is_active')
+                    has_other_active_membership = Membership.objects.filter(
+                        user=user,
+                        currently_active=True,
+                        is_active=True,
+                    ).exclude(id=membership.id).exists()
+                    should_be_currently_active = membership.is_active and not has_other_active_membership
+                    if membership.currently_active != should_be_currently_active:
+                        membership.currently_active = should_be_currently_active
+                        updates.append('currently_active')
+                    if updates:
+                        membership.save(update_fields=updates)
+                        updated_memberships += 1
+
+                assign_org_default_permissions_to_membership(membership.id, membership.role)
+
+        response_status = status.HTTP_201_CREATED if created_memberships else status.HTTP_200_OK
+        return Response(
+            {
+                'organisation_id': active_organisation.id,
+                'created_users': created_users,
+                'created_memberships': created_memberships,
+                'existing_memberships': existing_memberships,
+                'updated_memberships': updated_memberships,
+                'skipped_rows': skipped_rows,
+            },
+            status=response_status,
+        )
     
     def destroy(self, request, *args, **kwargs):
         membership = self.get_object()
@@ -221,7 +425,7 @@ class MembershipViewset(ModelViewSet):
         membership.save(update_fields=['is_active'])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], url_path='my-memberships')
     def my_memberships(self, request):
         memberships = Membership.objects.filter(user=request.user)
         serializer = self.get_serializer(memberships, many=True)
@@ -448,51 +652,12 @@ class ElectionViewset(ModelViewSet):
     def send_voter_invites(self, request, pk=None):
         election = self.get_object()
         generated_by = get_user_active_membership(request.user.id)
-        participants = (
-            Participant.objects
-            .select_related('membership__user')
-            .filter(election=election)
+        summary = dispatch_voter_invites_for_election(
+            election=election,
+            generated_by=generated_by,
+            skip_if_already_dispatched=False,
         )
-        sent_count = 0
-        links_created = 0
-        links_refreshed = 0
-        errors = []
-
-        for participant in participants:
-            try:
-                voting_link, created = create_or_refresh_voting_link(
-                    election=election,
-                    participant=participant,
-                    generated_by=generated_by,
-                )
-                send_voting_invitation_email(
-                    participant=participant,
-                    election=election,
-                    voting_link=voting_link,
-                )
-                sent_count += 1
-                if created:
-                    links_created += 1
-                else:
-                    links_refreshed += 1
-            except Exception as exc:
-                errors.append(
-                    {
-                        'participant_id': participant.id,
-                        'email': participant.membership.user.email,
-                        'reason': str(exc),
-                    }
-                )
-
-        return Response(
-            {
-                'sent_count': sent_count,
-                'links_created': links_created,
-                'links_refreshed': links_refreshed,
-                'errors': errors,
-            },
-            status=status.HTTP_200_OK,
-        )
+        return Response(summary, status=status.HTTP_200_OK)
 
 
 class LogViewset(ModelViewSet):

@@ -49,6 +49,9 @@ class VerifyOTPView(APIView):
         user = User.objects.filter(email=email, is_active=True).first()
         if user is None or not verify_otp(user, code):
             return Response({'detail': 'Invalid or expired code.'}, status=400)
+        if not user.is_verified:
+            user.is_verified = True
+            user.save(update_fields=['is_verified'])
         eligibility = None
         ballot = None
         active_membership = get_user_active_membership(user.id)
@@ -90,6 +93,7 @@ class VerifyOTPView(APIView):
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
+                'is_verified': user.is_verified,
             },
             'membership': None,
         }

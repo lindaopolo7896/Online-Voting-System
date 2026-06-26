@@ -18,6 +18,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=50, blank=True, null=True)
     bio = models.CharField(max_length = 150, blank=True, null=True)
+    is_verified = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -29,9 +30,8 @@ class User(AbstractUser):
 
 ROLE_CHOICES =(
     ('admin','Admin'),
-    ('candidate','Candidate'),
-    ('participant','Participant'),
     ('official','Official'),
+    ('member','Member'),
 )
 
 class Membership(models.Model):
@@ -61,6 +61,7 @@ class Election(models.Model):
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE, related_name='elections')
     winner = models.ForeignKey('elections.Candidate', on_delete=models.SET_NULL, related_name='won_elections', blank=True, null=True)
     smart_contract_address = models.CharField(max_length=100, blank=True, null=True)
+    voter_invites_sent_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

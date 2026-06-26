@@ -82,3 +82,62 @@ def resolve_voting_link(token_or_url, election_id=None, require_active=False):
     if not raw_token:
         return None
     return query.filter(token__contains=f"token={raw_token}").first()
+
+
+def dispatch_voter_invites_for_election(election, generated_by=None, skip_if_already_dispatched=False):
+    if skip_if_already_dispatched and election.voter_invites_sent_at is not None:
+        return {
+            'sent_count': 0,
+            'links_created': 0,
+            'links_refreshed': 0,
+            'errors': [],
+            'already_dispatched': True,
+        }
+
+    participants = (
+        election.participants
+        .select_related('membership__user')
+        .all()
+    )
+    sent_count = 0
+    links_created = 0
+    links_refreshed = 0
+    errors = []
+
+    for participant in participants:
+        try:
+            voting_link, created = create_or_refresh_voting_link(
+                election=election,
+                participant=participant,
+                generated_by=generated_by,
+            )
+            send_voting_invitation_email(
+                participant=participant,
+                election=election,
+                voting_link=voting_link,
+            )
+            sent_count += 1
+            if created:
+                links_created += 1
+            else:
+                links_refreshed += 1
+        except Exception as exc:
+            errors.append(
+                {
+                    'participant_id': participant.id,
+                    'email': participant.membership.user.email,
+                    'reason': str(exc),
+                }
+            )
+
+    if election.voter_invites_sent_at is None:
+        election.voter_invites_sent_at = timezone.now()
+        election.save(update_fields=['voter_invites_sent_at'])
+
+    return {
+        'sent_count': sent_count,
+        'links_created': links_created,
+        'links_refreshed': links_refreshed,
+        'errors': errors,
+        'already_dispatched': False,
+    }

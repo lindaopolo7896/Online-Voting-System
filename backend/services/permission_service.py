@@ -81,31 +81,23 @@ ELECTION_PERMISSIONS = [
 ]
 
 
-# Role-based defaults. Roles not listed fall back to "others".
+# Role-based defaults. Unknown roles fall back to "member".
 default_org_permissions = {
     "admin": ORG_PERMISSIONS,
-    "others": [
-        "view.organisation",
-        "view.membership",
-    ],
     "official": [
         "view.organisation",
         "view.membership",
         "view.log",
         "add.election",
     ],
+    "member": [
+        "view.organisation",
+        "view.membership",
+    ],
 }
 
 default_election_permissions = {
     "admin": ELECTION_PERMISSIONS,
-    "others": [
-        "view.election",
-        "view.position",
-        "view.participant",
-        "view.candidate",
-        "add.vote",
-        "view.results",
-    ],
     "official": [
         "view.election",
         "start.election",
@@ -127,12 +119,20 @@ default_election_permissions = {
         "view.voting_link",
         "delete.voting_link",
     ],
+    "member": [
+        "view.election",
+        "view.position",
+        "view.participant",
+        "view.candidate",
+        "add.vote",
+        "view.results",
+    ],
 }
 
 
 def get_permissions_for_role(role, scope):
     table = default_election_permissions if scope == "election" else default_org_permissions
-    return table.get(role, table.get("others", []))
+    return table.get(role, table["member"])
 
 
 # --- Default seeding (called when a membership / election role is created) ---
