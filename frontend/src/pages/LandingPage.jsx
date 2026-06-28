@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import HeroImg from "../assets/images/landing/landing.jpg";
+import Img1 from "../assets/images/landing/img1.png";
+import Img2 from "../assets/images/landing/img2.png";
+import Img3 from "../assets/images/landing/img3.png";
+
+import Logo from "../assets/logo/logo.png";
+import { FiLock, FiZap, FiShield, FiLink } from "react-icons/fi";
 
 const EASE = [0.22, 1, 0.36, 1];
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
@@ -11,68 +18,7 @@ const fadeUp = {
 
 const ACCENT = "#144DEF";
 
-/* ── Top bar ────────────────────────────────────────────────────────────── */
-function TopBar() {
-  return (
-    <div className="hidden md:block border-b border-white/[0.05] bg-[#05060C]">
-      <div className="max-w-7xl mx-auto px-6 md:px-10 h-10 flex items-center justify-between text-xs text-white/40">
-        <div className="flex items-center gap-6">
-          <span className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            Blockchain network online
-          </span>
-          <span className="flex items-center gap-2">
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-              />
-            </svg>
-            support@votex.online
-          </span>
-          <span className="flex items-center gap-2">
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            Mon–Fri, 9am–5pm
-          </span>
-        </div>
-        <div className="flex items-center gap-4 text-white/40">
-          {[
-            "M22 12a10 10 0 10-11.5 9.9v-7H8v-2.9h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6v1.9H17l-.4 2.9h-2.1v7A10 10 0 0022 12z",
-            "M23 5a8.5 8.5 0 01-2.4.7A4.2 4.2 0 0022.4 3a8.4 8.4 0 01-2.7 1A4.2 4.2 0 0012.5 7.8 11.9 11.9 0 014 3.4a4.2 4.2 0 001.3 5.6 4.2 4.2 0 01-1.9-.5v.1a4.2 4.2 0 003.4 4.1 4.2 4.2 0 01-1.9.1 4.2 4.2 0 003.9 2.9A8.4 8.4 0 012 17.5a11.9 11.9 0 006.4 1.9c7.7 0 11.9-6.4 11.9-11.9v-.5A8.5 8.5 0 0023 5z",
-            "M16 8a6 6 0 016 6v6h-4v-6a2 2 0 00-4 0v6h-4v-6a6 6 0 016-6zM2 9h4v12H2zM4 6a2 2 0 100-4 2 2 0 000 4z",
-          ].map((d, i) => (
-            <a key={i} href="#" className="hover:text-white transition-colors">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d={d} />
-              </svg>
-            </a>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Navbar ─────────────────────────────────────────────────────────────── */
+/* Navbar  */
 function Navbar() {
   const [open, setOpen] = useState(false);
   const links = [
@@ -84,12 +30,13 @@ function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#06070E]/90 backdrop-blur-lg">
-      <div className="max-w-7xl mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6  h-20 flex items-center justify-between">
         <Link
           to="/"
-          className="text-white text-2xl font-extrabold tracking-wide select-none"
+          className="text-primary text-2xl font-extrabold tracking-wide flex items-center gap-3 select-none"
         >
-          VOTE<span style={{ color: ACCENT }}>X</span>
+          <img src={Logo} alt="votex logo" className="w-14" />
+          VOTEX
         </Link>
 
         <nav className="hidden lg:flex items-center gap-9 text-sm font-semibold tracking-wide text-white/50 uppercase">
@@ -202,7 +149,7 @@ function Navbar() {
   );
 }
 
-/* ── Hero ───────────────────────────────────────────────────────────────── */
+/* Hero  */
 function Hero() {
   return (
     <section id="home" className="relative bg-[#06070E] overflow-hidden">
@@ -210,8 +157,7 @@ function Hero() {
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1541872705-1f73c6400ec9?auto=format&fit=crop&w=2000&q=80')",
+          backgroundImage: `url(${HeroImg})`,
         }}
       />
       <div className="absolute inset-0 bg-[#06070E]/85" />
@@ -230,57 +176,6 @@ function Hero() {
       <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-[#06070E] to-transparent pointer-events-none" />
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 text-center flex flex-col items-center min-h-[calc(100vh-6.5rem)] justify-center py-24">
-        {/* Play button */}
-        <motion.button
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: EASE }}
-          className="relative mb-10 group"
-          aria-label="Watch how it works"
-        >
-          <span
-            className="absolute inset-0 rounded-full animate-ping"
-            style={{ backgroundColor: "rgba(20,77,239,0.25)" }}
-          />
-          <span
-            className="relative flex w-16 h-16 items-center justify-center rounded-full text-white"
-            style={{
-              backgroundColor: ACCENT,
-              boxShadow: "0 0 30px rgba(20,77,239,0.5)",
-            }}
-          >
-            <svg
-              className="w-6 h-6 ml-0.5"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </span>
-        </motion.button>
-
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.1, ease: EASE }}
-          className="inline-flex items-center gap-2 border rounded-full px-4 py-1.5 mb-7"
-          style={{
-            borderColor: "rgba(20,77,239,0.3)",
-            backgroundColor: "rgba(20,77,239,0.1)",
-          }}
-        >
-          <span
-            className="w-1.5 h-1.5 rounded-full animate-pulse"
-            style={{ backgroundColor: ACCENT }}
-          />
-          <span
-            className="text-xs font-bold tracking-[0.18em] uppercase"
-            style={{ color: ACCENT }}
-          >
-            Blockchain-Secured Voting
-          </span>
-        </motion.div>
-
         <motion.h1
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -337,8 +232,95 @@ function Hero() {
     </section>
   );
 }
+// STATS
+const stats = [
+  {
+    value: "100%",
+    label: "Anonymous Votes",
+    icon: <FiLock />,
+  },
+  {
+    value: "24/7",
+    label: "Election Availability",
+    icon: <FiZap />,
+  },
+  {
+    value: "256-bit",
+    label: "Data Protection",
+    icon: <FiShield />,
+  },
+  {
+    value: "Tamper-Proof",
+    label: "Vote Records",
+    icon: <FiLink />,
+  },
+];
 
-/* ── Features (numbered service cards) ──────────────────────────────────── */
+function TrustStats() {
+  return (
+    <section className="relative z-20  px-6">
+      <div
+        className="
+        mx-auto max-w-6xl
+        rounded-3xl
+        -mt-14
+        border 
+        border-white/[0.06] bg-[#06070E]/90 backdrop-blur-lg
+        shadow-2xl
+        px-8 py-7
+        "
+      >
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+          {stats.map((item, index) => (
+            <div
+              key={index}
+              className="
+              flex items-center gap-4
+              md:border-r md:border-white/10
+              last:border-none
+              "
+            >
+              <div
+                className="
+                flex h-12 w-12 items-center justify-center
+                rounded-xl
+                text-white
+                bg-[#144DEF]/80
+                text-2xl
+                "
+              >
+                {item.icon}
+              </div>
+
+              <div>
+                <h3
+                  className="
+                  text-2xl
+                  font-bold
+                  text-white
+                  "
+                >
+                  {item.value}
+                </h3>
+
+                <p
+                  className="
+                  text-sm
+                  text-gray-400
+                  "
+                >
+                  {item.label}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Features  */
 const FEATURES = [
   {
     title: "Blockchain Anchored",
@@ -377,10 +359,7 @@ const FEATURE_ICONS = [
 
 function Features() {
   return (
-    <section
-      id="features"
-      className="bg-[#06070E] py-24 px-6 md:px-12 lg:px-20"
-    >
+    <section id="features" className="bg-white py-24 px-6 md:px-12 lg:px-20">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Left intro */}
@@ -392,17 +371,17 @@ function Features() {
             className="lg:sticky lg:top-28 self-start"
           >
             <p
-              className="text-xs font-bold tracking-[0.22em] uppercase mb-4"
+              className="text-md font-bold tracking-[0.22em] uppercase mb-4"
               style={{ color: ACCENT }}
             >
-              ◆◆◆ Why Votex
+              Why Votex
             </p>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white leading-tight mb-5">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-black leading-tight mb-5">
               Explore Our
               <br />
               Best Features
             </h2>
-            <p className="text-white/45 text-sm leading-relaxed mb-8">
+            <p className="text-black/45 text-sm leading-relaxed mb-8">
               Every feature exists to remove trust assumptions from the process
               — replacing them with cryptographic guarantees that anyone can
               verify.
@@ -430,9 +409,9 @@ function Features() {
                 key={f.title}
                 variants={fadeUp}
                 whileHover={{ y: -5 }}
-                className="group relative bg-white/[0.03] border border-white/[0.07] rounded-lg p-7 flex flex-col gap-4 hover:border-white/20 transition-colors duration-200 overflow-hidden"
+                className="group relative bg-black/[0.03] border border-black/[0.07] rounded-lg p-7 flex flex-col gap-4 hover:border-black/20 transition-colors duration-200 overflow-hidden"
               >
-                <span className="absolute top-5 right-6 text-4xl font-extrabold text-white/[0.06] group-hover:text-white/10 transition-colors select-none">
+                <span className="absolute top-5 right-6 text-4xl font-extrabold text-black/[0.06] group-hover:text-black/10 transition-colors select-none">
                   0{i + 1}
                 </span>
                 <div
@@ -456,8 +435,8 @@ function Features() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-white font-bold text-base">{f.title}</h3>
-                <p className="text-white/45 text-sm leading-relaxed">
+                <h3 className="text-black font-bold text-base">{f.title}</h3>
+                <p className="text-black/45 text-sm leading-relaxed">
                   {f.desc}
                 </p>
               </motion.div>
@@ -469,19 +448,16 @@ function Features() {
   );
 }
 
-/* ── Ready section (split + stat badge) ─────────────────────────────────── */
+/* Ready section  */
 function Ready() {
   const points = [
-    "Enrol thousands of voters in a single bulk upload.",
+    "Enroll thousands of voters in a single bulk upload.",
     "Build multi-position ballots in minutes, no code required.",
     "Watch turnout climb live, then publish results on-chain.",
   ];
 
   return (
-    <section
-      id="ready"
-      className="bg-[#080A12] py-24 px-6 md:px-12 lg:px-20 border-y border-white/[0.05]"
-    >
+    <section id="ready" className="bg-white py-24 px-6 md:px-12 lg:px-20">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
         {/* Visual collage */}
         <motion.div
@@ -493,12 +469,36 @@ function Ready() {
         >
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-4">
-              <div className="h-40 rounded-xl bg-gradient-to-br from-[#144DEF]/30 to-[#144DEF]/5 border border-white/10" />
-              <div className="h-28 rounded-xl bg-white/[0.04] border border-white/10" />
+              <div className="h-40  rounded-xl">
+                <img
+                  src={Img1}
+                  alt=""
+                  className="object-fit w-full rounded-xl h-full"
+                />
+              </div>
+              <div className="h-32  rounded-xl">
+                <img
+                  src={Img2}
+                  alt=""
+                  className="object-fit w-full rounded-xl h-full"
+                />
+              </div>
             </div>
             <div className="space-y-4 pt-8">
-              <div className="h-28 rounded-xl bg-white/[0.04] border border-white/10" />
-              <div className="h-40 rounded-xl bg-gradient-to-br from-white/10 to-transparent border border-white/10" />
+              <div className="h-32  rounded-xl">
+                <img
+                  src={Img3}
+                  alt=""
+                  className="object-fit w-full rounded-xl h-full"
+                />
+              </div>
+              <div className="h-40  rounded-xl">
+                <img
+                  src={Img1}
+                  alt=""
+                  className="object-fit w-full rounded-xl h-full"
+                />
+              </div>
             </div>
           </div>
           {/* Stat badge */}
@@ -526,17 +526,17 @@ function Ready() {
           transition={{ duration: 0.7, ease: EASE }}
         >
           <p
-            className="text-xs font-bold tracking-[0.22em] uppercase mb-4"
+            className="text-md font-bold tracking-[0.22em] uppercase mb-4"
             style={{ color: ACCENT }}
           >
-            ◆◆◆ Ready When You Are
+            Ready When You Are
           </p>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white leading-tight mb-5">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-black leading-tight mb-5">
             Are You Ready To
             <br />
             Run Your <span style={{ color: ACCENT }}>Election?</span>
           </h2>
-          <p className="text-white/45 text-sm leading-relaxed mb-8">
+          <p className="text-black/45 text-sm leading-relaxed mb-8">
             From a campus student council to a national association, Votex
             scales with you — pairing an effortless admin experience with
             uncompromising cryptographic security.
@@ -576,8 +576,8 @@ function Ready() {
                   </svg>
                 </div>
                 <div>
-                  <h4 className="text-white font-bold text-sm">{c.title}</h4>
-                  <p className="text-white/40 text-xs mt-1 leading-relaxed">
+                  <h4 className="text-black font-bold text-sm">{c.title}</h4>
+                  <p className="text-black/40 text-xs mt-1 leading-relaxed">
                     {c.desc}
                   </p>
                 </div>
@@ -589,7 +589,7 @@ function Ready() {
             {points.map((p) => (
               <li
                 key={p}
-                className="flex items-start gap-3 text-white/55 text-sm"
+                className="flex items-start gap-3 text-black/55 text-sm"
               >
                 <span
                   className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
@@ -620,7 +620,7 @@ function Ready() {
   );
 }
 
-/* ── Trusted by (logo grid) ─────────────────────────────────────────────── */
+/* Trusted by */
 const ORGS = [
   "Student Council",
   "Co-operative",
@@ -702,7 +702,7 @@ function Trusted() {
   );
 }
 
-/* ── Process (filter-style steps) ───────────────────────────────────────── */
+/* ── Process  */
 const STEPS = [
   {
     num: "01",
@@ -732,10 +732,7 @@ const STEPS = [
 
 function Process() {
   return (
-    <section
-      id="process"
-      className="bg-[#080A12] py-24 px-6 md:px-12 lg:px-20 border-t border-white/[0.05]"
-    >
+    <section id="process" className="bg-white py-24 px-6 md:px-12 lg:px-20  ">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -976,11 +973,11 @@ function LandingPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="w-full bg-[#06070E]"
+      className="w-full "
     >
-      <TopBar />
       <Navbar />
       <Hero />
+      <TrustStats />
       <Features />
       <Ready />
       <Trusted />

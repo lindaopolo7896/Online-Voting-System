@@ -34,19 +34,23 @@ import OrganisationDashboardPage from "../pages/organisation/OrganisationDashboa
 import OrganisationElectionsPage from "../pages/organisation/OrganisationElectionsPage";
 import OrganisationCandidatesPage from "../pages/organisation/OrganisationCandidatesPage";
 import OrganisationMembersPage from "../pages/organisation/OrganisationMembersPage";
+import OrganisationVotersPage from "../pages/organisation/OrganisationVotersPage";
 import OrganisationPermissionsPage from "../pages/organisation/OrganisationPermissionsPage";
 import OrganisationResultsPage from "../pages/organisation/OrganisationResultsPage";
 import OrganisationAnalyticsPage from "../pages/organisation/OrganisationAnalyticsPage";
 import OrganisationSettingsPage from "../pages/organisation/OrganisationSettingsPage";
 import CreateElectionPage from "../pages/organisation/CreateElectionPage";
 
-import ComingSoon from "../pages/ComingSoon";
+import LandingPage from "../pages/LandingPage";
 
 function AppRoutes() {
   return (
     <Routes>
       {/* Public landing */}
-      <Route path="/" element={<ComingSoon />} />
+      <Route path="/" element={<LandingPage />} />
+
+      {/* Voting-link entry — public: the OTP here is what authenticates the voter */}
+      <Route path="/voter-verification" element={<LinkVerificationPage />} />
 
       {/* Guest-only: redirect logged-in users to their dashboard */}
       <Route element={<GuestRoute />}>
@@ -58,9 +62,8 @@ function AppRoutes() {
         <Route path="/confirmation" element={<Confirmation />} />
       </Route>
 
-      {/* Voting flow — requires authentication */}
+      {/* Voting flow — requires authentication (entry is /voter-verification above) */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/voter-verification" element={<LinkVerificationPage />} />
         <Route path="/voting-details" element={<VotingAccess />} />
         <Route path="/voting-instructions" element={<VotingInstructions />} />
         <Route path="/vote" element={<VotePage />} />
@@ -102,6 +105,10 @@ function AppRoutes() {
           <Route
             path="/organisation/members"
             element={<OrganisationMembersPage />}
+          />
+          <Route
+            path="/organisation/voters"
+            element={<OrganisationVotersPage />}
           />
           <Route
             path="/organisation/permissions"

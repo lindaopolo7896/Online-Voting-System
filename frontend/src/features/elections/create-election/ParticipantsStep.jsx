@@ -7,8 +7,7 @@ import { getMemberships } from "../../../api/permissionsApi";
 const ROLE_BADGE = {
   admin: "bg-purple-500/12 text-purple-400",
   official: "bg-blue-500/12 text-blue-400",
-  candidate: "bg-yellow-500/12 text-yellow-400",
-  participant: "bg-green-500/12 text-green-400",
+  member: "bg-green-500/12 text-green-400",
 };
 
 const SUPPORTED_FIELDS = [
@@ -20,7 +19,7 @@ const SUPPORTED_FIELDS = [
   {
     name: "role",
     required: false,
-    note: "admin | official | candidate | participant (defaults to participant)",
+    note: "admin | official | member (defaults to member)",
   },
 ];
 
@@ -91,12 +90,14 @@ function ParticipantsStep({
           candidates in one go.
         </p>
         <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-xs text-muted">
-          <span className="font-semibold text-text">Tip:</span> In the upload
-          file, set <span className="font-mono text-primary">role=participant</span>{" "}
-          for voters and{" "}
-          <span className="font-mono text-primary">role=candidate</span> for
-          people who will stand for positions. Candidates can be assigned to
-          positions from the Candidates page after the election is created.
+          <span className="font-semibold text-text">Tip:</span> Everyone you add
+          becomes a participant (voter). The optional{" "}
+          <span className="font-mono text-primary">role</span> column sets their
+          organisation role (<span className="font-mono text-primary">member</span>,{" "}
+          <span className="font-mono text-primary">official</span>, or{" "}
+          <span className="font-mono text-primary">admin</span>). You can register
+          any participant as a candidate for a position from the next step or the
+          Candidates page.
         </div>
       </div>
 

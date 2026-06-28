@@ -1,10 +1,9 @@
 import { X, Mail, Phone, User, Calendar, ShieldCheck } from "lucide-react";
 
 const ROLE_BADGE = {
-  admin:       "bg-purple-500/10 text-purple-600 border-purple-500/20",
-  official:    "bg-blue-500/10   text-blue-600   border-blue-500/20",
-  candidate:   "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
-  participant: "bg-green-500/10  text-green-600  border-green-500/20",
+  admin:    "bg-purple-500/10 text-purple-600 border-purple-500/20",
+  official: "bg-blue-500/10   text-blue-600   border-blue-500/20",
+  member:   "bg-green-500/10  text-green-600  border-green-500/20",
 };
 
 function Row({ icon: Icon, label, value }) {
@@ -41,7 +40,7 @@ function ViewMemberModal({ member, onClose }) {
           <div>
             <h2 className="font-semibold text-text">{name}</h2>
             <span className={`inline-flex mt-1 rounded border px-2 py-0.5 text-xs font-semibold capitalize ${ROLE_BADGE[member.role] ?? "bg-slate-50 border-slate-300 text-slate-600"}`}>
-              {member.role ?? "participant"}
+              {member.role ?? "member"}
             </span>
           </div>
         </div>

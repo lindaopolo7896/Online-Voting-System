@@ -129,11 +129,11 @@ function CreateElectionPage() {
 
       // 4. Enroll selected existing org members as participants
       for (const membershipId of selectedMemberIds) {
-        await createParticipant(election.id, membershipId);
+        await createParticipant(election.id, { membership_id: membershipId });
       }
 
       // 5. Bulk upload CSV/XLSX file (creates users + memberships server-side).
-      //    role=candidate rows will be assignable in the next step.
+      //    Any uploaded participant can be registered as a candidate next.
       if (participantsFile) {
         await bulkUploadParticipants(election.id, participantsFile);
       }

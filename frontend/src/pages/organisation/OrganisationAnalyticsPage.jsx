@@ -237,7 +237,7 @@ function OrganisationAnalyticsPage() {
   const roleCounts = useMemo(() => {
     const counts = {};
     memberships.forEach((m) => {
-      const role = m.role ?? "participant";
+      const role = m.role ?? "member";
       counts[role] = (counts[role] ?? 0) + 1;
     });
     return counts;
@@ -279,7 +279,7 @@ function OrganisationAnalyticsPage() {
           icon={Users}
           label="Total Members"
           value={memberships.length}
-          sub={`${roleCounts.candidate ?? 0} candidates`}
+          sub={`${roleCounts.official ?? 0} officials`}
         />
         <KpiCard
           icon={CheckCircle2}

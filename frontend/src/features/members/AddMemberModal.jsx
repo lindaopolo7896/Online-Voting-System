@@ -5,7 +5,7 @@ import { X, UserPlus } from "lucide-react";
 import { createMembership } from "../../api/organisationApi";
 import useAuth from "../../hooks/useAuth";
 
-const ROLES = ["participant", "candidate", "official", "admin"];
+const ROLES = ["member", "official", "admin"];
 
 function Field({ label, error, children }) {
   return (
@@ -25,7 +25,7 @@ function AddMemberModal({ onClose }) {
     first_name: "",
     last_name: "",
     email: "",
-    role: "participant",
+    role: "member",
     phone: "",
     bio: "",
   });

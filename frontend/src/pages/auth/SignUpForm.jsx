@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
-import PasswordInput from "../../components/ui/PasswordInput";
 import AuthHeader from "../../components/ui/AuthHeader";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -24,13 +23,11 @@ function SignUpForm() {
   function onSubmit(data) {
     registerOrganisation.mutate(data, {
       onSuccess: () => {
-        toast.success("User registered successfully");
+        toast.success("Account created. We sent a code to your email.");
 
         reset();
 
-        setTimeout(() => {
-          navigate("/sign-in");
-        }, 3000);
+        navigate("/verify-email", { state: { email: data.email } });
       },
 
       onError: (error) => {
@@ -75,18 +72,6 @@ function SignUpForm() {
             pattern: {
               value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
               message: "Invalid Email Format",
-            },
-          })}
-        />
-        <PasswordInput
-          label="Password"
-          placeholder="Setup your password"
-          error={errors.password?.message}
-          {...register("password", {
-            required: "Password is required",
-            minLength: {
-              value: 8,
-              message: "Password must be a minimum of 8 characters",
             },
           })}
         />
