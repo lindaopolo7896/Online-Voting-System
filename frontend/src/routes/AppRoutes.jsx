@@ -26,8 +26,8 @@ import GuestRoute from "../components/auth/GuestRoute";
 import VoterDashboard from "../pages/Voter/VoterDashboard";
 import ResultsPage from "../pages/Voter/ResultsPage";
 import ResultPage from "../pages/Voter/ResultPage";
-import VoterOrganisationsPage from "../pages/Voter/VoterOrganisationsPage";
 import VoterSettingsPage from "../pages/Voter/VoterSettingsPage";
+import VoterCandidacyPage from "../pages/Voter/VoterCandidacyPage";
 
 // Organisation pages
 import OrganisationDashboardPage from "../pages/organisation/OrganisationDashboardPage";
@@ -75,10 +75,7 @@ function AppRoutes() {
           <Route path="/voter/dashboard" element={<VoterDashboard />} />
           <Route path="/voter/results" element={<ResultsPage />} />
           <Route path="/voter/results/:id" element={<ResultPage />} />
-          <Route
-            path="/voter/organisations"
-            element={<VoterOrganisationsPage />}
-          />
+          <Route path="/voter/candidacy" element={<VoterCandidacyPage />} />
           <Route path="/voter/settings" element={<VoterSettingsPage />} />
         </Route>
       </Route>

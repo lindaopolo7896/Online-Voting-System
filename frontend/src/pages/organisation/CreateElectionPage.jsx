@@ -9,7 +9,10 @@ import {
   createParticipant,
   bulkUploadParticipants,
 } from "../../api/organisationApi";
-import { bulkAssignPermissions } from "../../api/permissionsApi";
+import {
+  bulkAssignPermissions,
+  getMembershipPermissions,
+} from "../../api/permissionsApi";
 
 import ElectionStepper from "../../features/elections/create-election/ElectionStepper";
 import ElectionInfoStep from "../../features/elections/create-election/ElectionInfoStep";
@@ -110,12 +113,27 @@ function CreateElectionPage() {
         organisation_id: user.organisationId,
       });
 
-      // 2. Safety-net: ensure admin has all election-management permissions
-      await bulkAssignPermissions({
-        type: "organisation",
-        membership_id: user.membershipId,
-        permissions: ADMIN_ORG_PERMISSIONS,
-      });
+      // 2. Safety-net: ensure the admin has the org permissions needed to
+      //    manage this election. MERGE with their current org permissions so
+      //    this never overwrites/strips existing ones (bulk_assign replaces the
+      //    whole org scope). Non-fatal — the admin already holds these from
+      //    registration, so a sync hiccup shouldn't block election creation.
+      try {
+        const existing = await getMembershipPermissions(user.membershipId);
+        const orgPerms = new Set(
+          (existing ?? [])
+            .filter((p) => !p.election)
+            .map((p) => p.codename),
+        );
+        ADMIN_ORG_PERMISSIONS.forEach((c) => orgPerms.add(c));
+        await bulkAssignPermissions({
+          type: "organisation",
+          membership_id: user.membershipId,
+          permissions: [...orgPerms],
+        });
+      } catch {
+        // ignore — don't block election creation on a permission sync failure
+      }
 
       // 3. Create positions
       const nonEmptyPositions = positions.filter((p) => p.trim());

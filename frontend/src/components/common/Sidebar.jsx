@@ -14,7 +14,7 @@ import {
 import { NavLink } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import { RiDashboardFill } from "react-icons/ri";
-import { FaClipboardList, FaBuilding } from "react-icons/fa";
+import { FaClipboardList } from "react-icons/fa";
 import { IoMdSettings } from "react-icons/io";
 import Logo from "../../assets/logo/logo.png";
 
@@ -67,11 +67,7 @@ const voterSections = [
     items: [
       { label: "Dashboard", path: "/voter/dashboard", icon: RiDashboardFill },
       { label: "Results", path: "/voter/results", icon: FaClipboardList },
-      {
-        label: "My Organisations",
-        path: "/voter/organisations",
-        icon: FaBuilding,
-      },
+      { label: "My Candidacy", path: "/voter/candidacy", icon: UserCheck },
       { label: "Settings", path: "/voter/settings", icon: IoMdSettings },
     ],
   },
