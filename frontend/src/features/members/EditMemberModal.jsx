@@ -4,14 +4,14 @@ import { toast } from "react-toastify";
 import { X, UserCog } from "lucide-react";
 import { updateMembership } from "../../api/organisationApi";
 
-const ROLES = ["participant", "candidate", "official", "admin"];
+const ROLES = ["member", "official", "admin"];
 
 function EditMemberModal({ member, onClose }) {
   const queryClient = useQueryClient();
   const u = member.user ?? {};
   const name = `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim() || `Member #${member.id}`;
 
-  const [role, setRole] = useState(member.role ?? "participant");
+  const [role, setRole] = useState(member.role ?? "member");
   const [isActive, setIsActive] = useState(member.is_active ?? true);
 
   const { mutate, isPending } = useMutation({

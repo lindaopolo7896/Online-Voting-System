@@ -6,11 +6,16 @@ function DropdownPortal({ items }) {
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
   const btnRef = useRef(null);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     if (!open) return;
     function handleClick(e) {
-      if (btnRef.current && !btnRef.current.contains(e.target)) {
+      // The menu is portaled to <body>, so it's outside btnRef — check it too,
+      // otherwise mousedown on an item closes the menu before its click fires.
+      const insideButton = btnRef.current?.contains(e.target);
+      const insideMenu = menuRef.current?.contains(e.target);
+      if (!insideButton && !insideMenu) {
         setOpen(false);
       }
     }
@@ -46,6 +51,7 @@ function DropdownPortal({ items }) {
 
       {open && createPortal(
         <div
+          ref={menuRef}
           style={{ position: "fixed", top: coords.top, left: coords.left, zIndex: 9999 }}
           className="w-48 rounded-xl border border-border bg-surface shadow-xl overflow-hidden"
         >

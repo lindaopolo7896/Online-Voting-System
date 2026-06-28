@@ -20,8 +20,7 @@ function voterEmail(p) {
 const ROLE_BADGE = {
   admin: "bg-purple-500/10 text-purple-500 border-purple-500/20",
   official: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  candidate: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
-  participant: "bg-green-500/10 text-green-600 border-green-500/20",
+  member: "bg-green-500/10 text-green-600 border-green-500/20",
 };
 
 const columns = [
@@ -48,9 +47,9 @@ const columns = [
   {
     id: "role",
     header: "ROLE",
-    accessorFn: (row) => row.role ?? "participant",
+    accessorFn: (row) => row.membership?.role ?? row.role ?? "member",
     cell: ({ row }) => {
-      const role = row.original.role ?? "participant";
+      const role = row.original.membership?.role ?? row.original.role ?? "member";
       return (
         <span
           className={`inline-flex rounded border px-2 py-0.5 text-xs font-semibold capitalize ${

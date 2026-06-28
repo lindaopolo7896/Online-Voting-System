@@ -28,7 +28,7 @@ function ActionsMenu({ election, onView, onEdit, onManageMembers, onDelete }) {
   const items = [
     { label: "View Election",   icon: Eye,    onClick: () => onView(election),          disabled: false,  danger: false },
     { label: "Edit Election",   icon: Pencil, onClick: () => onEdit(election),          disabled: locked, danger: false },
-    { label: "Manage Members",  icon: Users,  onClick: () => onManageMembers(election), disabled: locked, danger: false },
+    { label: "Manage Voters",   icon: Users,  onClick: () => onManageMembers(election), disabled: locked, danger: false },
     { label: "Delete Election", icon: Trash2, onClick: () => onDelete(election),        disabled: locked, danger: true  },
   ];
 
@@ -142,7 +142,7 @@ function ElectionsTable({ elections = [], participantQueries = [], candidateQuer
           election={row.original}
           onView={setViewing}
           onEdit={setEditing}
-          onManageMembers={(e) => navigate(`/organisation/members?election_id=${e.id}`)}
+          onManageMembers={(e) => navigate(`/organisation/voters?election_id=${e.id}`)}
           onDelete={setDeleting}
         />
       ),

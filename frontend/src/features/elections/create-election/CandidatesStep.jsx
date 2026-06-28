@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { UserCheck, ChevronRight } from "lucide-react";
@@ -26,10 +26,8 @@ function CandidatesStep({ electionId, onNext }) {
     enabled: !!electionId,
   });
 
-  const candidateParticipants = useMemo(
-    () => participants.filter((p) => p.membership?.role === "candidate"),
-    [participants],
-  );
+  // Any participant can be registered as a candidate — candidacy is not a role.
+  const eligibleParticipants = participants;
 
   async function handleAssign(participantId) {
     const positionId = assignments[participantId];
@@ -72,20 +70,18 @@ function CandidatesStep({ electionId, onNext }) {
         <p className="py-10 text-center text-sm text-muted">
           Loading participants…
         </p>
-      ) : candidateParticipants.length === 0 ? (
+      ) : eligibleParticipants.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border p-10 text-center">
           <UserCheck size={32} className="mx-auto mb-3 text-muted" />
-          <p className="font-medium text-text">No candidate participants found</p>
+          <p className="font-medium text-text">No participants found</p>
           <p className="mt-1 text-sm text-muted">
-            Upload participants with{" "}
-            <span className="font-mono text-primary">role=candidate</span> in
-            the CSV to register them here, or skip and assign from the
-            Candidates page after creation.
+            Add participants in the previous step to register them as candidates
+            here, or skip and assign from the Candidates page after creation.
           </p>
         </div>
       ) : (
         <div className="space-y-3">
-          {candidateParticipants.map((p) => {
+          {eligibleParticipants.map((p) => {
             const u = p.membership?.user ?? {};
             const name =
               `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim() ||
@@ -155,8 +151,8 @@ function CandidatesStep({ electionId, onNext }) {
 
       <div className="mt-8 flex items-center justify-between">
         <p className="text-xs text-muted">
-          {assignedCount} of {candidateParticipants.length} candidate
-          {candidateParticipants.length !== 1 ? "s" : ""} assigned
+          {assignedCount} of {eligibleParticipants.length} participant
+          {eligibleParticipants.length !== 1 ? "s" : ""} registered as candidates
         </p>
 
         <button

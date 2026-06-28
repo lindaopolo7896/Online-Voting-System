@@ -18,6 +18,7 @@ function VerifyEmail() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const email = state?.email;
+  const votingToken = state?.voting_token;
   const { login } = useAuth();
 
   // Redirect back to sign-in if arrived without an email
@@ -64,7 +65,7 @@ function VerifyEmail() {
 
   // Verify OTP
   const verifyMutation = useMutation({
-    mutationFn: ({ email, otp }) => verifyOtp({ email, otp }),
+    mutationFn: ({ email, otp }) => verifyOtp({ email, otp, voting_token: votingToken }),
     onSuccess: (data) => {
       const access = data?.access ?? "";
       const refresh = data?.refresh ?? "";
@@ -83,7 +84,10 @@ function VerifyEmail() {
         organisationId: data?.membership?.organisation_id,
       });
 
-      if (role === "admin") {
+      // Came in through a voting link → continue into the voting flow.
+      if (votingToken) {
+        navigate("/voting-details", { replace: true });
+      } else if (role === "admin") {
         navigate("/organisation/dashboard", { replace: true });
       } else {
         navigate("/voter/dashboard", { replace: true });
@@ -107,7 +111,7 @@ function VerifyEmail() {
 
   // Resend OTP
   const resendMutation = useMutation({
-    mutationFn: () => requestOtp(email),
+    mutationFn: () => requestOtp(email, votingToken),
     onSuccess: () => {
       toast.success("A new code has been sent to your email.");
       setCountdownKey((k) => k + 1); // re-mount countdown to reset timer

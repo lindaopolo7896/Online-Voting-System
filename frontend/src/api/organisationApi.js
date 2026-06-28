@@ -187,6 +187,16 @@ export const getMembership = (id) =>
 export const createMembership = (data) =>
   apiClient.post("/memberships/", data).then((r) => r.data);
 
+export const bulkUploadMembers = async (file, organisationId) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  if (organisationId != null) formData.append("organisation_id", organisationId);
+  const r = await apiClient.post("/memberships/bulk-upload/", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return r.data;
+};
+
 export const updateMembership = (id, data) =>
   apiClient.patch(`/memberships/${id}/`, data).then((r) => r.data);
 

@@ -5,13 +5,20 @@ export const registerOrganisation = async (data) => {
   return response.data;
 };
 
-export const requestOtp = async (email) => {
-  const response = await apiClient.post("/auth/request-otp/", { email });
+export const requestOtp = async (email, votingToken) => {
+  const response = await apiClient.post("/auth/request-otp/", {
+    email,
+    ...(votingToken && { voting_token: votingToken }),
+  });
   return response.data;
 };
 
-export const verifyOtp = async ({ email, otp }) => {
-  const response = await apiClient.post("/auth/verify-otp/", { email, code: otp });
+export const verifyOtp = async ({ email, otp, voting_token }) => {
+  const response = await apiClient.post("/auth/verify-otp/", {
+    email,
+    code: otp,
+    ...(voting_token && { voting_token }),
+  });
   return response.data;
 };
 

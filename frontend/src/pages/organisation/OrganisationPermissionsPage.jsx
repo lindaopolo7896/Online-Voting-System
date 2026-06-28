@@ -8,8 +8,11 @@ import {
   getMembershipPermissions,
   bulkAssignPermissions,
 } from "../../api/permissionsApi";
+import { getElections } from "../../api/organisationApi";
 
-const PERMISSION_GROUPS = [
+// Organisation-scoped permissions (election == null). Mirrors ORG_PERMISSIONS
+// in the backend services/permission_service.py.
+const ORG_PERMISSION_GROUPS = [
   {
     group: "Organisation",
     permissions: [
@@ -17,15 +20,6 @@ const PERMISSION_GROUPS = [
       { codename: "add.organisation", label: "Create" },
       { codename: "update.organisation", label: "Edit" },
       { codename: "delete.organisation", label: "Delete" },
-    ],
-  },
-  {
-    group: "Elections",
-    permissions: [
-      { codename: "view.election", label: "View" },
-      { codename: "add.election", label: "Create" },
-      { codename: "update.election", label: "Edit" },
-      { codename: "delete.election", label: "Delete" },
     ],
   },
   {
@@ -38,21 +32,50 @@ const PERMISSION_GROUPS = [
     ],
   },
   {
-    group: "Candidates",
+    group: "Permissions",
     permissions: [
-      { codename: "view.candidate", label: "View" },
-      { codename: "add.candidate", label: "Add" },
-      { codename: "update.candidate", label: "Edit" },
-      { codename: "delete.candidate", label: "Remove" },
+      { codename: "view.permission", label: "View" },
+      { codename: "assign.permission", label: "Assign" },
+      { codename: "unassign.permission", label: "Revoke" },
     ],
   },
   {
-    group: "Voters",
+    group: "Logs",
     permissions: [
-      { codename: "view.participant", label: "View" },
-      { codename: "add.participant", label: "Add" },
-      { codename: "update.participant", label: "Edit" },
-      { codename: "delete.participant", label: "Remove" },
+      { codename: "view.log", label: "View" },
+      { codename: "delete.log", label: "Delete" },
+    ],
+  },
+  {
+    group: "Elections",
+    permissions: [
+      { codename: "view.election", label: "View" },
+      { codename: "add.election", label: "Create" },
+      { codename: "update.election", label: "Edit" },
+      { codename: "delete.election", label: "Delete" },
+    ],
+  },
+  {
+    group: "Voting Links",
+    permissions: [
+      { codename: "view.voting_link", label: "View" },
+      { codename: "add.voting_link", label: "Create" },
+    ],
+  },
+];
+
+// Election-scoped permissions (tied to a specific election). Mirrors
+// ELECTION_PERMISSIONS in the backend services/permission_service.py.
+const ELECTION_PERMISSION_GROUPS = [
+  {
+    group: "Election",
+    permissions: [
+      { codename: "view.election", label: "View" },
+      { codename: "update.election", label: "Edit" },
+      { codename: "delete.election", label: "Delete" },
+      { codename: "start.election", label: "Start" },
+      { codename: "close.election", label: "Close" },
+      { codename: "publish.results", label: "Publish Results" },
     ],
   },
   {
@@ -65,12 +88,23 @@ const PERMISSION_GROUPS = [
     ],
   },
   {
-    group: "Voting Links",
+    group: "Voters",
     permissions: [
-      { codename: "view.voting_link", label: "View" },
-      { codename: "add.voting_link", label: "Create" },
-      { codename: "update.voting_link", label: "Edit" },
-      { codename: "delete.voting_link", label: "Delete" },
+      { codename: "view.participant", label: "View" },
+      { codename: "add.participant", label: "Add" },
+      { codename: "update.participant", label: "Edit" },
+      { codename: "delete.participant", label: "Remove" },
+    ],
+  },
+  {
+    group: "Candidates",
+    permissions: [
+      { codename: "view.candidate", label: "View" },
+      { codename: "add.candidate", label: "Add" },
+      { codename: "update.candidate", label: "Edit" },
+      { codename: "delete.candidate", label: "Remove" },
+      { codename: "approve.candidate", label: "Approve" },
+      { codename: "reject.candidate", label: "Reject" },
     ],
   },
   {
@@ -78,19 +112,19 @@ const PERMISSION_GROUPS = [
     permissions: [
       { codename: "view.vote", label: "View" },
       { codename: "add.vote", label: "Cast" },
+      { codename: "update.vote", label: "Edit" },
+      { codename: "delete.vote", label: "Delete" },
+      { codename: "view.results", label: "View Results" },
     ],
   },
   {
-    group: "Permissions",
+    group: "Voting Links",
     permissions: [
-      { codename: "view.permission", label: "View" },
-      { codename: "assign.permission", label: "Assign" },
-      { codename: "unassign.permission", label: "Revoke" },
+      { codename: "view.voting_link", label: "View" },
+      { codename: "add.voting_link", label: "Create" },
+      { codename: "update.voting_link", label: "Edit" },
+      { codename: "delete.voting_link", label: "Delete" },
     ],
-  },
-  {
-    group: "Logs",
-    permissions: [{ codename: "view.log", label: "View" }],
   },
 ];
 
@@ -103,6 +137,20 @@ function memberName(m) {
     : (u.email ?? `Member #${m.id}`);
 }
 
+// A permission record belongs to the election scope when it carries an
+// election object; org-scoped records have election == null.
+function recordCodenamesForScope(records, scope, electionId) {
+  return new Set(
+    records
+      .filter((p) =>
+        scope === "election"
+          ? p.election?.id === electionId
+          : !p.election,
+      )
+      .map((p) => p.codename ?? p.permission_codename ?? ""),
+  );
+}
+
 function OrganisationPermissionsPage() {
   const { setPageTitle, setSubtitle } = useDashboard();
   const queryClient = useQueryClient();
@@ -111,6 +159,22 @@ function OrganisationPermissionsPage() {
     setPageTitle("Permissions");
     setSubtitle("Manage member access and permissions");
   }, [setPageTitle, setSubtitle]);
+
+  // ── Scope: organisation-wide vs a specific election ───────────────────────
+  const [scope, setScope] = useState("organisation"); // "organisation" | "election"
+  const [selectedElectionId, setSelectedElectionId] = useState(null);
+
+  const { data: elections = [] } = useQuery({
+    queryKey: ["elections"],
+    queryFn: () => getElections(),
+  });
+
+  // Default to the first election when switching into election scope.
+  useEffect(() => {
+    if (scope === "election" && elections.length > 0 && !selectedElectionId) {
+      setSelectedElectionId(elections[0].id);
+    }
+  }, [scope, elections, selectedElectionId]);
 
   // ── Members list ─────────────────────────────────────────────────────────
   const { data: members = [], isLoading: membersLoading } = useQuery({
@@ -126,7 +190,7 @@ function OrganisationPermissionsPage() {
     }
   }, [members, selectedMemberId]);
 
-  // ── Permissions for selected member ──────────────────────────────────────
+  // ── Permissions for selected member (all scopes; filtered client-side) ────
   const { data: permissionRecords = [], isLoading: permsLoading } = useQuery({
     queryKey: ["member-permissions", selectedMemberId],
     queryFn: () => getMembershipPermissions(selectedMemberId),
@@ -134,26 +198,25 @@ function OrganisationPermissionsPage() {
     staleTime: Infinity,
   });
 
-  // Local editable set — only re-initialize when the selected member changes,
-  // not on every React Query background refetch (which would reset user edits).
+  // Local editable set — re-initialize when the member, scope, or selected
+  // election changes, but not on background refetches (which would discard edits).
   const [pendingSet, setPendingSet] = useState(() => new Set());
   const [dirty, setDirty] = useState(false);
   const initializedForRef = useRef(null);
 
-  useEffect(() => {
-    // Skip while data is still loading for the current member
-    if (permsLoading || !selectedMemberId) return;
-    // Skip if we already initialized for this member (user may have edited checkboxes)
-    if (initializedForRef.current === selectedMemberId) return;
+  const scopeKey = `${selectedMemberId}:${scope}:${selectedElectionId ?? ""}`;
 
-    initializedForRef.current = selectedMemberId;
+  useEffect(() => {
+    if (permsLoading || !selectedMemberId) return;
+    if (scope === "election" && !selectedElectionId) return;
+    if (initializedForRef.current === scopeKey) return;
+
+    initializedForRef.current = scopeKey;
     setPendingSet(
-      new Set(
-        permissionRecords.map((p) => p.codename ?? p.permission_codename ?? ""),
-      ),
+      recordCodenamesForScope(permissionRecords, scope, selectedElectionId),
     );
     setDirty(false);
-  }, [selectedMemberId, permissionRecords, permsLoading]);
+  }, [scopeKey, permissionRecords, permsLoading, selectedMemberId, scope, selectedElectionId]);
 
   function toggle(codename) {
     setPendingSet((prev) => {
@@ -164,21 +227,22 @@ function OrganisationPermissionsPage() {
     setDirty(true);
   }
 
-  function getCodenames(records) {
-    return new Set(
-      records.map((p) => p.codename ?? p.permission_codename ?? ""),
-    );
-  }
-
   function cancel() {
-    setPendingSet(getCodenames(permissionRecords));
+    setPendingSet(
+      recordCodenamesForScope(permissionRecords, scope, selectedElectionId),
+    );
     setDirty(false);
   }
 
+  function changeScope(nextScope) {
+    if (nextScope === scope) return;
+    setScope(nextScope);
+    initializedForRef.current = null; // force re-init for the new scope
+  }
+
   // ── Save ─────────────────────────────────────────────────────────────────
-  // The backend bulk_assign does delete-all + recreate, so we must send the
-  // complete desired set — not just the delta — otherwise adding one permission
-  // would wipe all existing ones.
+  // The backend bulk_assign does delete-all + recreate at the chosen scope, so
+  // we send the complete desired set — not a delta.
   const assignMutation = useMutation({ mutationFn: bulkAssignPermissions });
   const isSaving = assignMutation.isPending;
 
@@ -187,7 +251,8 @@ function OrganisationPermissionsPage() {
       await assignMutation.mutateAsync({
         membership_id: selectedMemberId,
         permissions: [...pendingSet],
-        type: "organisation",
+        type: scope,
+        ...(scope === "election" && { election_id: selectedElectionId }),
       });
       queryClient.invalidateQueries({
         queryKey: ["member-permissions", selectedMemberId],
@@ -200,9 +265,54 @@ function OrganisationPermissionsPage() {
   }
 
   const selectedMember = members.find((m) => m.id === selectedMemberId);
+  const groups =
+    scope === "election" ? ELECTION_PERMISSION_GROUPS : ORG_PERMISSION_GROUPS;
+  const electionNotChosen = scope === "election" && !selectedElectionId;
 
   return (
     <div className="p-4 sm:p-6 flex flex-col gap-5 h-full">
+      {/* ── Scope toggle ──────────────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="inline-flex rounded-lg border border-border p-1">
+          {[
+            { key: "organisation", label: "Organisation" },
+            { key: "election", label: "Election" },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => changeScope(key)}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${
+                scope === key
+                  ? "bg-primary text-white"
+                  : "text-muted hover:text-text"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {scope === "election" && (
+          <select
+            value={selectedElectionId ?? ""}
+            onChange={(e) => {
+              setSelectedElectionId(Number(e.target.value) || null);
+            }}
+            className="h-10 rounded-lg border border-border bg-surface px-3 text-sm text-text focus:outline-none focus:border-primary"
+          >
+            {elections.length === 0 ? (
+              <option value="">No elections</option>
+            ) : (
+              elections.map((el) => (
+                <option key={el.id} value={el.id}>
+                  {el.name}
+                </option>
+              ))
+            )}
+          </select>
+        )}
+      </div>
+
       <div className="flex flex-col lg:flex-row gap-5 flex-1">
         {/* ── Members panel ─────────────────────────────────────────────── */}
         <Card className="border-white/10 rounded-xl p-4 lg:w-64 shrink-0 self-start">
@@ -257,12 +367,22 @@ function OrganisationPermissionsPage() {
                 Select a member to view and edit their permissions.
               </p>
             </Card>
+          ) : electionNotChosen ? (
+            <Card className="border-white/10 rounded-xl p-6">
+              <p className="text-muted">
+                Select an election to manage election-specific permissions.
+              </p>
+            </Card>
           ) : (
             <>
               {/* Header */}
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
-                  <p className="text-muted text-sm">Editing permissions for</p>
+                  <p className="text-muted text-sm">
+                    Editing{" "}
+                    {scope === "election" ? "election" : "organisation"}{" "}
+                    permissions for
+                  </p>
                   <h2 className="font-bold text-text text-lg">
                     {selectedMember ? memberName(selectedMember) : "…"}
                   </h2>
@@ -293,7 +413,7 @@ function OrganisationPermissionsPage() {
                 </Card>
               ) : (
                 <div className="grid gap-3 md:grid-cols-2">
-                  {PERMISSION_GROUPS.map(({ group, permissions }) => (
+                  {groups.map(({ group, permissions }) => (
                     <Card
                       key={group}
                       className="border-white/10 rounded-xl p-4"

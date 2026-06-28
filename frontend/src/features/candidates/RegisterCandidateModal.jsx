@@ -25,7 +25,7 @@ function RegisterCandidateModal({
   const [positionId, setPositionId] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Participants with role=candidate who haven't been converted yet
+  // Membership ids already registered as candidates (for any position).
   const registeredMembershipIds = useMemo(
     () =>
       new Set(
@@ -36,12 +36,12 @@ function RegisterCandidateModal({
     [registeredCandidates],
   );
 
+  // Any participant in the election can stand as a candidate — candidacy is not
+  // a role. Exclude those already registered as candidates.
   const eligible = useMemo(
     () =>
       participants.filter(
-        (p) =>
-          p.membership?.role === "candidate" &&
-          !registeredMembershipIds.has(p.membership?.id),
+        (p) => !registeredMembershipIds.has(p.membership?.id),
       ),
     [participants, registeredMembershipIds],
   );
@@ -98,12 +98,11 @@ function RegisterCandidateModal({
         {eligible.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border py-10 text-center">
             <p className="font-medium text-text">
-              No unregistered candidates found
+              No participants available
             </p>
             <p className="mt-1 text-sm text-muted">
-              Upload participants with{" "}
-              <span className="font-mono text-primary">role=candidate</span> in
-              the CSV, or all candidates are already registered.
+              Add participants to this election first, or every participant is
+              already registered as a candidate.
             </p>
             <button
               onClick={onClose}

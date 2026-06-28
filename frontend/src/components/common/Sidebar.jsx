@@ -5,7 +5,7 @@ import {
   Settings,
   Vote,
   PlusCircle,
-  Archive,
+  UserCheck,
   BarChart2,
   TrendingUp,
   FileText,
@@ -42,6 +42,8 @@ const adminSections = [
         path: "/organisation/create-election",
         icon: PlusCircle,
       },
+      { label: "Candidates", path: "/organisation/candidates", icon: UserCheck },
+      { label: "Voters", path: "/organisation/voters", icon: Users },
     ],
   },
   {

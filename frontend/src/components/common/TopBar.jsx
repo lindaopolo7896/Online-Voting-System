@@ -43,7 +43,7 @@ function TopBar({ onMenuClick }) {
       </div>
 
       <div className="flex items-center gap-3">
-        {user?.role === "admin" && <OrgSwitcher />}
+        <OrgSwitcher />
 
         <div className="relative">
         <button

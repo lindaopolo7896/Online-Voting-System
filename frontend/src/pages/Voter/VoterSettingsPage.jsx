@@ -97,7 +97,7 @@ function VoterSettingsPage() {
             </p>
             <p className="text-muted text-sm">{user?.email}</p>
             <span className="inline-block mt-1 px-2 py-0.5 rounded text-xs font-semibold bg-primary/12 text-primary capitalize">
-              {user?.role ?? "participant"}
+              {user?.role ?? "member"}
             </span>
           </div>
         </div>

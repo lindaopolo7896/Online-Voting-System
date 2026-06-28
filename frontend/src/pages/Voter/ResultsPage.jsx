@@ -22,7 +22,7 @@ function ResultsPage() {
 
   const { data: rawElections = [], isLoading } = useQuery({
     queryKey: ["elections"],
-    queryFn: getElections,
+    queryFn: () => getElections(),
   });
 
   // Fetch participants per election to show voter counts

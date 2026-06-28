@@ -73,7 +73,7 @@ function VoterDashboard() {
 
   const { data: rawElections = [], isLoading: electionsLoading } = useQuery({
     queryKey: ["elections"],
-    queryFn: getElections,
+    queryFn: () => getElections(),
   });
 
   // Sort: live → completed → upcoming

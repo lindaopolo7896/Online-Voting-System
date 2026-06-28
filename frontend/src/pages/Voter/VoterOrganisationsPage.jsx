@@ -4,6 +4,7 @@ import { FaBuilding } from "react-icons/fa";
 import { MdHowToVote } from "react-icons/md";
 import useDashboard from "../../hooks/useDashboard";
 import {
+  getMyMemberships,
   getElections,
   getElectionStatus,
   formatElectionDate,
@@ -16,6 +17,12 @@ const STATUS_BADGE = {
   completed: "bg-white/10 text-muted border-white/10",
 };
 
+const ROLE_BADGE = {
+  admin: "bg-purple-500/15 text-purple-400 border-purple-500/20",
+  official: "bg-blue-500/15 text-blue-400 border-blue-500/20",
+  member: "bg-green-500/15 text-green-400 border-green-500/20",
+};
+
 function VoterOrganisationsPage() {
   const { setPageTitle, setSubtitle } = useDashboard();
   useEffect(() => {
@@ -23,24 +30,43 @@ function VoterOrganisationsPage() {
     setSubtitle("Organisations you belong to");
   }, [setPageTitle, setSubtitle]);
 
-  const { data: elections = [], isLoading, isError } = useQuery({
-    queryKey: ["elections"],
-    queryFn: getElections,
+  // Memberships are the source of truth for which orgs the voter belongs to.
+  const {
+    data: memberships = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["my-memberships"],
+    queryFn: getMyMemberships,
   });
 
-  // Group elections by organisation
-  const organisations = useMemo(() => {
+  // Elections the voter is part of, shown grouped under each organisation.
+  const { data: elections = [] } = useQuery({
+    queryKey: ["elections"],
+    queryFn: () => getElections(),
+  });
+
+  const electionsByOrg = useMemo(() => {
     const map = {};
     for (const e of elections) {
-      const org = e.organisation ?? {};
-      const orgId = org.id ?? "unknown";
-      if (!map[orgId]) {
-        map[orgId] = { org, elections: [] };
-      }
-      map[orgId].elections.push(e);
+      const orgId = e.organisation?.id ?? "unknown";
+      (map[orgId] ??= []).push(e);
     }
-    return Object.values(map);
+    return map;
   }, [elections]);
+
+  // One organisation per membership (a user has at most one membership per org).
+  const organisations = useMemo(
+    () =>
+      memberships
+        .filter((m) => m.organisation)
+        .map((m) => ({
+          org: m.organisation,
+          role: m.role,
+          elections: electionsByOrg[m.organisation.id] ?? [],
+        })),
+    [memberships, electionsByOrg],
+  );
 
   if (isLoading) {
     return <div className="p-6 text-muted text-sm">Loading organisations…</div>;
@@ -63,7 +89,7 @@ function VoterOrganisationsPage() {
         <div>
           <p className="text-text font-semibold">No organisations yet</p>
           <p className="text-muted text-sm mt-1">
-            You have not been enrolled in any election yet.
+            You are not a member of any organisation yet.
           </p>
         </div>
       </div>
@@ -78,7 +104,7 @@ function VoterOrganisationsPage() {
       </p>
 
       <div className="flex flex-col gap-6">
-        {organisations.map(({ org, elections: orgElections }) => {
+        {organisations.map(({ org, role, elections: orgElections }) => {
           const orgName = org.name ?? "Unknown Organisation";
           const initial = orgName.charAt(0).toUpperCase();
 
@@ -94,7 +120,7 @@ function VoterOrganisationsPage() {
                     {initial}
                   </span>
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-text font-bold text-lg truncate">
                     {orgName}
                   </p>
@@ -103,10 +129,16 @@ function VoterOrganisationsPage() {
                       {org.description}
                     </p>
                   )}
-                  {org.email && (
-                    <p className="text-muted text-xs truncate">{org.email}</p>
-                  )}
                 </div>
+                {role && (
+                  <span
+                    className={`shrink-0 px-2.5 py-0.5 rounded text-xs font-semibold border capitalize ${
+                      ROLE_BADGE[role] ?? "bg-white/10 text-muted border-white/10"
+                    }`}
+                  >
+                    {role}
+                  </span>
+                )}
               </div>
 
               {/* Elections list */}
@@ -116,35 +148,41 @@ function VoterOrganisationsPage() {
                   Elections ({orgElections.length})
                 </p>
 
-                <div className="flex flex-col gap-2">
-                  {orgElections.map((e) => {
-                    const status = getElectionStatus(e);
-                    return (
-                      <div
-                        key={e.id}
-                        className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-background"
-                      >
-                        <div className="min-w-0">
-                          <p className="text-text text-sm font-medium truncate">
-                            {e.name}
-                          </p>
-                          <p className="text-muted text-xs mt-0.5">
-                            {formatElectionDate(e.date_time_occuring)} →{" "}
-                            {formatElectionDate(e.date_time_ending)}
-                          </p>
-                        </div>
-
-                        <span
-                          className={`shrink-0 px-2.5 py-0.5 rounded text-xs font-semibold border capitalize ${
-                            STATUS_BADGE[status] ?? STATUS_BADGE.completed
-                          }`}
+                {orgElections.length === 0 ? (
+                  <p className="text-muted text-sm">
+                    You are not enrolled in any elections here yet.
+                  </p>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {orgElections.map((e) => {
+                      const status = getElectionStatus(e);
+                      return (
+                        <div
+                          key={e.id}
+                          className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-background"
                         >
-                          {status === "live" ? "● Live" : status}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+                          <div className="min-w-0">
+                            <p className="text-text text-sm font-medium truncate">
+                              {e.name}
+                            </p>
+                            <p className="text-muted text-xs mt-0.5">
+                              {formatElectionDate(e.date_time_occuring)} →{" "}
+                              {formatElectionDate(e.date_time_ending)}
+                            </p>
+                          </div>
+
+                          <span
+                            className={`shrink-0 px-2.5 py-0.5 rounded text-xs font-semibold border capitalize ${
+                              STATUS_BADGE[status] ?? STATUS_BADGE.completed
+                            }`}
+                          >
+                            {status === "live" ? "● Live" : status}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </Card>
           );
