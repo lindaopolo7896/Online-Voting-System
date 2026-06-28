@@ -17,15 +17,15 @@ import {
   CheckCircle2,
   TrendingUp,
 } from "lucide-react";
-import useDashboard from "../../hooks/useDashboard";
-import Card from "../../components/ui/Card";
+import useDashboard from "@/hooks/useDashboard";
+import Card from "@/components/ui/Card";
 import {
   getElections,
   getElectionCandidates,
   getElectionParticipants,
   getMemberships,
   getElectionStatus,
-} from "../../api/organisationApi";
+} from "@/api/organisationApi";
 
 ChartJS.register(
   CategoryScale,

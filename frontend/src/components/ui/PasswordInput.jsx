@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ShowPassword from "../ShowPassword";
+import ShowPassword from "@/components/ui/ShowPassword";
 
 export default function PasswordInput({
   label,

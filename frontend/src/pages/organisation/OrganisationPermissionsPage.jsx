@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import Card from "../../components/ui/Card";
-import useDashboard from "../../hooks/useDashboard";
+import Card from "@/components/ui/Card";
+import useDashboard from "@/hooks/useDashboard";
 import {
   getMemberships,
   getMembershipPermissions,
   bulkAssignPermissions,
-} from "../../api/permissionsApi";
-import { getElections } from "../../api/organisationApi";
+} from "@/features/permissions/api";
+import { getElections } from "@/api/organisationApi";
 
 // Organisation-scoped permissions (election == null). Mirrors ORG_PERMISSIONS
 // in the backend services/permission_service.py.
@@ -182,13 +183,18 @@ function OrganisationPermissionsPage() {
     queryFn: getMemberships,
   });
 
+  // Optional ?membership_id= preselects a member (e.g. from the Members table).
+  const [searchParams] = useSearchParams();
+  const urlMembershipId = Number(searchParams.get("membership_id")) || null;
+
   const [selectedMemberId, setSelectedMemberId] = useState(null);
 
   useEffect(() => {
     if (members.length > 0 && !selectedMemberId) {
-      setSelectedMemberId(members[0].id);
+      const fromUrl = members.find((m) => m.id === urlMembershipId);
+      setSelectedMemberId(fromUrl ? fromUrl.id : members[0].id);
     }
-  }, [members, selectedMemberId]);
+  }, [members, selectedMemberId, urlMembershipId]);
 
   // ── Permissions for selected member (all scopes; filtered client-side) ────
   const { data: permissionRecords = [], isLoading: permsLoading } = useQuery({

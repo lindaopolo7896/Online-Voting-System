@@ -1,8 +1,8 @@
 import { useForm } from "react-hook-form";
-import AuthLayout from "../../layouts/AuthLayout";
-import Button from "../../components/ui/Button";
-import PasswordInput from "../../components/ui/PasswordInput";
-import AuthHeader from "../../components/ui/AuthHeader";
+import AuthLayout from "@/components/layout/AuthLayout";
+import Button from "@/components/ui/Button";
+import PasswordInput from "@/components/ui/PasswordInput";
+import AuthHeader from "@/components/ui/AuthHeader";
 
 function ResetPassword() {
   const {

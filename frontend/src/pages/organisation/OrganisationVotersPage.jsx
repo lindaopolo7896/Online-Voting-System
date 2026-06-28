@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import VotersTable from "../../features/voters/VotersTable";
-import MemberStats from "../../features/voters/MemberStats";
-import useDashboard from "../../hooks/useDashboard";
+import VotersTable from "@/features/voters/components/VotersTable";
+import MemberStats from "@/features/voters/components/MemberStats";
+import useDashboard from "@/hooks/useDashboard";
 import {
   getElections,
   getElectionParticipants,
+  getElectionCandidates,
   getElectionStatus,
   getMemberships,
-} from "../../api/organisationApi";
+} from "@/api/organisationApi";
 
 function OrganisationVotersPage() {
   const { setPageTitle, setSubtitle } = useDashboard();
@@ -42,6 +43,13 @@ function OrganisationVotersPage() {
     enabled: !!activeId,
   });
 
+  // Candidacy is derived on the frontend from the election's candidate records.
+  const { data: candidates = [] } = useQuery({
+    queryKey: ["election-candidates", activeId],
+    queryFn: () => getElectionCandidates(activeId),
+    enabled: !!activeId,
+  });
+
   const { data: members = [] } = useQuery({
     queryKey: ["memberships"],
     queryFn: getMemberships,
@@ -52,6 +60,7 @@ function OrganisationVotersPage() {
       <MemberStats members={members} />
       <VotersTable
         participants={participants}
+        candidates={candidates}
         isLoading={isLoading}
         elections={elections}
         selectedElectionId={activeId}

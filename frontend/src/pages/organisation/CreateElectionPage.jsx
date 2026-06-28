@@ -2,64 +2,21 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import useAuth from "../../hooks/useAuth";
+import useAuth from "@/hooks/useAuth";
 import {
   createElection,
   createPosition,
   createParticipant,
   bulkUploadParticipants,
-} from "../../api/organisationApi";
-import { bulkAssignPermissions } from "../../api/permissionsApi";
+} from "@/api/organisationApi";
 
-import ElectionStepper from "../../features/elections/create-election/ElectionStepper";
-import ElectionInfoStep from "../../features/elections/create-election/ElectionInfoStep";
-import PositionsStep from "../../features/elections/create-election/PositionsStep";
-import ParticipantsStep from "../../features/elections/create-election/ParticipantsStep";
-import CandidatesStep from "../../features/elections/create-election/CandidatesStep";
-import NotificationsStep from "../../features/elections/create-election/NotificationsStep";
-import ElectionSummary from "../../features/elections/create-election/ElectionSummary";
-
-const ADMIN_ORG_PERMISSIONS = [
-  "add.organisation",
-  "view.organisation",
-  "update.organisation",
-  "delete.organisation",
-  "add.membership",
-  "view.membership",
-  "update.membership",
-  "delete.membership",
-  "assign.permission",
-  "view.permission",
-  "unassign.permission",
-  "view.log",
-  "delete.log",
-  "add.election",
-  "view.election",
-  "update.election",
-  "delete.election",
-  "add.voting_link",
-  "view.voting_link",
-  "start.election",
-  "close.election",
-  "publish.results",
-  "add.position",
-  "view.position",
-  "update.position",
-  "delete.position",
-  "add.participant",
-  "view.participant",
-  "update.participant",
-  "delete.participant",
-  "add.candidate",
-  "view.candidate",
-  "update.candidate",
-  "delete.candidate",
-  "approve.candidate",
-  "reject.candidate",
-  "view.results",
-  "update.voting_link",
-  "delete.voting_link",
-];
+import ElectionStepper from "@/features/elections/components/create-election/ElectionStepper";
+import ElectionInfoStep from "@/features/elections/components/create-election/ElectionInfoStep";
+import PositionsStep from "@/features/elections/components/create-election/PositionsStep";
+import ParticipantsStep from "@/features/elections/components/create-election/ParticipantsStep";
+import CandidatesStep from "@/features/elections/components/create-election/CandidatesStep";
+import NotificationsStep from "@/features/elections/components/create-election/NotificationsStep";
+import ElectionSummary from "@/features/elections/components/create-election/ElectionSummary";
 
 function CreateElectionPage() {
   const navigate = useNavigate();
@@ -110,14 +67,9 @@ function CreateElectionPage() {
         organisation_id: user.organisationId,
       });
 
-      // 2. Safety-net: ensure admin has all election-management permissions
-      await bulkAssignPermissions({
-        type: "organisation",
-        membership_id: user.membershipId,
-        permissions: ADMIN_ORG_PERMISSIONS,
-      });
-
-      // 3. Create positions
+      // 2. Create positions
+      //    (the backend seeds the creator's election permissions automatically
+      //    when the election is created — no client-side permission assignment.)
       const nonEmptyPositions = positions.filter((p) => p.trim());
       for (const posName of nonEmptyPositions) {
         await createPosition(election.id, {
@@ -127,12 +79,12 @@ function CreateElectionPage() {
         });
       }
 
-      // 4. Enroll selected existing org members as participants
+      // 3. Enroll selected existing org members as participants
       for (const membershipId of selectedMemberIds) {
         await createParticipant(election.id, { membership_id: membershipId });
       }
 
-      // 5. Bulk upload CSV/XLSX file (creates users + memberships server-side).
+      // 4. Bulk upload CSV/XLSX file (creates users + memberships server-side).
       //    Any uploaded participant can be registered as a candidate next.
       if (participantsFile) {
         await bulkUploadParticipants(election.id, participantsFile);

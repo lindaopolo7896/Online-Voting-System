@@ -1,12 +1,12 @@
-import AuthLayout from "../../layouts/AuthLayout";
+import AuthLayout from "@/components/layout/AuthLayout";
 import { TiTick } from "react-icons/ti";
 import { MdLockOutline } from "react-icons/md";
 import { FaLink } from "react-icons/fa";
 import { FaWifi } from "react-icons/fa";
 import { GoVerified } from "react-icons/go";
 import { MdOutlineVerifiedUser } from "react-icons/md";
-import Card from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
 import { Link } from "react-router-dom";
 
 const instructions = [

@@ -4,15 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { GoDotFill } from "react-icons/go";
 
-import CandidateSection from "../../components/voter/CandidateSection";
-import CountDownCard from "../../components/common/CountDownCard";
-import useCountdown from "../../hooks/useCountdown";
+import CandidateSection from "@/features/voting/components/CandidateSection";
+import CountDownCard from "@/components/common/CountDownCard";
+import useCountdown from "@/hooks/useCountdown";
 import {
   getElectionCandidates,
   getPositions,
   getElectionStatus,
   castVote,
-} from "../../api/organisationApi";
+} from "@/api/organisationApi";
 
 // Normalize a real API candidate to the shape CandidateCard/ProfileModal expect
 function normalizeCandidate(c) {

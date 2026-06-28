@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
-import useDashboard from "../../hooks/useDashboard";
-import ElectionStats from "../../features/elections/ElectionStats";
-import ElectionsTable from "../../features/elections/ElectionsTable";
+import useDashboard from "@/hooks/useDashboard";
+import ElectionStats from "@/features/elections/components/ElectionStats";
+import ElectionsTable from "@/features/elections/components/ElectionsTable";
 import {
   getElections,
   getElectionParticipants,
   getElectionCandidates,
-} from "../../api/organisationApi";
+} from "@/api/organisationApi";
 
 function OrganisationElectionsPage() {
   const { setPageTitle, setSubtitle } = useDashboard();
