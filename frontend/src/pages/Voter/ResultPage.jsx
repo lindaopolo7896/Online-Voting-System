@@ -1,18 +1,18 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { IoMdArrowRoundBack } from "react-icons/io";
-import ProgressCard from "../../components/voter/results/ProgressCard";
-import ResultsTable from "../../components/voter/results/ResultsTable";
-import VotesDistribution from "../../components/voter/results/VotesDistribution";
-import ElectionSummary from "../../components/voter/results/ElectionSummary";
-import Card from "../../components/ui/Card";
+import ProgressCard from "@/features/results/components/ProgressCard";
+import ResultsTable from "@/features/results/components/ResultsTable";
+import VotesDistribution from "@/features/results/components/VotesDistribution";
+import ElectionSummary from "@/features/results/components/ElectionSummary";
+import Card from "@/components/ui/Card";
 import {
   getElection,
   getElectionParticipants,
   getElectionCandidates,
   getElectionStatus,
   formatElectionDate,
-} from "../../api/organisationApi";
+} from "@/api/organisationApi";
 
 function buildCategories(candidates) {
   const posMap = {};

@@ -1,13 +1,13 @@
-import AuthLayout from "../../layouts/AuthLayout";
+import AuthLayout from "@/components/layout/AuthLayout";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-import Button from "../../components/ui/Button";
-import Input from "../../components/ui/Input";
-import AuthHeader from "../../components/ui/AuthHeader";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import AuthHeader from "@/components/ui/AuthHeader";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-import { useRegisterOrganisation } from "../../hooks/useRegisterOrganisation";
+import { useRegisterOrganisation } from "@/hooks/useRegisterOrganisation";
 
 function SignUpForm() {
   const {

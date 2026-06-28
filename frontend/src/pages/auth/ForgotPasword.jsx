@@ -1,10 +1,10 @@
 import { useForm } from "react-hook-form";
-import AuthLayout from "../../layouts/AuthLayout";
-import Button from "../../components/ui/Button";
+import AuthLayout from "@/components/layout/AuthLayout";
+import Button from "@/components/ui/Button";
 import { IoChevronBackOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import Input from "../../components/ui/Input";
-import AuthHeader from "../../components/ui/AuthHeader";
+import Input from "@/components/ui/Input";
+import AuthHeader from "@/components/ui/AuthHeader";
 
 function ForgotPasword() {
   const {

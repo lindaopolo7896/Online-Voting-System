@@ -2,14 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import Card from "../../components/ui/Card";
-import useDashboard from "../../hooks/useDashboard";
+import Card from "@/components/ui/Card";
+import useDashboard from "@/hooks/useDashboard";
 import {
   getMemberships,
   getMembershipPermissions,
   bulkAssignPermissions,
-} from "../../api/permissionsApi";
-import { getElections } from "../../api/organisationApi";
+} from "@/features/permissions/api";
+import { getElections } from "@/api/organisationApi";
 
 // Organisation-scoped permissions (election == null). Mirrors ORG_PERMISSIONS
 // in the backend services/permission_service.py.
@@ -129,14 +129,6 @@ const ELECTION_PERMISSION_GROUPS = [
   },
 ];
 
-// The org-scoped permissions a voter needs to use the voter dashboard/results.
-const VOTER_ORG_PERMS = [
-  "view.organisation",
-  "view.membership",
-  "view.election",
-  "view.voting_link",
-];
-
 function memberName(m) {
   const u = m.user ?? {};
   const first = u.first_name ?? "";
@@ -246,12 +238,6 @@ function OrganisationPermissionsPage() {
       recordCodenamesForScope(permissionRecords, scope, selectedElectionId),
     );
     setDirty(false);
-  }
-
-  // Tick the standard voter org permissions in one click (admin then reviews + saves).
-  function grantVoterAccess() {
-    setPendingSet((prev) => new Set([...prev, ...VOTER_ORG_PERMS]));
-    setDirty(true);
   }
 
   function changeScope(nextScope) {
@@ -409,16 +395,6 @@ function OrganisationPermissionsPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {scope === "organisation" && (
-                    <button
-                      onClick={grantVoterAccess}
-                      disabled={isSaving}
-                      title="Tick the standard voter permissions (view organisation, members, elections, voting links)"
-                      className="px-4 py-2 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 transition text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      Grant voter access
-                    </button>
-                  )}
                   <button
                     onClick={cancel}
                     disabled={!dirty || isSaving}

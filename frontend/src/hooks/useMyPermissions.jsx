@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getMyMemberships, getMembershipPermissions } from "../api/permissionsApi";
+import { getMyMemberships, getMembershipPermissions } from "@/features/permissions/api";
 
 export function useMyPermissions() {
   const {

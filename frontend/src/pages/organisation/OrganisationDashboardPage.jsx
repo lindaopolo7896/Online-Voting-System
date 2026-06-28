@@ -1,25 +1,25 @@
 import { useEffect } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
-import useDashboard from "../../hooks/useDashboard";
-import Card from "../../components/ui/Card";
+import useDashboard from "@/hooks/useDashboard";
+import Card from "@/components/ui/Card";
 import { Link } from "react-router-dom";
 import { FaArrowRightLong } from "react-icons/fa6";
-import ProgressCard from "../../components/voter/results/ProgressCard";
-import ProfileImg from "../../components/ui/ProfileImg";
-import Divider from "../../components/ui/Divider";
+import ProgressCard from "@/features/results/components/ProgressCard";
+import ProfileImg from "@/components/ui/ProfileImg";
+import Divider from "@/components/ui/Divider";
 import { IoMdAdd } from "react-icons/io";
 import { IoCloudUploadOutline } from "react-icons/io5";
 import { LuClipboardList } from "react-icons/lu";
 import { MdSecurity } from "react-icons/md";
-import VoterTurnoutChart from "../../components/common/VoterTurnoutChart";
-import CandidatesByPositionChart from "../../components/common/CandidatesByPositionChart";
+import VoterTurnoutChart from "@/features/organisation/components/VoterTurnoutChart";
+import CandidatesByPositionChart from "@/features/organisation/components/CandidatesByPositionChart";
 import {
   getElections,
   getElectionCandidates,
   getElectionParticipants,
   getElectionStatus,
   formatElectionDate,
-} from "../../api/organisationApi";
+} from "@/api/organisationApi";
 
 const actions = [
   {

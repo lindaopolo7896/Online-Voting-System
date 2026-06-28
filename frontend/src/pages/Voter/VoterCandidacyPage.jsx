@@ -2,16 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { Award, ImagePlus } from "lucide-react";
-import Card from "../../components/ui/Card";
-import Input from "../../components/ui/Input";
-import useDashboard from "../../hooks/useDashboard";
-import useAuth from "../../hooks/useAuth";
+import Card from "@/components/ui/Card";
+import Input from "@/components/ui/Input";
+import useDashboard from "@/hooks/useDashboard";
+import useAuth from "@/hooks/useAuth";
 import {
   getElections,
   getElectionCandidates,
   updateCandidateProfile,
   updateUser,
-} from "../../api/organisationApi";
+} from "@/api/organisationApi";
 
 // ── Personal details (first/last name live on the User) ─────────────────────
 function PersonalDetailsCard({ userId, firstName, lastName }) {

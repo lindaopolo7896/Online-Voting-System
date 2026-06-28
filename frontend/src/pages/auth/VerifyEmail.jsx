@@ -4,13 +4,13 @@ import { useMutation } from "@tanstack/react-query";
 import { motion, useAnimation } from "framer-motion";
 import { IoChevronBackOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
-import AuthLayout from "../../layouts/AuthLayout";
-import AuthHeader from "../../components/ui/AuthHeader";
-import Button from "../../components/ui/Button";
-import { requestOtp, verifyOtp } from "../../api/authApi";
-import VerificationCountdown from "../../helpers/VerificationCountdown";
-import maskEmail from "../../helpers/maskEmail";
-import useAuth from "../../hooks/useAuth";
+import AuthLayout from "@/components/layout/AuthLayout";
+import AuthHeader from "@/components/ui/AuthHeader";
+import Button from "@/components/ui/Button";
+import { requestOtp, verifyOtp } from "@/features/auth/api";
+import VerificationCountdown from "@/components/common/VerificationCountdown";
+import maskEmail from "@/utils/maskEmail";
+import useAuth from "@/hooks/useAuth";
 
 const OTP_LENGTH = 6;
 

@@ -3,11 +3,11 @@ import { useNavigate, Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import AuthLayout from "../../layouts/AuthLayout";
-import AuthHeader from "../../components/ui/AuthHeader";
-import Input from "../../components/ui/Input";
-import Button from "../../components/ui/Button";
-import { requestOtp } from "../../api/authApi";
+import AuthLayout from "@/components/layout/AuthLayout";
+import AuthHeader from "@/components/ui/AuthHeader";
+import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
+import { requestOtp } from "@/features/auth/api";
 
 function SignInForm() {
   const navigate = useNavigate();

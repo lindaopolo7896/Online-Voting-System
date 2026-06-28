@@ -1,17 +1,11 @@
 import { useEffect } from "react";
-import { useQuery, useQueries } from "@tanstack/react-query";
-import ElectionList from "../../components/voter/results/ElectionList";
-import VoteIcon from "../../assets/icons/vote.png";
-import VoterIcon from "../../assets/icons/voter.png";
-import TickIcon from "../../assets/icons/tick.png";
-import Card from "../../components/ui/Card";
-import useDashboard from "../../hooks/useDashboard";
-import {
-  getElections,
-  getElectionParticipants,
-  getElectionStatus,
-  formatElectionDate,
-} from "../../api/organisationApi";
+import ElectionList from "@/features/results/components/ElectionList";
+import VoteIcon from "@/assets/icons/vote.png";
+import VoterIcon from "@/assets/icons/voter.png";
+import TickIcon from "@/assets/icons/tick.png";
+import Card from "@/components/ui/Card";
+import useDashboard from "@/hooks/useDashboard";
+import { useElectionResults } from "@/features/results/hooks/useElectionResults";
 
 function ResultsPage() {
   const { setPageTitle, setSubtitle } = useDashboard();
@@ -20,32 +14,7 @@ function ResultsPage() {
     setSubtitle("Results for all elections registered");
   }, [setPageTitle, setSubtitle]);
 
-  const { data: rawElections = [], isLoading } = useQuery({
-    queryKey: ["elections"],
-    queryFn: () => getElections(),
-  });
-
-  // Fetch participants per election to show voter counts
-  const participantQueries = useQueries({
-    queries: rawElections.map((e) => ({
-      queryKey: ["election-participants", e.id],
-      queryFn: () => getElectionParticipants(e.id),
-    })),
-  });
-
-  // Normalize elections into the shape ElectionList expects
-  const elections = rawElections.map((e, i) => {
-    const parts = participantQueries[i]?.data ?? [];
-    return {
-      id: e.id,
-      title: e.name,
-      organization: e.organisation?.name ?? "",
-      date: formatElectionDate(e.date_time_occuring),
-      totalVoters: parts.length,
-      votesCast: parts.filter((p) => p.has_voted).length,
-      status: getElectionStatus(e),
-    };
-  });
+  const { elections, isLoading } = useElectionResults();
 
   const stats = [
     {

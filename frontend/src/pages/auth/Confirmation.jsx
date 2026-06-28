@@ -1,7 +1,7 @@
-import AuthLayout from "../../layouts/AuthLayout";
-import Button from "../../components/ui/Button";
+import AuthLayout from "@/components/layout/AuthLayout";
+import Button from "@/components/ui/Button";
 import { useNavigate } from "react-router-dom";
-import Success from "../../assets/icons/success.png";
+import Success from "@/assets/icons/success.png";
 
 function Confirmation() {
   const navigate = useNavigate();

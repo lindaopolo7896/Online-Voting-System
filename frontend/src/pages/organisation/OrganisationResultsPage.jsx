@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import useDashboard from "../../hooks/useDashboard";
-import Card from "../../components/ui/Card";
+import useDashboard from "@/hooks/useDashboard";
+import Card from "@/components/ui/Card";
 import {
   getElections,
   getElectionCandidates,
   getElectionParticipants,
   getElectionStatus,
   formatElectionDate,
-} from "../../api/organisationApi";
+} from "@/api/organisationApi";
 
 function StatusBadge({ status }) {
   const styles = {

@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import useDashboard from "../../hooks/useDashboard";
-import useAuth from "../../hooks/useAuth";
-import Card from "../../components/ui/Card";
-import Input from "../../components/ui/Input";
-import PasswordInput from "../../components/ui/PasswordInput";
-import Button from "../../components/ui/Button";
-import ProfileImg from "../../components/ui/ProfileImg";
-import { updateUser } from "../../api/organisationApi";
-import { changePassword } from "../../api/authApi";
+import useDashboard from "@/hooks/useDashboard";
+import useAuth from "@/hooks/useAuth";
+import Card from "@/components/ui/Card";
+import Input from "@/components/ui/Input";
+import PasswordInput from "@/components/ui/PasswordInput";
+import Button from "@/components/ui/Button";
+import ProfileImg from "@/components/ui/ProfileImg";
+import { updateUser } from "@/api/organisationApi";
+import { changePassword } from "@/features/auth/api";
 
 function Section({ title, subtitle, children }) {
   return (

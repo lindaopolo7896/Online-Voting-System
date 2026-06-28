@@ -2,15 +2,15 @@ import { flexRender } from "@tanstack/react-table";
 
 function DataTable({ table }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
+    <div className="rounded-xl border border-black/10 dark:border-white/10 bg-surface overflow-x-auto">
       <table className="w-full">
-        <thead className="bg-slate-50">
+        <thead className="bg-black/5 dark:bg-white/5">
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}
-                  className="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500 first:rounded-tl-xl last:rounded-tr-xl"
+                  className="px-6 py-4 text-left text-xs font-semibold uppercase text-muted first:rounded-tl-xl last:rounded-tr-xl"
                 >
                   {header.isPlaceholder
                     ? null
@@ -30,12 +30,12 @@ function DataTable({ table }) {
             return (
               <tr
                 key={row.id}
-                className="border-t border-slate-100 hover:bg-slate-50"
+                className="border-t border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5"
               >
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
-                    className={`px-6 py-4 text-sm text-slate-700 ${
+                    className={`px-6 py-4 text-sm text-text ${
                       isLast
                         ? "first:rounded-bl-xl last:rounded-br-xl"
                         : ""
@@ -51,7 +51,7 @@ function DataTable({ table }) {
       </table>
 
       {table.getRowModel().rows.length === 0 && (
-        <div className="p-10 text-center text-slate-500">No records found.</div>
+        <div className="p-10 text-center text-muted">No records found.</div>
       )}
     </div>
   );

@@ -2,11 +2,11 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import MailIcon from "../../assets/icons/mail.png";
-import Button from "../../components/ui/Button";
-import Input from "../../components/ui/Input";
-import AuthLayout from "../../layouts/AuthLayout";
-import { requestOtp } from "../../api/authApi";
+import MailIcon from "@/assets/icons/mail.png";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import AuthLayout from "@/components/layout/AuthLayout";
+import { requestOtp } from "@/features/auth/api";
 
 function LinkVerificationPage() {
   const navigate = useNavigate();

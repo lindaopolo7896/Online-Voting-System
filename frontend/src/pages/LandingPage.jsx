@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import HeroImg from "../assets/images/landing/landing.jpg";
-import Img1 from "../assets/images/landing/img1.png";
-import Img2 from "../assets/images/landing/img2.png";
-import Img3 from "../assets/images/landing/img3.png";
+import HeroImg from "@/assets/images/landing/landing.jpg";
+import Img1 from "@/assets/images/landing/img1.png";
+import Img2 from "@/assets/images/landing/img2.png";
+import Img3 from "@/assets/images/landing/img3.png";
 
-import Logo from "../assets/logo/logo.png";
+import Logo from "@/assets/logo/logo.png";
 import { FiLock, FiZap, FiShield, FiLink } from "react-icons/fi";
 
 const EASE = [0.22, 1, 0.36, 1];
