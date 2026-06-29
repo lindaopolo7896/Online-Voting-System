@@ -1,93 +1,33 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Card from "@/components/ui/Card";
 
-function ResultsTable({
-  title,
-  subtitle,
-  categories,
-  accentColor = "#144DEF",
-}) {
+// Shows live per-candidate tallies when the backend provides vote counts
+// (category.tallied === true); otherwise falls back to a candidate roster.
+function ResultsTable({ title, subtitle, categories, accentColor = "#144DEF" }) {
   const [activeTab, setActiveTab] = useState(0);
 
-  const [sortType, setSortType] = useState("most");
-
   const category = categories[activeTab];
-
-  const sortedResults = useMemo(() => {
-    const results = [...category.results];
-
-    if (sortType === "most") {
-      return results.sort((a, b) => b.votes - a.votes);
-    }
-
-    return results.sort((a, b) => a.votes - b.votes);
-  }, [category, sortType]);
+  const candidates = category?.results ?? [];
+  const tallied = !!category?.tallied;
+  const totalVotes = candidates.reduce((s, c) => s + (c.votes ?? 0), 0);
 
   return (
-    <Card
-      className="
-      mt-8
-      w-full
-      
-      border border-white/10
-      rounded-2xl
-      p-6
-      flex flex-col gap-6
-      "
-    >
+    <Card className="mt-8 w-full border border-white/10 rounded-2xl p-6 flex flex-col gap-6">
       {/* HEADER */}
-
-      <div className="flex justify-between items-start flex-wrap gap-4">
-        <div>
-          <h1 className="text-text text-xl font-bold">{title}</h1>
-
-          <p className="text-muted text-sm">{subtitle}</p>
-        </div>
-
-        {/* SORT */}
-
-        <select
-          value={sortType}
-          onChange={(e) => setSortType(e.target.value)}
-          className="
-          bg-surface
-          shadow
-          border border-white/10
-          rounded-lg
-          px-4 py-2
-          text-text
-          outline-none
-          cursor-pointer
-          "
-        >
-          <option value="most">Sort by: Most Votes</option>
-
-          <option value="least">Sort by: Least Votes</option>
-        </select>
+      <div>
+        <h1 className="text-text text-xl font-bold">{title}</h1>
+        {subtitle && <p className="text-muted text-sm">{subtitle}</p>}
       </div>
 
       {/* TABS */}
-
-      <div
-        className="
-        flex items-center gap-8
-        border-b border-white/10
-        overflow-x-auto
-        "
-      >
+      <div className="flex items-center gap-8 border-b border-white/10 overflow-x-auto">
         {categories.map((item, index) => (
           <button
             key={item.id}
             onClick={() => setActiveTab(index)}
-            className="
-            pb-3
-            whitespace-nowrap
-            font-semibold
-            transition-all
-            "
+            className="pb-3 whitespace-nowrap font-semibold transition-all"
             style={{
-              color: activeTab === index ? "text-primary" : "text-text",
-
+              color: activeTab === index ? accentColor : undefined,
               borderBottom:
                 activeTab === index ? `2px solid ${accentColor}` : "none",
             }}
@@ -97,61 +37,27 @@ function ResultsTable({
         ))}
       </div>
 
-      {/* TABLE */}
-
-      <div
-        className="
-        border border-white/10
-        rounded-2xl
-        overflow-hidden
-        "
-      >
-        {/* HEADER */}
-
+      <div className="border border-white/10 rounded-2xl overflow-hidden">
+        {/* column header */}
         <div
-          className="
-          grid grid-cols-[60px_1fr_120px_120px]
-          px-6 py-4
-          border-b border-white/10
-          text-muted
-          text-sm
-          font-semibold
-          "
+          className={`grid ${tallied ? "grid-cols-[60px_1fr_120px_120px]" : "grid-cols-[60px_1fr]"} px-6 py-4 border-b border-white/10 text-muted text-sm font-semibold`}
         >
           <p>#</p>
-
           <p>Candidate</p>
-
-          <p>Votes</p>
-
-          <p>Percentage</p>
+          {tallied && <p>Votes</p>}
+          {tallied && <p>Percentage</p>}
         </div>
 
-        {/* BODY */}
-
+        {/* rows */}
         <div className="flex flex-col">
-          {sortedResults.map((candidate, index) => (
+          {candidates.map((candidate, index) => (
             <div
               key={index}
-              className="
-              grid grid-cols-[60px_1fr_120px_120px]
-              items-center
-              px-6 py-5
-              border-b border-white/5
-              "
+              className={`grid ${tallied ? "grid-cols-[60px_1fr_120px_120px]" : "grid-cols-[60px_1fr]"} items-center px-6 py-5 border-b border-white/5`}
             >
-              {/* RANK */}
-
-              <p
-                className="text-3xl font-bold"
-                style={{
-                  color: accentColor,
-                }}
-              >
+              <p className="text-2xl font-bold" style={{ color: accentColor }}>
                 {index + 1}
               </p>
-
-              {/* CANDIDATE */}
 
               <div className="flex items-center gap-4">
                 {candidate.image ? (
@@ -168,68 +74,47 @@ function ResultsTable({
                     {candidate.candidate.charAt(0).toUpperCase()}
                   </div>
                 )}
-
-                <div className="flex flex-col gap-2 w-full">
-                  <p className="text-text font-semibold">
-                    {candidate.candidate}
-                  </p>
-
-                  {/* BAR */}
-
-                  <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                    <div
-                      className="
-                      h-full
-                      rounded-full
-                      transition-all duration-700
-                      "
-                      style={{
-                        width: `${candidate.percentage}%`,
-                        backgroundColor: accentColor,
-                      }}
-                    ></div>
-                  </div>
+                <div className="flex flex-col gap-2 w-full min-w-0">
+                  <p className="text-text font-semibold">{candidate.candidate}</p>
+                  {tallied && (
+                    <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{
+                          width: `${candidate.percentage}%`,
+                          backgroundColor: accentColor,
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* VOTES */}
-
-              <p className="text-text font-bold text-lg">{candidate.votes}</p>
-
-              {/* PERCENTAGE */}
-
-              <p
-                className="font-bold text-2xl"
-                style={{
-                  color: accentColor,
-                }}
-              >
-                {candidate.percentage}%
-              </p>
+              {tallied && (
+                <p className="text-text font-bold text-lg">{candidate.votes}</p>
+              )}
+              {tallied && (
+                <p className="font-bold text-2xl" style={{ color: accentColor }}>
+                  {candidate.percentage}%
+                </p>
+              )}
             </div>
           ))}
         </div>
 
-        {/* FOOTER */}
-
-        <div
-          className="
-          flex justify-between items-center
-          px-6 py-4
-          text-sm
-          "
-        >
-          <p className="text-muted">
-            Total votes for this position:{" "}
-            <span className="text-text font-semibold">
-              {sortedResults.reduce(
-                (total, candidate) => total + candidate.votes,
-                0,
-              )}
-            </span>
-          </p>
-
-          <p className="text-muted">Valid votes only</p>
+        {/* footer */}
+        <div className="px-6 py-4 text-sm">
+          {tallied ? (
+            <p className="text-muted">
+              Total votes for this position:{" "}
+              <span className="text-text font-semibold">{totalVotes}</span>
+            </p>
+          ) : (
+            <p className="text-muted">
+              {candidates.length} candidate{candidates.length !== 1 ? "s" : ""} ·
+              live tallies appear here as votes are counted.
+            </p>
+          )}
         </div>
       </div>
     </Card>

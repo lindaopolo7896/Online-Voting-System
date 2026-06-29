@@ -10,20 +10,24 @@ import Button from "@/components/ui/Button";
 import { requestOtp, verifyOtp } from "@/features/auth/api";
 import VerificationCountdown from "@/components/common/VerificationCountdown";
 import maskEmail from "@/utils/maskEmail";
-import useAuth from "@/hooks/useAuth";
+import {
+  buildVotingSession,
+  saveVotingSession,
+} from "@/features/voting/session";
 
 const OTP_LENGTH = 6;
 
-function VerifyEmail() {
+function VoterLinkVerifyPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const email = state?.email;
-  const { login } = useAuth();
+  const votingToken = state?.voting_token;
 
-  // Redirect back to sign-in if arrived without an email
   useEffect(() => {
-    if (!email) navigate("/sign-in", { replace: true });
-  }, [email, navigate]);
+    if (!email || !votingToken) {
+      navigate("/sign-in", { replace: true });
+    }
+  }, [email, votingToken, navigate]);
 
   const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(""));
   const [otpError, setOtpError] = useState("");
@@ -31,7 +35,6 @@ function VerifyEmail() {
   const inputRefs = useRef([]);
   const shakeControls = useAnimation();
 
-  // OTP digit change
   function handleChange(value, index) {
     const digit = value.replace(/\D/g, "").slice(-1);
     const next = [...otp];
@@ -49,47 +52,37 @@ function VerifyEmail() {
     }
   }
 
-  // Paste full OTP at once
   function handlePaste(e) {
     e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, OTP_LENGTH);
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, OTP_LENGTH);
     if (!pasted) return;
     const next = Array(OTP_LENGTH).fill("");
-    pasted.split("").forEach((char, i) => { next[i] = char; });
+    pasted.split("").forEach((char, i) => {
+      next[i] = char;
+    });
     setOtp(next);
     setOtpError("");
     const lastIdx = Math.min(pasted.length, OTP_LENGTH - 1);
     inputRefs.current[lastIdx]?.focus();
   }
 
-  // Verify OTP
   const verifyMutation = useMutation({
-    mutationFn: ({ email, otp }) => verifyOtp({ email, otp }),
+    mutationFn: ({ email, otp }) =>
+      verifyOtp({ email, otp, voting_token: votingToken }),
     onSuccess: (data) => {
-      const access = data?.access ?? "";
-      const refresh = data?.refresh ?? "";
-      if (access) localStorage.setItem("access_token", access);
-      if (refresh) localStorage.setItem("refresh_token", refresh);
+      if (data?.access) localStorage.setItem("access_token", data.access);
+      if (data?.refresh) localStorage.setItem("refresh_token", data.refresh);
 
-      const role = data?.membership?.role ?? "";
-      const firstName = data?.user?.first_name ?? "";
-      const lastName = data?.user?.last_name ?? "";
-      login({
-        id: data?.user?.id,
-        name: `${firstName} ${lastName}`.trim() || data?.user?.email,
-        email: data?.user?.email,
-        role,
-        membershipId: data?.membership?.id,
-        organisationId: data?.membership?.organisation_id,
-      });
-
-      // Login is for accessing the dashboard / results. (Voting uses the separate
-      // link-verification flow — see VoterLinkVerifyPage.)
-      if (role === "admin") {
-        navigate("/organisation/dashboard", { replace: true });
-      } else {
-        navigate("/voter/dashboard", { replace: true });
+      if (!data?.eligibility?.eligible) {
+        setOtpError("You are not eligible to vote with this link.");
+        return;
       }
+
+      saveVotingSession(buildVotingSession(data, votingToken));
+      navigate("/voting-details", { replace: true });
     },
     onError: (error) => {
       const message =
@@ -97,7 +90,6 @@ function VerifyEmail() {
         error?.response?.data?.message ||
         "Invalid or expired code. Please try again.";
       setOtpError(message);
-      // Shake the OTP inputs
       shakeControls.start({
         x: [0, -8, 8, -8, 8, 0],
         transition: { duration: 0.4 },
@@ -107,12 +99,11 @@ function VerifyEmail() {
     },
   });
 
-  // Resend OTP
   const resendMutation = useMutation({
-    mutationFn: () => requestOtp(email),
+    mutationFn: () => requestOtp(email, votingToken),
     onSuccess: () => {
       toast.success("A new code has been sent to your email.");
-      setCountdownKey((k) => k + 1); // re-mount countdown to reset timer
+      setCountdownKey((k) => k + 1);
       setOtp(Array(OTP_LENGTH).fill(""));
       setOtpError("");
       setTimeout(() => inputRefs.current[0]?.focus(), 50);
@@ -136,7 +127,7 @@ function VerifyEmail() {
     verifyMutation.mutate({ email, otp: code });
   }
 
-  if (!email) return null;
+  if (!email || !votingToken) return null;
 
   return (
     <AuthLayout>
@@ -147,27 +138,27 @@ function VerifyEmail() {
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         className="w-full max-w-lg m-auto rounded-xl flex flex-col p-10 gap-6"
       >
-        {/* Back button */}
         <button
           type="button"
-          onClick={() => navigate("/sign-in")}
+          onClick={() => navigate(-1)}
           className="p-2 w-10 h-10 rounded-full border border-primary flex justify-center items-center cursor-pointer hover:bg-primary/20 transition-all duration-300 ease-in-out self-start"
         >
           <IoChevronBackOutline className="text-2xl text-white" />
         </button>
 
         <AuthHeader
-          heading="Verify Email"
-          subHeading={`Enter the 6-digit code sent to ${maskEmail(email)}`}
+          heading="Confirm it's you"
+          subHeading={`Enter the 6-digit code sent to ${maskEmail(email)} to verify your identity for this election`}
         />
 
-        {/* OTP inputs */}
         <div className="flex flex-col items-center gap-4 my-4">
           <motion.div animate={shakeControls} className="flex gap-3 sm:gap-4">
             {otp.map((digit, index) => (
               <input
                 key={index}
-                ref={(el) => { inputRefs.current[index] = el; }}
+                ref={(el) => {
+                  inputRefs.current[index] = el;
+                }}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
@@ -176,15 +167,15 @@ function VerifyEmail() {
                 onKeyDown={(e) => handleKeyDown(e, index)}
                 onPaste={index === 0 ? handlePaste : undefined}
                 className={`w-12 h-14 text-center text-2xl font-bold border rounded-xl bg-surface text-text focus:outline-none transition-all duration-200
-                  ${otpError
-                    ? "border-error focus:border-error focus:shadow-[0_0_12px_rgba(220,38,38,0.2)]"
-                    : "border-border focus:border-primary focus:shadow-[0_0_12px_rgba(20,77,239,0.2)]"
+                  ${
+                    otpError
+                      ? "border-error focus:border-error focus:shadow-[0_0_12px_rgba(220,38,38,0.2)]"
+                      : "border-border focus:border-primary focus:shadow-[0_0_12px_rgba(20,77,239,0.2)]"
                   }`}
               />
             ))}
           </motion.div>
 
-          {/* Inline error */}
           {otpError && (
             <motion.p
               initial={{ opacity: 0, y: -4 }}
@@ -195,12 +186,10 @@ function VerifyEmail() {
             </motion.p>
           )}
 
-          {/* Countdown */}
           <p className="flex items-center gap-1 text-muted text-sm">
             Code expires in: <VerificationCountdown key={countdownKey} />
           </p>
 
-          {/* Resend */}
           <p className="text-muted text-sm">
             Didn't get the code?{" "}
             <button
@@ -215,12 +204,14 @@ function VerifyEmail() {
         </div>
 
         <Button
-          name={verifyMutation.isPending ? "Verifying..." : "Verify & Sign In"}
-          disabled={verifyMutation.isPending || otp.join("").length < OTP_LENGTH}
+          name={verifyMutation.isPending ? "Verifying..." : "Verify & Continue"}
+          disabled={
+            verifyMutation.isPending || otp.join("").length < OTP_LENGTH
+          }
         />
       </motion.form>
     </AuthLayout>
   );
 }
 
-export default VerifyEmail;
+export default VoterLinkVerifyPage;

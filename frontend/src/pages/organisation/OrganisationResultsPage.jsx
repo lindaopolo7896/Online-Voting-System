@@ -127,33 +127,57 @@ function ResultsDetail({ election }) {
         </Card>
       ) : (
         Object.entries(byPosition).map(([position, positionCandidates]) => {
-          const totalVotesForPos = positionCandidates.reduce((s, c) => s + (c.votes ?? 0), 0);
-          const sorted = [...positionCandidates].sort((a, b) => (b.votes ?? 0) - (a.votes ?? 0));
+          const tallied = positionCandidates.some(
+            (c) => typeof c.vote_count === "number",
+          );
+          const totalForPos = positionCandidates.reduce(
+            (s, c) => s + (c.vote_count ?? 0),
+            0,
+          );
+          const ordered = [...positionCandidates].sort(
+            (a, b) => (b.vote_count ?? 0) - (a.vote_count ?? 0),
+          );
           return (
             <Card key={position} className="border-white/10 p-4 rounded-xl">
               <h3 className="text-text font-semibold mb-3">{position}</h3>
               <div className="flex flex-col gap-3">
-                {sorted.map((c, i) => {
-                  const votes = c.votes ?? 0;
-                  const pct = totalVotesForPos > 0 ? Math.round((votes / totalVotesForPos) * 100) : 0;
+                {ordered.map((c) => {
+                  const name =
+                    `${c.membership?.user?.first_name ?? ""} ${c.membership?.user?.last_name ?? ""}`.trim() ||
+                    `Candidate #${c.id}`;
+                  const votes = c.vote_count ?? 0;
+                  const pct =
+                    totalForPos > 0 ? Math.round((votes / totalForPos) * 100) : 0;
                   return (
                     <div key={c.id}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className={`text-text font-medium ${i === 0 && status === "completed" ? "text-primary" : ""}`}>
-                          {i === 0 && status === "completed" ? "👑 " : ""}{c.membership?.user?.first_name ?? ""} {c.membership?.user?.last_name ?? `Candidate #${c.id}`}
-                        </span>
-                        <span className="text-muted">{totalVotesForPos > 0 ? `${votes} votes · ${pct}%` : "No votes yet"}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                          {name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-text text-sm flex-1">{name}</span>
+                        {tallied && (
+                          <span className="text-muted text-sm shrink-0">
+                            {votes} · {pct}%
+                          </span>
+                        )}
                       </div>
-                      <div className="h-1.5 rounded-full bg-white/10">
-                        <div
-                          className={`h-full rounded-full transition-all duration-500 ${i === 0 ? "bg-primary" : "bg-white/30"}`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
+                      {tallied && (
+                        <div className="h-1.5 mt-1.5 rounded-full bg-white/10">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all duration-500"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      )}
                     </div>
                   );
                 })}
               </div>
+              {!tallied && (
+                <p className="text-muted text-xs mt-3">
+                  Live tallies appear here as votes are counted.
+                </p>
+              )}
             </Card>
           );
         })

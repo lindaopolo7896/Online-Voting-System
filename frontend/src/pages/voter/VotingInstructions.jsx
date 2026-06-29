@@ -7,7 +7,8 @@ import { GoVerified } from "react-icons/go";
 import { MdOutlineVerifiedUser } from "react-icons/md";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { getVotingSession } from "@/features/voting/session";
 
 const instructions = [
   {
@@ -44,6 +45,11 @@ const instructions = [
 ];
 
 function VotingInstructions() {
+  // No verified voting session — the voter hasn't completed link verification.
+  if (!getVotingSession()) {
+    return <Navigate to="/sign-in" replace />;
+  }
+
   return (
     <AuthLayout>
       <div className="flex flex-col gap-5 items-center justify-center max-w-lg">
