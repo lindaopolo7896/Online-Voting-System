@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { ChevronDown, Check, Building2, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { getMyMemberships, switchMembership } from "@/api/organisationApi";
@@ -7,7 +7,6 @@ import useAuth from "@/hooks/useAuth";
 
 function OrgSwitcher() {
   const { user, login } = useAuth();
-  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -20,16 +19,20 @@ function OrgSwitcher() {
   const { mutate: doSwitch, isPending } = useMutation({
     mutationFn: (id) => switchMembership(id),
     onSuccess: (membership) => {
-      // Update auth context so the rest of the app reflects the new org
+      // Persist the new active membership to auth context/localStorage, then do a
+      // full reload so every org-scoped view (and any component-local state like
+      // selected election or filters) starts fresh against the newly active org.
+      // A soft invalidateQueries() left stale details from the previous org behind.
       login({
         ...user,
         membershipId: membership.id,
         organisationId: membership.organisation?.id,
         role: membership.role,
       });
-      queryClient.invalidateQueries();
       setOpen(false);
-      toast.success(`Switched to ${membership.organisation?.name}`);
+      const destination =
+        membership.role === "admin" ? "/organisation/dashboard" : "/voter/dashboard";
+      window.location.assign(destination);
     },
     onError: (err) => {
       const msg =

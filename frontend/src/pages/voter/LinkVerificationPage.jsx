@@ -19,7 +19,7 @@ function LinkVerificationPage() {
   const mutation = useMutation({
     mutationFn: (value) => requestOtp(value, token),
     onSuccess: () => {
-      navigate("/verify-email", {
+      navigate("/voter-verification/code", {
         state: { email: email.trim().toLowerCase(), voting_token: token },
       });
     },

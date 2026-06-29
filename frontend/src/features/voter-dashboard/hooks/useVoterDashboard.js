@@ -22,22 +22,25 @@ function buildCategories(candidates) {
     posMap[posId].results.push({
       candidate:
         `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() || "Unknown",
-      votes: c.vote_count ?? 0,
+      // null = backend hasn't provided a tally yet; a number = real live count.
+      votes: typeof c.vote_count === "number" ? c.vote_count : null,
       percentage: 0,
       image: user?.profile_picture ?? "",
     });
   }
 
   return Object.values(posMap).map((pos) => {
-    const total = pos.results.reduce((s, r) => s + r.votes, 0);
+    const tallied = pos.results.some((r) => r.votes != null);
+    const total = pos.results.reduce((s, r) => s + (r.votes ?? 0), 0);
     return {
       ...pos,
+      tallied,
       results: pos.results
         .map((r) => ({
           ...r,
-          percentage: total > 0 ? Math.round((r.votes / total) * 100) : 0,
+          percentage: total > 0 ? Math.round(((r.votes ?? 0) / total) * 100) : 0,
         }))
-        .sort((a, b) => b.votes - a.votes),
+        .sort((a, b) => (b.votes ?? 0) - (a.votes ?? 0)),
     };
   });
 }

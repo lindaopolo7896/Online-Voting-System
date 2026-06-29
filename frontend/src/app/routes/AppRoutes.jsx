@@ -8,10 +8,12 @@ import VerifyEmail from "@/pages/auth/VerifyEmail";
 import ResetPassword from "@/pages/auth/ResetPassword";
 import Confirmation from "@/pages/auth/Confirmation";
 
-// Voting flow (token-based, requires auth)
+// Voting flow (token + verified-session based, self-guarded — not a dashboard login)
 import LinkVerificationPage from "@/pages/voter/LinkVerificationPage";
+import VoterLinkVerifyPage from "@/pages/voter/VoterLinkVerifyPage";
 import VotingInstructions from "@/pages/voter/VotingInstructions";
 import VotePage from "@/pages/voter/VotePage";
+import VoteConfirmationPage from "@/pages/voter/VoteConfirmationPage";
 import VotingAccess from "@/features/voting/components/VotingAccess";
 
 // Layouts
@@ -49,8 +51,15 @@ function AppRoutes() {
       {/* Public landing */}
       <Route path="/" element={<LandingPage />} />
 
-      {/* Voting-link entry — public: the OTP here is what authenticates the voter */}
+      {/* Voting flow (public entry) — the unique link + OTP verify the voter for a
+          specific election. These pages self-guard on the verified voting session
+          (sessionStorage); they are NOT a dashboard login. */}
       <Route path="/voter-verification" element={<LinkVerificationPage />} />
+      <Route path="/voter-verification/code" element={<VoterLinkVerifyPage />} />
+      <Route path="/voting-details" element={<VotingAccess />} />
+      <Route path="/voting-instructions" element={<VotingInstructions />} />
+      <Route path="/vote" element={<VotePage />} />
+      <Route path="/vote-confirmation" element={<VoteConfirmationPage />} />
 
       {/* Guest-only: redirect logged-in users to their dashboard */}
       <Route element={<GuestRoute />}>
@@ -60,13 +69,6 @@ function AppRoutes() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/confirmation" element={<Confirmation />} />
-      </Route>
-
-      {/* Voting flow — requires authentication (entry is /voter-verification above) */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/voting-details" element={<VotingAccess />} />
-        <Route path="/voting-instructions" element={<VotingInstructions />} />
-        <Route path="/vote" element={<VotePage />} />
       </Route>
 
       {/* Dashboard layout — voter routes (any authenticated user) */}

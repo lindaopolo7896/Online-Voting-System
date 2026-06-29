@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import ProgressCard from "@/features/results/components/ProgressCard";
 import ResultsTable from "@/features/results/components/ResultsTable";
-import VotesDistribution from "@/features/results/components/VotesDistribution";
 import ElectionSummary from "@/features/results/components/ElectionSummary";
 import Card from "@/components/ui/Card";
 import {
@@ -30,21 +29,24 @@ function buildCategories(candidates) {
       candidate:
         `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
         "Unknown",
-      votes: c.vote_count ?? 0,
+      // null = backend hasn't provided a tally yet; a number = real live count.
+      votes: typeof c.vote_count === "number" ? c.vote_count : null,
       percentage: 0,
       image: user?.profile_picture ?? "",
     });
   }
   return Object.values(posMap).map((pos) => {
-    const total = pos.results.reduce((s, r) => s + r.votes, 0);
+    const tallied = pos.results.some((r) => r.votes != null);
+    const total = pos.results.reduce((s, r) => s + (r.votes ?? 0), 0);
     return {
       ...pos,
+      tallied,
       results: pos.results
         .map((r) => ({
           ...r,
-          percentage: total > 0 ? Math.round((r.votes / total) * 100) : 0,
+          percentage: total > 0 ? Math.round(((r.votes ?? 0) / total) * 100) : 0,
         }))
-        .sort((a, b) => b.votes - a.votes),
+        .sort((a, b) => (b.votes ?? 0) - (a.votes ?? 0)),
     };
   });
 }
@@ -204,7 +206,7 @@ function ResultPage() {
             />
             <ResultsTable
               title="Results by Position"
-              subtitle="Live results update automatically as votes are cast."
+              subtitle="Live results update as votes are counted."
               categories={categories}
             />
           </div>
@@ -245,7 +247,6 @@ function ResultPage() {
                     },
               ]}
             />
-            <VotesDistribution categories={categories} />
           </div>
         </div>
       )}

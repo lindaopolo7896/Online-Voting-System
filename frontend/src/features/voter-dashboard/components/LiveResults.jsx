@@ -48,7 +48,7 @@ function LiveResults({ election }) {
       <div className="flex justify-between items-start gap-4 mb-6 sm:mb-8">
         <div className="min-w-0">
           <p className="text-muted text-xs sm:text-sm font-semibold tracking-wide">
-            LIVE RESULTS
+            CANDIDATES
           </p>
 
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary break-words">
@@ -107,9 +107,9 @@ function LiveResults({ election }) {
 
       {!hasCategories ? (
         <p className="text-muted text-sm text-center py-8">
-          No candidate results yet for this election.
+          No candidates registered for this election yet.
         </p>
-      ) : (
+      ) : category.tallied ? (
         <div className="flex flex-col gap-5 sm:gap-6">
           {category.results.map((candidate, index) => (
             <div key={index} className="flex flex-col gap-2">
@@ -117,19 +117,16 @@ function LiveResults({ election }) {
                 <p className="text-muted font-medium break-words max-w-[55%] sm:max-w-none">
                   {candidate.candidate}
                 </p>
-
                 <div className="flex gap-2 sm:gap-3 items-center shrink-0">
                   <p className="font-bold text-text text-sm sm:text-base">
                     {candidate.votes}
                   </p>
-
                   <p className="text-muted text-xs sm:text-sm">
                     {candidate.percentage}%
                   </p>
                 </div>
               </div>
-
-              <div className="w-full h-2.5 sm:h-3 bg-[#E9EAE1] rounded-full overflow-hidden">
+              <div className="w-full h-2.5 sm:h-3 bg-white/10 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-700 ${colors[index % colors.length]}`}
                   style={{ width: `${candidate.percentage}%` }}
@@ -137,6 +134,25 @@ function LiveResults({ election }) {
               </div>
             </div>
           ))}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3 sm:gap-4">
+          {category.results.map((candidate, index) => (
+            <div key={index} className="flex items-center gap-3">
+              <div
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${colors[index % colors.length]}`}
+              >
+                {candidate.candidate.charAt(0).toUpperCase()}
+              </div>
+              <p className="text-text font-medium break-words">
+                {candidate.candidate}
+              </p>
+            </div>
+          ))}
+
+          <p className="text-muted text-xs mt-2">
+            Live tallies appear here as votes are counted.
+          </p>
         </div>
       )}
     </div>
