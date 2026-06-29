@@ -42,7 +42,7 @@ function EditCandidateModal({ electionId, candidate, onClose }) {
       if (payload.photo) {
         form.append("campaign_photos", payload.photo);
       }
-      // Clear Content-Type so the browser sets the multipart boundary automatically
+
       const { data } = await apiClient.patch(
         `/elections/${electionId}/candidates/${candidate.id}/`,
         form,
@@ -115,7 +115,9 @@ function EditCandidateModal({ electionId, candidate, onClose }) {
           </div>
           <div>
             <h2 className="font-semibold text-text">Edit Candidate</h2>
-            <p className="text-xs text-muted">Update candidate profile details</p>
+            <p className="text-xs text-muted">
+              Update candidate profile details
+            </p>
           </div>
         </div>
 
@@ -129,16 +131,16 @@ function EditCandidateModal({ electionId, candidate, onClose }) {
               value={name}
               className="rounded-lg border border-border bg-background/50 px-3 py-2.5 text-sm text-muted cursor-not-allowed"
             />
-            {email && (
-              <p className="text-xs text-muted">{email}</p>
-            )}
+            {email && <p className="text-xs text-muted">{email}</p>}
           </div>
 
           {/* Slogan */}
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-text">
               Slogan
-              <span className="ml-1 text-xs text-muted font-normal">(max 100 chars)</span>
+              <span className="ml-1 text-xs text-muted font-normal">
+                (max 100 chars)
+              </span>
             </label>
             <input
               type="text"
@@ -181,7 +183,9 @@ function EditCandidateModal({ electionId, candidate, onClose }) {
 
           {/* Campaign Photo */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-text">Campaign Photo</label>
+            <label className="text-sm font-medium text-text">
+              Campaign Photo
+            </label>
 
             {displayPhoto ? (
               <div className="relative w-full overflow-hidden rounded-xl border border-border">

@@ -11,15 +11,15 @@ function DropdownPortal({ items }) {
   useEffect(() => {
     if (!open) return;
     function handleClick(e) {
-      // The menu is portaled to <body>, so it's outside btnRef — check it too,
-      // otherwise mousedown on an item closes the menu before its click fires.
       const insideButton = btnRef.current?.contains(e.target);
       const insideMenu = menuRef.current?.contains(e.target);
       if (!insideButton && !insideMenu) {
         setOpen(false);
       }
     }
-    function handleScroll() { setOpen(false); }
+    function handleScroll() {
+      setOpen(false);
+    }
     document.addEventListener("mousedown", handleClick);
     document.addEventListener("scroll", handleScroll, true);
     return () => {
@@ -49,32 +49,44 @@ function DropdownPortal({ items }) {
         <MoreVertical size={15} />
       </button>
 
-      {open && createPortal(
-        <div
-          ref={menuRef}
-          style={{ position: "fixed", top: coords.top, left: coords.left, zIndex: 9999 }}
-          className="w-48 rounded-xl border border-border bg-surface shadow-xl overflow-hidden"
-        >
-          {items.map(({ label, icon: Icon, onClick, disabled, danger }) => (
-            <button
-              key={label}
-              disabled={disabled}
-              onClick={() => { if (!disabled) { onClick(); setOpen(false); } }}
-              className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm transition
-                ${disabled
-                  ? "cursor-not-allowed opacity-40 text-muted"
-                  : danger
-                    ? "text-error hover:bg-background cursor-pointer"
-                    : "text-text hover:bg-background cursor-pointer"
+      {open &&
+        createPortal(
+          <div
+            ref={menuRef}
+            style={{
+              position: "fixed",
+              top: coords.top,
+              left: coords.left,
+              zIndex: 9999,
+            }}
+            className="w-48 rounded-xl border border-border bg-surface shadow-xl overflow-hidden"
+          >
+            {items.map(({ label, icon: Icon, onClick, disabled, danger }) => (
+              <button
+                key={label}
+                disabled={disabled}
+                onClick={() => {
+                  if (!disabled) {
+                    onClick();
+                    setOpen(false);
+                  }
+                }}
+                className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm transition
+                ${
+                  disabled
+                    ? "cursor-not-allowed opacity-40 text-muted"
+                    : danger
+                      ? "text-error hover:bg-background cursor-pointer"
+                      : "text-text hover:bg-background cursor-pointer"
                 }`}
-            >
-              <Icon size={15} className="shrink-0" />
-              {label}
-            </button>
-          ))}
-        </div>,
-        document.body
-      )}
+              >
+                <Icon size={15} className="shrink-0" />
+                {label}
+              </button>
+            ))}
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

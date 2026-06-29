@@ -8,7 +8,6 @@ function DashboardLayout() {
 
   return (
     <div className="min-h-screen flex bg-background">
-      {/* Mobile overlay — closes sidebar on backdrop tap */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/50 lg:hidden"

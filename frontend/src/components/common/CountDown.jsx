@@ -9,7 +9,6 @@ export default function Countdown({ election }) {
 
   useEffect(() => {
     const calculateTime = () => {
-      // Completed elections stay at 0
       if (election.status === "completed") {
         setCountdown({
           hours: 0,
@@ -20,7 +19,6 @@ export default function Countdown({ election }) {
         return;
       }
 
-      // Determine target time
       const targetDate =
         election.status === "live"
           ? new Date(election.endTime)

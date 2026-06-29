@@ -3,8 +3,6 @@ import Dark from "@/assets/images/bg-dark.png";
 import Light from "@/assets/images/bg-light.png";
 import useTheme from "@/hooks/useTheme";
 
-// Resolve the effective theme: explicit "dark"/"light" win; "system" follows the
-// OS preference and updates live when it changes.
 function useIsDark(theme) {
   const [isDark, setIsDark] = useState(
     () =>
