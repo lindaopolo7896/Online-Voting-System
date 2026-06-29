@@ -13,11 +13,12 @@ function CandidateFilters({
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
       <div className="flex flex-wrap items-center gap-3">
-        {/* Election filter — parent-controlled */}
         <select
           value={selectedElectionId ?? ""}
           onChange={(e) =>
-            onElectionChange(e.target.value ? parseInt(e.target.value, 10) : null)
+            onElectionChange(
+              e.target.value ? parseInt(e.target.value, 10) : null,
+            )
           }
           className="h-10 rounded-lg border border-white/10 bg-surface px-3 text-sm text-text focus:outline-none focus:border-primary"
         >
@@ -29,7 +30,6 @@ function CandidateFilters({
           ))}
         </select>
 
-        {/* Position filter — column-level */}
         <select
           value={table.getColumn("position")?.getFilterValue() ?? ""}
           onChange={(e) =>
@@ -47,7 +47,6 @@ function CandidateFilters({
           ))}
         </select>
 
-        {/* Status filter — column-level */}
         <select
           value={table.getColumn("status")?.getFilterValue() ?? ""}
           onChange={(e) =>
@@ -63,7 +62,6 @@ function CandidateFilters({
           <option value="disqualified">Disqualified</option>
         </select>
 
-        {/* Search */}
         <div className="relative">
           <Search
             size={16}

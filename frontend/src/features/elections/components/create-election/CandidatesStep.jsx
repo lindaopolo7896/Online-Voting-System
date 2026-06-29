@@ -26,8 +26,6 @@ function CandidatesStep({ electionId, onNext }) {
     enabled: !!electionId,
   });
 
-  // Prefer participants tagged with the "candidate" role; if none are, fall back
-  // to all participants (candidacy isn't strictly a role).
   const eligibleParticipants = useMemo(() => {
     const tagged = participants.filter(
       (p) => p.membership?.role === "candidate",
@@ -158,7 +156,8 @@ function CandidatesStep({ electionId, onNext }) {
       <div className="mt-8 flex items-center justify-between">
         <p className="text-xs text-muted">
           {assignedCount} of {eligibleParticipants.length} participant
-          {eligibleParticipants.length !== 1 ? "s" : ""} registered as candidates
+          {eligibleParticipants.length !== 1 ? "s" : ""} registered as
+          candidates
         </p>
 
         <button

@@ -8,8 +8,18 @@ const steps = [
     description:
       "Your organisation administrator enrolls you as a participant. You receive a secure, unique voting link — no password required.",
     icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+      <svg
+        className="w-7 h-7"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.5}
+          d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+        />
       </svg>
     ),
   },
@@ -20,8 +30,18 @@ const steps = [
     description:
       "Click your unique link and complete OTP verification. The system confirms you are the intended voter before granting ballot access.",
     icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      <svg
+        className="w-7 h-7"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.5}
+          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+        />
       </svg>
     ),
   },
@@ -32,8 +52,18 @@ const steps = [
     description:
       "Browse candidates per position, read their profiles, and cast your ballot. Your vote is encrypted and submitted in seconds.",
     icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+      <svg
+        className="w-7 h-7"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.5}
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+        />
       </svg>
     ),
   },
@@ -44,8 +74,18 @@ const steps = [
     description:
       "Every submitted vote is anchored immutably on-chain. Results are verifiable, auditable, and tamper-proof — permanently.",
     icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+      <svg
+        className="w-7 h-7"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.5}
+          d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+        />
       </svg>
     ),
   },
@@ -67,7 +107,6 @@ function Features() {
   return (
     <section id="journey" className="bg-[#F0F4FF] py-20 px-6 md:px-16 lg:px-32">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -85,12 +124,12 @@ function Features() {
               <span className="text-[#144DEF]">verified vote</span>
             </h2>
             <p className="text-gray-500 text-base max-w-sm leading-relaxed">
-              Four steps. Full transparency. Cryptographic proof at every stage of the process.
+              Four steps. Full transparency. Cryptographic proof at every stage
+              of the process.
             </p>
           </div>
         </motion.div>
 
-        {/* Step grid — gap-px creates hairline separators */}
         <motion.div
           variants={container}
           initial="hidden"
@@ -104,7 +143,6 @@ function Features() {
               variants={item}
               className="bg-white p-8 flex flex-col gap-5 group hover:bg-[#F0F4FF] transition-colors duration-300 cursor-default"
             >
-              {/* Icon + step number */}
               <div className="flex items-center justify-between">
                 <div className="w-12 h-12 rounded-xl bg-[#144DEF]/10 border border-[#144DEF]/15 flex items-center justify-center text-[#144DEF]">
                   {step.icon}
@@ -114,15 +152,17 @@ function Features() {
                 </span>
               </div>
 
-              {/* Label pill */}
               <span className="inline-flex w-fit text-[#144DEF] text-xs font-bold tracking-widest uppercase bg-[#144DEF]/10 px-3 py-1 rounded-full">
                 {step.label}
               </span>
 
-              {/* Text */}
               <div className="flex flex-col gap-2">
-                <h3 className="text-gray-900 font-bold text-lg leading-snug">{step.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{step.description}</p>
+                <h3 className="text-gray-900 font-bold text-lg leading-snug">
+                  {step.title}
+                </h3>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  {step.description}
+                </p>
               </div>
             </motion.div>
           ))}

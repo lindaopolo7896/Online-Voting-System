@@ -19,10 +19,6 @@ function OrgSwitcher() {
   const { mutate: doSwitch, isPending } = useMutation({
     mutationFn: (id) => switchMembership(id),
     onSuccess: (membership) => {
-      // Persist the new active membership to auth context/localStorage, then do a
-      // full reload so every org-scoped view (and any component-local state like
-      // selected election or filters) starts fresh against the newly active org.
-      // A soft invalidateQueries() left stale details from the previous org behind.
       login({
         ...user,
         membershipId: membership.id,
@@ -31,7 +27,9 @@ function OrgSwitcher() {
       });
       setOpen(false);
       const destination =
-        membership.role === "admin" ? "/organisation/dashboard" : "/voter/dashboard";
+        membership.role === "admin"
+          ? "/organisation/dashboard"
+          : "/voter/dashboard";
       window.location.assign(destination);
     },
     onError: (err) => {
@@ -43,7 +41,6 @@ function OrgSwitcher() {
     },
   });
 
-  // Close on outside click
   useEffect(() => {
     function handle(e) {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
@@ -52,7 +49,9 @@ function OrgSwitcher() {
     return () => document.removeEventListener("mousedown", handle);
   }, []);
 
-  const active = memberships.find((m) => m.id === user?.membershipId) ?? memberships.find((m) => m.currently_active);
+  const active =
+    memberships.find((m) => m.id === user?.membershipId) ??
+    memberships.find((m) => m.currently_active);
   const activeOrgName = active?.organisation?.name ?? "Organisation";
 
   return (
@@ -86,30 +85,39 @@ function OrgSwitcher() {
               <Loader2 size={18} className="animate-spin text-muted" />
             </div>
           ) : memberships.length === 0 ? (
-            <p className="px-4 py-4 text-sm text-muted">No organisations found.</p>
+            <p className="px-4 py-4 text-sm text-muted">
+              No organisations found.
+            </p>
           ) : (
             <ul className="py-1.5">
               {memberships.map((m) => {
-                const isCurrent = m.id === (active?.id);
+                const isCurrent = m.id === active?.id;
                 return (
                   <li key={m.id}>
                     <button
                       onClick={() => !isCurrent && doSwitch(m.id)}
                       disabled={isCurrent || isPending}
                       className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition
-                        ${isCurrent
-                          ? "text-primary cursor-default"
-                          : "text-text hover:bg-background cursor-pointer"
+                        ${
+                          isCurrent
+                            ? "text-primary cursor-default"
+                            : "text-text hover:bg-background cursor-pointer"
                         }`}
                     >
                       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary text-xs font-bold">
                         {m.organisation?.name?.charAt(0).toUpperCase() ?? "O"}
                       </div>
                       <div className="flex-1 text-left min-w-0">
-                        <p className="truncate font-medium">{m.organisation?.name}</p>
-                        <p className="text-xs text-muted capitalize">{m.role}</p>
+                        <p className="truncate font-medium">
+                          {m.organisation?.name}
+                        </p>
+                        <p className="text-xs text-muted capitalize">
+                          {m.role}
+                        </p>
                       </div>
-                      {isCurrent && <Check size={14} className="text-primary shrink-0" />}
+                      {isCurrent && (
+                        <Check size={14} className="text-primary shrink-0" />
+                      )}
                     </button>
                   </li>
                 );

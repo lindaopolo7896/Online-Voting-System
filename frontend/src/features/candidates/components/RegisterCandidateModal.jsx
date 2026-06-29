@@ -36,9 +36,6 @@ function RegisterCandidateModal({
     [registeredCandidates],
   );
 
-  // Exclude participants already registered as candidates. Then, if any of the
-  // remaining are explicitly tagged with the "candidate" role, narrow to those;
-  // otherwise fall back to every participant (candidacy isn't strictly a role).
   const eligible = useMemo(() => {
     const available = participants.filter(
       (p) => !registeredMembershipIds.has(p.membership?.id),
@@ -100,9 +97,7 @@ function RegisterCandidateModal({
 
         {eligible.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border py-10 text-center">
-            <p className="font-medium text-text">
-              No participants available
-            </p>
+            <p className="font-medium text-text">No participants available</p>
             <p className="mt-1 text-sm text-muted">
               Add participants to this election first, or every participant is
               already registered as a candidate.
