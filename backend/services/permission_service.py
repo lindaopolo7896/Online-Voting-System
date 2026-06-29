@@ -1,132 +1,101 @@
 from apps.users.models import PermissionRecord, Log
 
 
-# Codename convention: "<verb>.<resource>", dot-style, used everywhere
-# (ACTION_PERMISSION_MAPs, defaults, and PermissionRecord.codename).
+# Codename convention: "<scope>.<capability>", where scope is "org" or "election".
 
 ORG_PERMISSIONS = [
-    # Organisation
-    "add.organisation",
-    "view.organisation",
-    "update.organisation",
-    "delete.organisation",
-
-    # Members
-    "add.membership",
-    "view.membership",
-    "update.membership",
-    "delete.membership",
-
-    # Permission assignments
-    "assign.permission",
-    "view.permission",
-    "unassign.permission",
-
-    # Audit logs
-    "view.log",
-    "delete.log",
-
-    # Elections (creation is an org-level act)
-    "add.election",
-    "view.election",
-    "update.election",
-    "delete.election",
-
-    # Voting links
-    "add.voting_link",
-    "view.voting_link",
+    "org.manage",
+    "org.members.manage",
+    "org.access.manage",
+    "org.elections.manage",
+    "org.analytics.view",
 ]
 
 ELECTION_PERMISSIONS = [
-    # Election lifecycle
-    "view.election",
-    "update.election",
-    "delete.election",
-    "start.election",
-    "close.election",
-    "publish.results",
-
-    # Positions
-    "add.position",
-    "view.position",
-    "update.position",
-    "delete.position",
-
-    # Participants
-    "add.participant",
-    "view.participant",
-    "update.participant",
-    "delete.participant",
-
-    # Candidates
-    "add.candidate",
-    "view.candidate",
-    "update.candidate",
-    "delete.candidate",
-    "approve.candidate",
-    "reject.candidate",
-
-    # Voting
-    "add.vote",
-    "view.vote",
-    "update.vote",
-    "delete.vote",
-    "view.results",
-
-    # Voting links
-    "add.voting_link",
-    "view.voting_link",
-    "update.voting_link",
-    "delete.voting_link",
+    "election.participants.manage",
+    "election.ballot.manage",
+    "election.invites.manage",
+    "election.votes.view",
+    "election.votes.manage",
+    "election.vote.cast",
 ]
 
 
 # Role-based defaults. Unknown roles fall back to "member".
 default_org_permissions = {
-    "admin": ORG_PERMISSIONS,
+    "admin": ORG_PERMISSIONS + ELECTION_PERMISSIONS,
     "official": [
-        "view.organisation",
-        "view.membership",
-        "view.log",
+        "org.members.manage",
+        "org.elections.manage",
+        "org.analytics.view",
+    ],
+    "member": [],
+}
+
+
+LEGACY_PERMISSION_ALIASES = {
+    "org.manage": [
+        "add.organisation",
+        "update.organisation",
+        "delete.organisation",
+    ],
+    "org.members.manage": [
+        "add.membership",
+        "update.membership",
+        "delete.membership",
+    ],
+    "org.access.manage": [
+        "assign.permission",
+        "view.permission",
+        "unassign.permission",
+    ],
+    "org.elections.manage": [
         "add.election",
+        "update.election",
+        "delete.election",
     ],
-    "member": [
-        "view.organisation",
-        "view.membership",
+    "org.analytics.view": ["view.log"],
+    "election.participants.manage": [
+        "add.participant",
+        "update.participant",
+        "delete.participant",
     ],
+    "election.ballot.manage": [
+        "add.position",
+        "update.position",
+        "delete.position",
+        "add.candidate",
+        "update.candidate",
+        "delete.candidate",
+        "approve.candidate",
+        "reject.candidate",
+    ],
+    "election.invites.manage": [
+        "add.voting_link",
+        "view.voting_link",
+        "update.voting_link",
+        "delete.voting_link",
+    ],
+    "election.votes.view": [
+        "view.vote",
+        "view.results",
+    ],
+    "election.votes.manage": [
+        "update.vote",
+        "delete.vote",
+    ],
+    "election.vote.cast": ["add.vote"],
 }
 
 default_election_permissions = {
     "admin": ELECTION_PERMISSIONS,
     "official": [
-        "view.election",
-        "start.election",
-        "close.election",
-        "publish.results",
-        "add.position",
-        "view.position",
-        "update.position",
-        "delete.position",
-        "add.participant",
-        "view.participant",
-        "update.participant",
-        "delete.participant",
-        "view.candidate",
-        "approve.candidate",
-        "reject.candidate",
-        "view.results",
-        "add.voting_link",
-        "view.voting_link",
-        "delete.voting_link",
+        "election.participants.manage",
+        "election.ballot.manage",
+        "election.invites.manage",
+        "election.votes.view",
     ],
-    "member": [
-        "view.election",
-        "view.position",
-        "view.participant",
-        "view.candidate",
-        "add.vote",
-        "view.results",
-    ],
+    "member": ["election.vote.cast"],
 }
 
 
@@ -194,7 +163,8 @@ def get_all_permissions_for_membership(membership_id):
 
 
 def check_membership_permission(membership, codename, election=None):
-    qs = membership.permissions.filter(codename=codename)
+    codenames = [codename, *LEGACY_PERMISSION_ALIASES.get(codename, [])]
+    qs = membership.permissions.filter(codename__in=codenames)
     if election is not None:
         return qs.filter(election=election).exists() or qs.filter(election__isnull=True).exists()
     return qs.filter(election__isnull=True).exists()

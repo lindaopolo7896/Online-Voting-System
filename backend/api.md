@@ -1,4 +1,4 @@
-# Voting Backend API Documentation V1.0.2
+# Voting Backend API Documentation V1.1.0
 
 Short description:
 This API manages organisations, elections, participants, candidates, voting links, OTP login, and anonymous vote submission with blockchain-style vote anchoring.
@@ -89,8 +89,8 @@ Lists organisations linked to current user, or creates a new organisation.
 - Method: `GET`, `POST`
 - Path: `/api/v1/organisations/`
 - Required permission:
-  - `GET`: `view.organisation`
-  - `POST`: `add.organisation`
+  - `GET`: `Authenticated + scoped membership access`
+  - `POST`: `org.manage`
 - Parameters:
   - Query (GET filters, optional):
     - `name`
@@ -108,9 +108,9 @@ Read or modify one organisation record.
 - Method: `GET`, `PUT`, `PATCH`, `DELETE`
 - Path: `/api/v1/organisations/{id}/`
 - Required permission:
-  - `GET`: `view.organisation`
-  - `PUT` / `PATCH`: `update.organisation`
-  - `DELETE`: `delete.organisation`
+  - `GET`: `Authenticated + scoped membership access`
+  - `PUT` / `PATCH`: `org.manage`
+  - `DELETE`: `org.manage`
 - Parameters:
   - Path: `id` (organisation id)
   - PUT/PATCH body: organisation fields
@@ -154,8 +154,8 @@ Lists users in active organisation context; create behavior depends on permissio
 - Method: `GET`, `POST`
 - Path: `/api/v1/users/`
 - Required permission:
-  - `GET`: `view.membership`
-  - `POST`: `add.membership`
+  - `GET`: `Authenticated + active organisation scope`
+  - `POST`: `org.members.manage`
 - Parameters:
   - Query (GET filters, optional):
     - `email`, `first_name`, `last_name`, `is_active`
@@ -173,9 +173,9 @@ Reads, updates, or soft-deletes one user. Delete also soft-deletes that user’s
 - Method: `GET`, `PUT`, `PATCH`, `DELETE`
 - Path: `/api/v1/users/{id}/`
 - Required permission:
-  - `GET`: `view.membership`
-  - `PUT` / `PATCH`: `update.membership`
-  - `DELETE`: `delete.membership`
+  - `GET`: `Authenticated + active organisation scope`
+  - `PUT` / `PATCH`: `org.members.manage`
+  - `DELETE`: `org.members.manage`
 - Parameters:
   - Path: `id`
   - PUT/PATCH body: user fields
@@ -193,8 +193,8 @@ Lists memberships in active org scope. Create can onboard a new user + membershi
 - Method: `GET`, `POST`
 - Path: `/api/v1/memberships/`
 - Required permission:
-  - `GET`: `view.membership`
-  - `POST`: `add.membership`
+  - `GET`: `Authenticated + active organisation scope`
+  - `POST`: `org.members.manage`
 - Parameters:
   - Query (GET filters, optional):
     - `organisation_id`, `user_id`, `role`, `is_active`
@@ -217,9 +217,9 @@ Read, update, or soft-delete one membership.
 - Method: `GET`, `PUT`, `PATCH`, `DELETE`
 - Path: `/api/v1/memberships/{id}/`
 - Required permission:
-  - `GET`: `view.membership`
-  - `PUT` / `PATCH`: `update.membership`
-  - `DELETE`: `delete.membership`
+  - `GET`: `Authenticated + active organisation scope`
+  - `PUT` / `PATCH`: `org.members.manage`
+  - `DELETE`: `org.members.manage`
 - Parameters:
   - Path: `id`
   - PUT/PATCH body: membership fields
@@ -232,7 +232,7 @@ Returns memberships for current authenticated user.
 
 - Method: `GET`
 - Path: `/api/v1/memberships/my-memberships/`
-- Required permission: `view.membership`
+- Required permission: `Authenticated`
 - Parameters:
   - None
 - Response:
@@ -244,7 +244,7 @@ Uploads a member roster for the active organisation and creates/updates organisa
 
 - Method: `POST`
 - Path: `/api/v1/memberships/bulk-upload/`
-- Required permission: `add.membership`
+- Required permission: `org.members.manage`
 - Parameters:
   - Body (multipart/form-data):
     - `file` (required, `.csv` or `.xlsx`)
@@ -274,7 +274,7 @@ Assigns permissions at organisation or election scope.
 
 - Method: `POST`
 - Path: `/api/v1/permission-records/bulk-assign/`
-- Required permission: `assign.permission`
+- Required permission: `org.access.manage`
 - Parameters:
   - Body:
     - `type` (`"organisation"` or `"election"`)
@@ -290,7 +290,7 @@ Removes permissions at organisation or election scope.
 
 - Method: `POST`
 - Path: `/api/v1/permission-records/bulk-unassign/`
-- Required permission: `unassign.permission`
+- Required permission: `org.access.manage`
 - Parameters:
   - Body:
     - `type`, `membership_id`, `permissions`, `election_id` (same as assign)
@@ -303,7 +303,7 @@ Returns all permission records for one membership.
 
 - Method: `GET`
 - Path: `/api/v1/permission-records/get-membership-permissions/`
-- Required permission: `view.permission`
+- Required permission: `org.access.manage`
 - Parameters:
   - Query:
     - `membership_id` (int, required)
@@ -321,8 +321,8 @@ Lists elections in user scope, or creates a new election.
 - Method: `GET`, `POST`
 - Path: `/api/v1/elections/`
 - Required permission:
-  - `GET`: `view.election`
-  - `POST`: `add.election`
+  - `GET`: `Authenticated + scoped membership access`
+  - `POST`: `org.elections.manage`
 - Parameters:
   - Query (GET filters, optional):
     - `organisation_id`, `date_time_occuring`, `date_time_ending`, `winner_id`
@@ -346,9 +346,9 @@ Read or edit one election.
 - Method: `GET`, `PUT`, `PATCH`, `DELETE`
 - Path: `/api/v1/elections/{id}/`
 - Required permission:
-  - `GET`: `view.election`
-  - `PUT` / `PATCH`: `update.election`
-  - `DELETE`: `delete.election`
+  - `GET`: `Authenticated + scoped membership access`
+  - `PUT` / `PATCH`: `org.elections.manage`
+  - `DELETE`: `org.elections.manage`
 - Parameters:
   - Path: `id`
   - PUT/PATCH body: election fields
@@ -365,9 +365,9 @@ Read election-linked resources from top-level election route.
   - `/api/v1/elections/{id}/election-participants/`
   - `/api/v1/elections/{id}/election-candidates/`
 - Required permission:
-  - `/election-positions/`: `view.position`
-  - `/election-participants/`: `view.participant`
-  - `/election-candidates/`: `view.candidate`
+  - `/election-positions/`: `Authenticated + scoped membership access`
+  - `/election-participants/`: `Authenticated + scoped membership access`
+  - `/election-candidates/`: `Authenticated + scoped membership access`
 - Parameters:
   - Path: `id`
 - Response:
@@ -379,7 +379,7 @@ Creates and stores a development smart contract address for election.
 
 - Method: `POST`
 - Path: `/api/v1/elections/{id}/deploy-contract/`
-- Required permission: `update.election`
+- Required permission: `org.elections.manage`
 - Parameters:
   - Path: `id`
 - Response:
@@ -394,7 +394,7 @@ Generates or refreshes voting links for all election participants and sends invi
 
 - Method: `POST`
 - Path: `/api/v1/elections/{id}/send-voter-invites/`
-- Required permission: `add.voting_link`
+- Required permission: `election.invites.manage`
 - Parameters:
   - Path: `id`
 - Response:
@@ -411,7 +411,7 @@ Adds all active organisation memberships to the election as participants and see
 
 - Method: `POST`
 - Path: `/api/v1/elections/{id}/enroll-all-members/`
-- Required permission: `add.participant`
+- Required permission: `election.participants.manage`
 - Parameters:
   - Path: `id`
   - Body (optional):
@@ -440,8 +440,8 @@ CRUD positions for a specific election context.
 - Method: `GET`, `POST`
 - Path: `/api/v1/elections/{election_id}/positions/`
 - Required permission:
-  - `GET`: `view.position`
-  - `POST`: `add.position`
+  - `GET`: `Authenticated + scoped election access`
+  - `POST`: `election.ballot.manage`
 - Parameters:
   - Path: `election_id`
   - Query (GET filters, optional):
@@ -458,9 +458,9 @@ CRUD positions for a specific election context.
 - Method: `GET`, `PUT`, `PATCH`, `DELETE`
 - Path: `/api/v1/elections/{election_id}/positions/{id}/`
 - Required permission:
-  - `GET`: `view.position`
-  - `PUT` / `PATCH`: `update.position`
-  - `DELETE`: `delete.position`
+  - `GET`: `Authenticated + scoped election access`
+  - `PUT` / `PATCH`: `election.ballot.manage`
+  - `DELETE`: `election.ballot.manage`
 - Parameters:
   - Path: `election_id`, `id`
 - Response:
@@ -473,8 +473,8 @@ CRUD participants and run bulk participant onboarding from CSV/XLSX.
 - Method: `GET`, `POST`
 - Path: `/api/v1/elections/{election_id}/participants/`
 - Required permission:
-  - `GET`: `view.participant`
-  - `POST`: `add.participant`
+  - `GET`: `Authenticated + scoped election access`
+  - `POST`: `election.participants.manage`
 - Parameters:
   - Path: `election_id`
   - Query (GET filters, optional):
@@ -488,9 +488,9 @@ CRUD participants and run bulk participant onboarding from CSV/XLSX.
 - Method: `GET`, `PUT`, `PATCH`, `DELETE`
 - Path: `/api/v1/elections/{election_id}/participants/{id}/`
 - Required permission:
-  - `GET`: `view.participant`
-  - `PUT` / `PATCH`: `update.participant`
-  - `DELETE`: `delete.participant`
+  - `GET`: `Authenticated + scoped election access`
+  - `PUT` / `PATCH`: `election.participants.manage`
+  - `DELETE`: `election.participants.manage`
 - Parameters:
   - Path: `election_id`, `id`
 - Response:
@@ -502,7 +502,7 @@ Uploads a roster for an election. Every valid row becomes a participant in the t
 
 - Method: `POST`
 - Path: `/api/v1/elections/{election_id}/participants/bulk-upload/`
-- Required permission: `add.participant`
+- Required permission: `election.participants.manage`
 - Parameters:
   - Path: `election_id`
   - Body (multipart/form-data):
@@ -526,7 +526,7 @@ Generates/refreshes voting links and emails for participants in this election. L
 
 - Method: `POST`
 - Path: `/api/v1/elections/{election_id}/participants/send-invitations/`
-- Required permission: `add.voting_link`
+- Required permission: `election.invites.manage`
 - Parameters:
   - Path: `election_id`
 - Response:
@@ -538,7 +538,7 @@ Creates a candidate in this election from the selected participant membership.
 
 - Method: `POST`
 - Path: `/api/v1/elections/{election_id}/participants/{id}/convert-to-candidate/`
-- Required permission: `add.participant`
+- Required permission: `election.ballot.manage`
 - Parameters:
   - Path: `election_id`, `id` (participant id)
   - Body:
@@ -561,8 +561,8 @@ CRUD candidates for a specific election context.
 - Method: `GET`, `POST`
 - Path: `/api/v1/elections/{election_id}/candidates/`
 - Required permission:
-  - `GET`: `view.candidate`
-  - `POST`: `add.candidate`
+  - `GET`: `Authenticated + scoped election access`
+  - `POST`: `election.ballot.manage`
 - Parameters:
   - Path: `election_id`
   - Query (GET filters, optional):
@@ -578,9 +578,9 @@ CRUD candidates for a specific election context.
 - Method: `GET`, `PUT`, `PATCH`, `DELETE`
 - Path: `/api/v1/elections/{election_id}/candidates/{id}/`
 - Required permission:
-  - `GET`: `view.candidate`
-  - `PUT` / `PATCH`: `update.candidate`
-  - `DELETE`: `delete.candidate`
+  - `GET`: `Authenticated + scoped election access`
+  - `PUT` / `PATCH`: `election.ballot.manage`
+  - `DELETE`: `election.ballot.manage`
 - Parameters:
   - Path: `election_id`, `id`
 - Response:
@@ -597,8 +597,8 @@ Lists votes, or submits a vote and anchors it to the blockchain-style hash recor
 - Method: `GET`, `POST`
 - Path: `/api/v1/votes/`
 - Required permission:
-  - `GET`: `view.vote`
-  - `POST`: `add.vote`
+  - `GET`: `election.votes.view`
+  - `POST`: `election.vote.cast`
 - Parameters:
   - Query (GET filters, optional):
     - `election_id`, `position_id`, `voted_for_id`
@@ -626,9 +626,9 @@ Read or modify one vote record.
 - Method: `GET`, `PUT`, `PATCH`, `DELETE`
 - Path: `/api/v1/votes/{id}/`
 - Required permission:
-  - `GET`: `view.vote`
-  - `PUT` / `PATCH`: `update.vote`
-  - `DELETE`: `delete.vote`
+  - `GET`: `election.votes.view`
+  - `PUT` / `PATCH`: `election.votes.manage`
+  - `DELETE`: `election.votes.manage`
 - Parameters:
   - Path: `id`
   - PUT/PATCH body: vote fields
@@ -641,7 +641,7 @@ Returns all votes for an election.
 
 - Method: `POST`
 - Path: `/api/v1/votes/by-election/`
-- Required permission: `view.vote`
+- Required permission: `election.votes.view`
 - Parameters:
   - Body:
     - `election_id` (int, required)
@@ -654,7 +654,7 @@ Returns all votes for a candidate.
 
 - Method: `POST`
 - Path: `/api/v1/votes/by-candidate/`
-- Required permission: `view.vote`
+- Required permission: `election.votes.view`
 - Parameters:
   - Body:
     - `candidate_id` (int, required)
@@ -672,8 +672,8 @@ Manage voting link records directly.
 - Method: `GET`, `POST`
 - Path: `/api/v1/voting-links/`
 - Required permission:
-  - `GET`: `view.voting_link`
-  - `POST`: `add.voting_link`
+  - `GET`: `election.invites.manage`
+  - `POST`: `election.invites.manage`
 - Parameters:
   - Query (GET filters, optional):
     - `election_id`, `participant_id`, `generated_by_id`, `is_used`, `expires_at`
@@ -694,9 +694,9 @@ Read or modify one voting link.
 - Method: `GET`, `PUT`, `PATCH`, `DELETE`
 - Path: `/api/v1/voting-links/{id}/`
 - Required permission:
-  - `GET`: `view.voting_link`
-  - `PUT` / `PATCH`: `update.voting_link`
-  - `DELETE`: `delete.voting_link`
+  - `GET`: `election.invites.manage`
+  - `PUT` / `PATCH`: `election.invites.manage`
+  - `DELETE`: `election.invites.manage`
 - Parameters:
   - Path: `id`
 - Response:
@@ -708,7 +708,7 @@ Returns voting links tied to current user through participant membership.
 
 - Method: `GET`
 - Path: `/api/v1/voting-links/my-links/`
-- Required permission: `view.voting_link`
+- Required permission: `Authenticated`
 - Parameters:
   - None
 - Response:
@@ -751,7 +751,7 @@ Returns logs for current user’s memberships.
 
 - Method: `GET`
 - Path: `/api/v1/logs/membership-logs/`
-- Required permission: `view.log`
+- Required permission: `org.analytics.view`
 - Parameters:
   - None
 - Response:
@@ -763,7 +763,7 @@ Returns logs for current user by election id.
 
 - Method: `GET`
 - Path: `/api/v1/logs/election-logs/{election_id}/`
-- Required permission: `view.log`
+- Required permission: `org.analytics.view`
 - Parameters:
   - Path: `election_id`
 - Response:

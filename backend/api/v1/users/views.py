@@ -92,17 +92,18 @@ class OrganisationViewSet(ModelViewSet):
     filterset_fields = ['name']
 
     ACTION_PERMISSION_MAP = {
-        'create': 'add.organisation',
-        'list': 'view.organisation',
-        'retrieve': 'view.organisation',
-        'update': 'update.organisation',
-        'partial_update': 'update.organisation',
-        'destroy': 'delete.organisation',
+        'create': 'org.manage',
+        'update': 'org.manage',
+        'partial_update': 'org.manage',
+        'destroy': 'org.manage',
+        'election_stats': 'org.analytics.view',
     }
 
     def get_permissions(self):
         if self.action == 'register_org':
             return [AllowAny()]
+        if self.action in {'list', 'retrieve'}:
+            return [IsAuthenticated()]
         return super().get_permissions()
 
     #in this case we want to fetch organisations a person is a member of
@@ -192,13 +193,16 @@ class UserViewset(ModelViewSet):
     filterset_fields = ['email', 'first_name', 'last_name', 'is_active']
 
     ACTION_PERMISSION_MAP = {
-        'create': 'add.membership',
-        'list': 'view.membership',
-        'retrieve': 'view.membership',
-        'update': 'update.membership',
-        'partial_update': 'update.membership',
-        'destroy': 'delete.membership',
+        'create': 'org.members.manage',
+        'update': 'org.members.manage',
+        'partial_update': 'org.members.manage',
+        'destroy': 'org.members.manage',
     }
+
+    def get_permissions(self):
+        if self.action in {'list', 'retrieve'}:
+            return [IsAuthenticated()]
+        return super().get_permissions()
 
     #we want to scope to the users in the current membership organisation
     def get_queryset(self):
@@ -228,26 +232,23 @@ class MembershipViewset(ModelViewSet):
     filterset_fields = ['organisation_id', 'user_id', 'role', 'is_active']
 
     ACTION_PERMISSION_MAP = {
-        'create': 'add.membership',
-        'bulk_upload': 'add.membership',
-        'list': 'view.membership',
-        'retrieve': 'view.membership',
-        'update': 'update.membership',
-        'partial_update': 'update.membership',
-        'destroy': 'delete.membership',
-        'my_memberships': 'view.membership',
+        'create': 'org.members.manage',
+        'bulk_upload': 'org.members.manage',
+        'update': 'org.members.manage',
+        'partial_update': 'org.members.manage',
+        'destroy': 'org.members.manage',
     }
 
     def get_permissions(self):
-        if self.action == 'switch_membership':
+        if self.action in {'list', 'retrieve', 'my_memberships', 'switch_membership'}:
             return [IsAuthenticated()]
         return super().get_permissions()
     
     # we want to scope it to the current organisation
     def get_queryset(self):
         user = self.request.user
-        if self.action == 'switch_membership':
-            return Membership.objects.filter(user=user, is_active=True)
+        # if self.action == 'switch_membership':
+        #     return Membership.objects.filter(user=user, is_active=True)
         organisation = get_user_active_organisation(user.id)
         active_membership = get_user_active_membership(user.id)
 
@@ -447,9 +448,9 @@ class PermissionRecordViewset(ModelViewSet):
 
 
     ACTION_PERMISSION_MAP = {
-        'bulk_assign': 'assign.permission',
-        'bulk_unassign': 'unassign.permission',
-        'get_membership_permissions': 'view.permission',
+        'bulk_assign': 'org.access.manage',
+        'bulk_unassign': 'org.access.manage',
+        'get_membership_permissions': 'org.access.manage',
     }
     
     @action(detail=False, methods=['post'])
@@ -498,19 +499,20 @@ class ElectionViewset(ModelViewSet):
     filterset_fields = ['organisation_id', 'date_time_occuring', 'date_time_ending', 'winner_id']
 
     ACTION_PERMISSION_MAP = {
-        'create': 'add.election',
-        'list': 'view.election',
-        'retrieve': 'view.election',
-        'update': 'update.election',
-        'partial_update': 'update.election',
-        'destroy': 'delete.election',
-        'positions': 'view.position',
-        'participants': 'view.participant',
-        'candidates': 'view.candidate',
-        'deploy_contract': 'update.election',
-        'send_voter_invites': 'add.voting_link',
-        'enroll_all_members': 'add.participant',
+        'create': 'org.elections.manage',
+        'update': 'org.elections.manage',
+        'partial_update': 'org.elections.manage',
+        'destroy': 'org.elections.manage',
+        'deploy_contract': 'org.elections.manage',
+        'voter_turnout': 'org.analytics.view',
+        'send_voter_invites': 'election.invites.manage',
+        'enroll_all_members': 'election.participants.manage',
     }
+
+    def get_permissions(self):
+        if self.action in {'list', 'retrieve', 'positions', 'participants', 'candidates'}:
+            return [IsAuthenticated()]
+        return super().get_permissions()
 
     def get_queryset(self):
         #we want to return elections that a member is a participant or caidate
@@ -666,8 +668,8 @@ class LogViewset(ModelViewSet):
     permission_classes = [HasPermission]
 
     ACTION_PERMISSION_MAP = {
-        'membership_logs': 'view.log',
-        'membership_logs_by_election': 'view.log',
+        'membership_logs': 'org.analytics.view',
+        'membership_logs_by_election': 'org.analytics.view',
     }
 
 
