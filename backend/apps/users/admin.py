@@ -33,6 +33,6 @@ class PermissionRecordAdmin(admin.ModelAdmin):
 
 @admin.register(Log)
 class LogAdmin(admin.ModelAdmin):
-    list_display = ('membership', 'election', 'codename', 'created_at')
+    list_display = ('membership', 'election', 'codename', 'timestamp')
     search_fields = ('membership__user__email', 'election__name', 'codename')
     list_filter = ('codename', 'election')
