@@ -1,5 +1,6 @@
 from django.db import transaction
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,6 +11,7 @@ from apps.elections.models import Participant
 from .serializers import VoteSerializer, VotingLinkSerializer
 from api.v1.users.permissions import HasPermission
 from services.blockchain_service import anchor_vote
+from services.membership_service import get_user_active_organisation
 from services.voting_link_service import resolve_voting_link
 
 class VoteViewSet(ModelViewSet):
@@ -19,16 +21,22 @@ class VoteViewSet(ModelViewSet):
     filterset_fields = ['election_id', 'position_id', 'voted_for_id']
 
     ACTION_PERMISSION_MAP = {
-        'list': 'view.vote',
-        'retrieve': 'view.vote',
-        'create': 'add.vote',
-        'update': 'update.vote',
-        'partial_update': 'update.vote',
-        'destroy': 'delete.vote',
-        'my_votes': 'view.vote',
-        'by_election': 'view.vote',
-        'by_candidate': 'view.vote',
+        'list': 'election.votes.view',
+        'retrieve': 'election.votes.view',
+        'by_election': 'election.votes.view',
+        'by_candidate': 'election.votes.view',
+        'my_votes': 'election.votes.view',
+        'create': 'election.vote.cast',
+        'update': 'election.votes.manage',
+        'partial_update': 'election.votes.manage',
+        'destroy': 'election.votes.manage',
     }
+
+    def get_queryset(self):
+        organisation = get_user_active_organisation(self.request.user.id)
+        if organisation is None:
+            return Vote.objects.none()
+        return Vote.objects.filter(election__organisation=organisation)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -77,7 +85,7 @@ class VoteViewSet(ModelViewSet):
         election_id = request.data.get('election_id')
         if not election_id:
             return Response({'detail': 'election_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        votes = Vote.objects.filter(election_id=election_id)
+        votes = self.get_queryset().filter(election_id=election_id)
         serializer = self.get_serializer(votes, many=True)
         return Response(serializer.data)
     
@@ -87,7 +95,7 @@ class VoteViewSet(ModelViewSet):
         candidate_id = request.data.get('candidate_id')
         if not candidate_id:
             return Response({'detail': 'candidate_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        votes = Vote.objects.filter(voted_for_id=candidate_id)
+        votes = self.get_queryset().filter(voted_for_id=candidate_id)
         serializer = self.get_serializer(votes, many=True)
         return Response(serializer.data)
 
@@ -100,15 +108,24 @@ class VotingLinkViewSet(ModelViewSet):
 
 
     ACTION_PERMISSION_MAP = {
-        'list': 'view.voting_link',
-        'retrieve': 'view.voting_link',
-        'create': 'add.voting_link',
-        'update': 'update.voting_link',
-        'partial_update': 'update.voting_link',
-        'destroy': 'delete.voting_link',
-        'my_links': 'view.voting_link',
+        'list': 'election.invites.manage',
+        'retrieve': 'election.invites.manage',
+        'create': 'election.invites.manage',
+        'update': 'election.invites.manage',
+        'partial_update': 'election.invites.manage',
+        'destroy': 'election.invites.manage',
     }
 
+    def get_permissions(self):
+        if self.action == 'my_links':
+            return [IsAuthenticated()]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        organisation = get_user_active_organisation(self.request.user.id)
+        if organisation is None:
+            return VotingLink.objects.none()
+        return VotingLink.objects.filter(election__organisation=organisation)
 
     @action(detail=False, methods=['get'], url_path='my-links')
     def my_links(self, request):

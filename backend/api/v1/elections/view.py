@@ -4,6 +4,7 @@ from pathlib import Path
 
 from django.db import transaction
 from django.utils.crypto import get_random_string
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
 from rest_framework.decorators import action
@@ -80,13 +81,16 @@ class PositionViewSet(ModelViewSet):
     filterset_fields = ['organisation_id', 'election_id', 'status', 'name']
 
     ACTION_PERMISSION_MAP = {
-        'list': 'view.position',
-        'retrieve': 'view.position',
-        'create': 'add.position',
-        'update': 'update.position',
-        'partial_update': 'update.position',
-        'destroy': 'delete.position',
+        'create': 'election.ballot.manage',
+        'update': 'election.ballot.manage',
+        'partial_update': 'election.ballot.manage',
+        'destroy': 'election.ballot.manage',
     }
+
+    def get_permissions(self):
+        if self.action in {'list', 'retrieve'}:
+            return [IsAuthenticated()]
+        return super().get_permissions()
 
     #scope to current election
     def get_queryset(self):
@@ -101,16 +105,19 @@ class ParticipantViewSet(ModelViewSet):
     filterset_fields = ['membership_id', 'election_id', 'has_voted']
 
     ACTION_PERMISSION_MAP = {
-        'list': 'view.participant',
-        'retrieve': 'view.participant',
-        'create': 'add.participant',
-        'bulk_upload': 'add.participant',
-        'convert_to_candidate': 'add.participant',
-        'send_invitations': 'add.voting_link',
-        'update': 'update.participant',
-        'partial_update': 'update.participant',
-        'destroy': 'delete.participant',
+        'create': 'election.participants.manage',
+        'bulk_upload': 'election.participants.manage',
+        'update': 'election.participants.manage',
+        'partial_update': 'election.participants.manage',
+        'destroy': 'election.participants.manage',
+        'convert_to_candidate': 'election.ballot.manage',
+        'send_invitations': 'election.invites.manage',
     }
+
+    def get_permissions(self):
+        if self.action in {'list', 'retrieve'}:
+            return [IsAuthenticated()]
+        return super().get_permissions()
 
     def get_queryset(self):
         election_id = self.kwargs.get('election_id')
@@ -320,13 +327,16 @@ class CandidateViewSet(ModelViewSet):
     filterset_fields = ['membership_id', 'election_id', 'position_id', 'status']
 
     ACTION_PERMISSION_MAP = {
-        'list': 'view.candidate',
-        'retrieve': 'view.candidate',
-        'create': 'add.candidate',
-        'update': 'update.candidate',
-        'partial_update': 'update.candidate',
-        'destroy': 'delete.candidate',
+        'create': 'election.ballot.manage',
+        'update': 'election.ballot.manage',
+        'partial_update': 'election.ballot.manage',
+        'destroy': 'election.ballot.manage',
     }
+
+    def get_permissions(self):
+        if self.action in {'list', 'retrieve'}:
+            return [IsAuthenticated()]
+        return super().get_permissions()
 
     def get_queryset(self):
         election_id = self.kwargs.get('election_id')
