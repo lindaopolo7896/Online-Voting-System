@@ -75,8 +75,8 @@ class PermissionRecord(models.Model):
     assigned_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.membership.user.email} - {self.codename} for {self.election.name}"
-    
+        return f"{self.membership.user.email} - {self.codename} for {self.election.name if self.election else 'The organisation'}"
+
     class Meta:
         unique_together = ('membership', 'codename', 'election')
 
@@ -87,7 +87,7 @@ class Log(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.membership.user.email} performed {self.codename} on {self.election.name} at {self.timestamp}"
+        return f"{self.membership.user.email} performed {self.codename} on {self.election.name if self.election else self.membership.organisation.name} at {self.timestamp}"
 
 
 # One-time codes for passwordless email login. The raw code is never stored —

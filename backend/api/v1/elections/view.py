@@ -227,9 +227,10 @@ class ParticipantViewSet(ModelViewSet):
                     created_memberships += 1
                 else:
                     updates = []
-                    if membership.role != role:
-                        membership.role = role
-                        updates.append('role')
+                    #lets avoid role updates for now
+                    # if membership.role != role:
+                    #     membership.role = role
+                    #     updates.append('role')
                     if not membership.is_active:
                         membership.is_active = True
                         updates.append('is_active')
