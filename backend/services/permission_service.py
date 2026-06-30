@@ -33,60 +33,6 @@ default_org_permissions = {
 }
 
 
-LEGACY_PERMISSION_ALIASES = {
-    "org.manage": [
-        "add.organisation",
-        "update.organisation",
-        "delete.organisation",
-    ],
-    "org.members.manage": [
-        "add.membership",
-        "update.membership",
-        "delete.membership",
-    ],
-    "org.access.manage": [
-        "assign.permission",
-        "view.permission",
-        "unassign.permission",
-    ],
-    "org.elections.manage": [
-        "add.election",
-        "update.election",
-        "delete.election",
-    ],
-    "org.analytics.view": ["view.log"],
-    "election.participants.manage": [
-        "add.participant",
-        "update.participant",
-        "delete.participant",
-    ],
-    "election.ballot.manage": [
-        "add.position",
-        "update.position",
-        "delete.position",
-        "add.candidate",
-        "update.candidate",
-        "delete.candidate",
-        "approve.candidate",
-        "reject.candidate",
-    ],
-    "election.invites.manage": [
-        "add.voting_link",
-        "view.voting_link",
-        "update.voting_link",
-        "delete.voting_link",
-    ],
-    "election.votes.view": [
-        "view.vote",
-        "view.results",
-    ],
-    "election.votes.manage": [
-        "update.vote",
-        "delete.vote",
-    ],
-    "election.vote.cast": ["add.vote"],
-}
-
 default_election_permissions = {
     "admin": ELECTION_PERMISSIONS,
     "official": [
@@ -163,8 +109,7 @@ def get_all_permissions_for_membership(membership_id):
 
 
 def check_membership_permission(membership, codename, election=None):
-    codenames = [codename, *LEGACY_PERMISSION_ALIASES.get(codename, [])]
-    qs = membership.permissions.filter(codename__in=codenames)
+    qs = membership.permissions.filter(codename=codename)
     if election is not None:
         return qs.filter(election=election).exists() or qs.filter(election__isnull=True).exists()
     return qs.filter(election__isnull=True).exists()

@@ -247,8 +247,8 @@ class MembershipViewset(ModelViewSet):
     # we want to scope it to the current organisation
     def get_queryset(self):
         user = self.request.user
-        # if self.action == 'switch_membership':
-        #     return Membership.objects.filter(user=user, is_active=True)
+        if self.action == 'switch_membership':
+            return Membership.objects.filter(user=user, is_active=True)
         organisation = get_user_active_organisation(user.id)
         active_membership = get_user_active_membership(user.id)
 
@@ -453,7 +453,7 @@ class PermissionRecordViewset(ModelViewSet):
         'get_membership_permissions': 'org.access.manage',
     }
     
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], url_path='bulk-assign')
     def bulk_assign(self, request):
         type = request.data.get('type')
         membership_id = request.data.get('membership_id')
@@ -468,7 +468,7 @@ class PermissionRecordViewset(ModelViewSet):
             return Response({'error': 'Invalid type'}, status=400)
         return Response({'detail': 'Permissions assigned.'}, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['post'])   
+    @action(detail=False, methods=['post'], url_path='bulk-unassign')   
     def bulk_unassign(self, request):
         type = request.data.get('type')
         membership_id = request.data.get('membership_id')
@@ -483,7 +483,7 @@ class PermissionRecordViewset(ModelViewSet):
             return Response({'error': 'Invalid type'}, status=400)
         return Response({'detail': 'Permissions removed.'}, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], url_path='get-membership-permissions')
     def get_membership_permissions(self, request):
         membership_id = request.query_params.get('membership_id')
         if not membership_id:

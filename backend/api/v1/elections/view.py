@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from apps.elections.models import Position, Participant, Candidate
 from api.v1.users.permissions import HasPermission
 from apps.users.models import Election, Membership, User
-from services.membership_service import get_user_active_membership
+from services.membership_service import get_user_active_membership, get_user_active_organisation
 from services.permission_service import assign_election_default_permissions_to_membership
 from services.voting_link_service import dispatch_voter_invites_for_election
 from .serializers import PositionSerializer, ParticipantSerializer, CandidateSerializer
@@ -95,7 +95,10 @@ class PositionViewSet(ModelViewSet):
     #scope to current election
     def get_queryset(self):
         election_id = self.kwargs.get('election_id')
-        return Position.objects.filter(election_id=election_id)
+        organisation = get_user_active_organisation(self.request.user.id)
+        if organisation is None:
+            return Position.objects.none()
+        return Position.objects.filter(election_id=election_id, election__organisation=organisation)
 
     
 class ParticipantViewSet(ModelViewSet):
@@ -121,7 +124,10 @@ class ParticipantViewSet(ModelViewSet):
 
     def get_queryset(self):
         election_id = self.kwargs.get('election_id')
-        return Participant.objects.filter(election_id=election_id)
+        organisation = get_user_active_organisation(self.request.user.id)
+        if organisation is None:
+            return Participant.objects.none()
+        return Participant.objects.filter(election_id=election_id, election__organisation=organisation)
 
     def create(self, request, *args, **kwargs):
         election_id = self.kwargs.get('election_id')
@@ -340,4 +346,7 @@ class CandidateViewSet(ModelViewSet):
 
     def get_queryset(self):
         election_id = self.kwargs.get('election_id')
-        return Candidate.objects.filter(election_id=election_id)
+        organisation = get_user_active_organisation(self.request.user.id)
+        if organisation is None:
+            return Candidate.objects.none()
+        return Candidate.objects.filter(election_id=election_id, election__organisation=organisation)
