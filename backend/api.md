@@ -1,4 +1,4 @@
-# Voting Backend API Documentation V1.1.1
+# Voting Backend API Documentation V1.2.1
 
 Short description:
 This API manages organisations, elections, participants, candidates, voting links, OTP login, and anonymous vote submission with blockchain-style vote anchoring.
